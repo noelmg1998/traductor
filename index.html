@@ -133,27 +133,9 @@
   .chead .ctitle h2 em{font-style:italic; background:var(--gold-grad); -webkit-background-clip:text; background-clip:text; color:transparent;}
   .chead .ctitle p{color:var(--muted); font-size:12.5px; margin:3px 0 0;}
 
-  /* ---------- Stage: avatars + orb ---------- */
-  .stage{display:flex; align-items:center; justify-content:space-between; gap:4px; padding:8px 2px 2px;}
-  .person{width:86px; text-align:center; transition:opacity .3s ease;}
-  .person .avatar{
-    width:74px; height:74px; margin:0 auto; border-radius:50%;
-    background:radial-gradient(circle at 32% 28%, #2a2f47, #141726 70%);
-    border:2px solid rgba(212,167,92,.35);
-    display:flex; align-items:center; justify-content:center;
-    font-family:var(--serif); font-size:27px; font-weight:700; color:var(--gold1);
-    transition:border-color .3s ease, box-shadow .3s ease;
-  }
-  .person.active .avatar{
-    border-color:var(--gold1);
-    box-shadow:0 0 0 3px rgba(212,167,92,.18), 0 0 24px rgba(212,167,92,.5);
-    animation:avatarPulse 1.5s ease-in-out infinite;
-  }
-  .person.dim{opacity:.45;}
-  @keyframes avatarPulse{0%,100%{box-shadow:0 0 0 2px rgba(212,167,92,.15), 0 0 16px rgba(212,167,92,.35);} 50%{box-shadow:0 0 0 5px rgba(212,167,92,.08), 0 0 30px rgba(212,167,92,.6);}}
-  .person .pname{font-weight:600; font-size:15px; margin-top:8px;}
-  .person .pstatus{color:var(--muted); font-size:12px; margin-top:1px; min-height:15px;}
-  .person .dots{color:var(--gold2); letter-spacing:3px; font-size:11px; margin-top:2px; opacity:.85;}
+  /* ---------- Stage: la esfera es la única protagonista (sin personas:
+     cualquiera de los dos puede hablar cualquiera de los dos idiomas) ---------- */
+  .stage{display:flex; align-items:center; justify-content:center; padding:8px 2px 2px;}
   .orbwrap{flex:1; display:flex; justify-content:center;}
   .orb{
     position:relative; width:158px; height:158px; border-radius:50%;
@@ -434,11 +416,9 @@
 
   @media (min-width:640px){
     .orb{width:180px; height:180px;}
-    .person .avatar{width:84px; height:84px;}
-    .person{width:100px;}
   }
   @media (prefers-reduced-motion: reduce){
-    .orb::before, .orb[data-state="processing"], .person.active .avatar{animation:none !important;}
+    .orb::before, .orb[data-state="processing"]{animation:none !important;}
     .card, .sheet{animation:none !important;}
     *{transition-duration:.01ms !important;}
   }
@@ -490,23 +470,11 @@
     <div class="pills" id="call-pills"></div>
 
     <div class="stage">
-      <div class="person" id="person-a">
-        <div class="avatar" id="avatar-a">Y</div>
-        <div class="pname" id="pname-a">You</div>
-        <div class="pstatus" id="pstatus-a"></div>
-        <div class="dots">●●●</div>
-      </div>
       <div class="orbwrap">
         <div class="orb" id="orb" data-state="idle">
           <canvas id="orb-canvas" width="316" height="316"></canvas>
           <div class="particles"><i></i><i></i><i></i><i></i></div>
         </div>
-      </div>
-      <div class="person" id="person-b">
-        <div class="avatar" id="avatar-b">T</div>
-        <div class="pname" id="pname-b">They</div>
-        <div class="pstatus" id="pstatus-b"></div>
-        <div class="dots">●●●</div>
       </div>
     </div>
 
@@ -587,7 +555,7 @@
   </section>
 
   <footer data-i18n="footer">Traducción automática con IA · En vivo</footer>
-  <div class="verlabel">v7 · automática</div>
+  <div class="verlabel">v8 · automática</div>
 </div>
 
 <!-- ===== Modal de idiomas ===== -->
@@ -767,7 +735,6 @@
       tipB: 'Tip:', tip: 'usa audífonos. Así el micrófono no escucha la traducción en voz alta y la conversación suena limpia, sin repeticiones.',
       testNote: 'Modo prueba — crédito de la cuenta',
       callSub: 'Traducción en tiempo real, conversación natural.',
-      you: 'Tú', they: 'Otra persona',
       stListening: 'Escuchando', stSpeaking: 'Hablando', stWaiting: 'En espera',
       mute: 'Silencio', micOn: 'Micrófono activo', micOff: 'Micrófono desactivado',
       speaker: 'Altavoz', autoPlay: 'Automático',
@@ -838,7 +805,6 @@
       tipB: 'Tip:', tip: 'use earbuds. That way the microphone does not hear the spoken translation and the conversation stays clean, with no repeats.',
       testNote: 'Test mode — account credit',
       callSub: 'Real-time translation, natural conversations.',
-      you: 'You', they: 'Other person',
       stListening: 'Listening', stSpeaking: 'Speaking', stWaiting: 'Waiting',
       mute: 'Mute', micOn: 'Mic On', micOff: 'Microphone off',
       speaker: 'Speaker', autoPlay: 'Auto Play',
@@ -952,10 +918,6 @@
   var orb = $('orb'), orbCanvas = $('orb-canvas');
   var statusPill = $('statuspill'), stateText = $('state-text'), timerEl = $('timer');
   var minLine = $('minline');
-  var personA = $('person-a'), personB = $('person-b');
-  var avatarA = $('avatar-a'), avatarB = $('avatar-b');
-  var pnameA = $('pname-a'), pnameB = $('pname-b');
-  var pstatusA = $('pstatus-a'), pstatusB = $('pstatus-b');
   var btnMute = $('btn-mute'), muteSub = $('mute-sub');
   var btnSpeaker = $('btn-speaker');
   var btnPause = $('btn-pause'), pauseIcon = $('pause-icon'), pauseLabel = $('pause-label');
@@ -983,7 +945,6 @@
   /* ================= Máquina de estados (§17) ================= */
   var STATES = ['idle', 'requesting_permission', 'connecting', 'listening', 'processing', 'translating', 'speaking', 'paused', 'reconnecting', 'error', 'ended'];
   var appState = 'idle';
-  var activeSide = null; // 'A' | 'B' | null — lado que habla según la dirección detectada
   function setState(s) {
     if (STATES.indexOf(s) < 0) return;
     appState = s;
@@ -996,18 +957,6 @@
     stateText.textContent = t('state_' + s);
     statusPill.classList.toggle('paused', s === 'paused');
     statusPill.classList.toggle('error', s === 'error');
-    updatePersons();
-  }
-  function updatePersons() {
-    var live = ['listening', 'processing', 'translating', 'speaking', 'reconnecting', 'connecting'].indexOf(appState) >= 0;
-    [ ['A', personA, pstatusA], ['B', personB, pstatusB] ].forEach(function (p) {
-      var isActive = live && activeSide === p[0];
-      p[1].classList.toggle('active', isActive);
-      p[1].classList.toggle('dim', live && activeSide !== null && activeSide !== p[0]);
-      p[2].textContent = !live ? '' :
-        isActive ? t('stSpeaking') :
-        activeSide ? t('stListening') : t('stWaiting');
-    });
   }
 
   /* ================= Audio real: niveles (Web Audio / AnalyserNode) ================= */
@@ -1216,7 +1165,7 @@
     el.innerHTML =
       '<div class="chead2">' +
         '<div class="cavatar">?</div>' +
-        '<div class="cmeta"><b class="cwho"></b> · <span class="clang"></span></div>' +
+        '<div class="cmeta"><span class="clang"></span></div>' +
         '<span class="chip">' + t('chipListening') + '</span>' +
         '<span class="ctime"></span>' +
       '</div>' +
@@ -1231,11 +1180,11 @@
       '</div>';
     feed.appendChild(el);
     var c = {
-      el: el, origText: '', transText: '', fromLang: null, toLang: null, side: null,
+      el: el, origText: '', transText: '', fromLang: null, toLang: null,
       inDone: false, outDone: false, finalized: false, errored: false,
       time: nowTime(), lastAct: Date.now(),
       els: {
-        avatar: el.querySelector('.cavatar'), who: el.querySelector('.cwho'),
+        avatar: el.querySelector('.cavatar'),
         lang: el.querySelector('.clang'), chip: el.querySelector('.chip'),
         time: el.querySelector('.ctime'), orig: el.querySelector('.orig'),
         flag: el.querySelector('.tlabel .flag'), tlang: el.querySelector('.tlang'),
@@ -1265,15 +1214,12 @@
   }
   function renderCard(c) {
     if (c.fromLang) {
+      // Sin etiquetas de persona: el avatar de la tarjeta es la inicial
+      // del IDIOMA de origen y la etiqueta es el nombre de ese idioma —
+      // cualquiera de los dos puede hablar cualquiera de los dos idiomas.
       var L = langOf(c.fromLang);
       c.els.lang.textContent = langName(c.fromLang);
-      c.els.avatar.textContent = c.side === 'B' ? L.init : (settings.uiLang === 'en' ? 'Y' : 'T');
-      if (c.side) {
-        c.els.who.textContent = c.side === 'A' ? t('you') : t('they');
-        c.els.avatar.textContent = c.side === 'A'
-          ? (settings.uiLang === 'en' ? 'Y' : 'T')
-          : L.init;
-      }
+      c.els.avatar.textContent = L.init;
     }
     c.els.orig.textContent = c.origText;
     if (c.toLang) {
@@ -1440,11 +1386,8 @@
       c1.transText = utt.outBy[out]; // buffer acumulado: incluye deltas previos a la decisión
       c1.toLang = out;
       c1.fromLang = out === settings.pairA ? settings.pairB : settings.pairA;
-      c1.side = out === settings.pairB ? 'A' : 'B';
       c1.outDone = false;
       c1.lastAct = Date.now();
-      activeSide = c1.side;
-      updatePersons();
       renderCard(c1);
       scrollFeed();
     } else if (ev.type === 'session.output_transcript.done') {
@@ -1649,11 +1592,8 @@
     if (cf.toLang && cf.toLang !== out && cf.transText) return; // no mezclar sentidos
     cf.toLang = out;
     cf.fromLang = out === settings.pairA ? settings.pairB : settings.pairA;
-    cf.side = out === settings.pairB ? 'A' : 'B';
     if (!cf.transText) cf.transText = utt.outBy[out];
     cf.lastAct = Date.now();
-    activeSide = cf.side;
-    updatePersons();
     renderCard(cf);
     scrollFeed();
   }
@@ -2082,9 +2022,6 @@
     if (!from) return;
     c.fromLang = from;
     c.toLang = from === settings.pairA ? settings.pairB : settings.pairA;
-    c.side = from === settings.pairA ? 'A' : 'B';
-    activeSide = c.side;
-    updatePersons();
     renderCard(c);
   }
 
@@ -2401,15 +2338,12 @@
       var c = ensureCard();
       c.fromLang = j.srcLang;
       c.toLang = j.dstLang;
-      c.side = j.srcLang === settings.pairA ? 'A' : 'B';
-      activeSide = c.side;
       c.origText = j.srcText || '';
       c.transText = j.dstText;
       c.inDone = true;
       c.outDone = true;
       c.lastAct = Date.now();
       renderCard(c);
-      updatePersons();
       tickTimer();
       if (settings.autoplay && j.audioBase64) {
         setState('speaking');
@@ -2522,21 +2456,12 @@
     saveSettings();
     closeLangModal();
     renderPills();
-    renderPersonsMeta();
     populateVoices();
     await reconfigureSessions();
   }
   langSearch.addEventListener('input', function () { renderLangList(langSearch.value); });
   $('lang-close').addEventListener('click', closeLangModal);
   langOverlay.addEventListener('click', function (e) { if (e.target === langOverlay) closeLangModal(); });
-
-  /* ================= Personas / avatares (§4) ================= */
-  function renderPersonsMeta() {
-    pnameA.textContent = t('you');
-    pnameB.textContent = t('they');
-    avatarA.textContent = settings.uiLang === 'en' ? 'Y' : 'T';
-    avatarB.textContent = langOf(settings.pairB).init;
-  }
 
   /* ================= i18n ================= */
   function applyI18n() {
@@ -2551,7 +2476,6 @@
     });
     if (!inCall && feedEmpty) feedEmpty.textContent = t('feedEmpty');
     renderPills();
-    renderPersonsMeta();
     setState(appState);
     tickTimer();
   }
@@ -2573,7 +2497,6 @@
       accumulatedMs = 0;
       cards = [];
       curCard = null;
-      activeSide = null;
       levelHistory = [];
       syncMuteUI();
       syncSpeakerUI();
@@ -2685,7 +2608,6 @@
     intentionalClose = false;
     inCall = false;
     paused = false;
-    activeSide = null;
     setState('ended');
     var translated = cards.filter(function (c) { return !!c.transText; }).length;
     lastSummary = {
