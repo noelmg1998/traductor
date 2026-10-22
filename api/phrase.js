@@ -7,8 +7,10 @@
 //
 // Pasos (todo del lado del servidor; la llave de OpenAI vive SOLO en la
 // variable de entorno OPENAI_API_KEY y nunca llega al navegador):
-//   1) Transcripción: gpt-4o-transcribe, response_format verbose_json
-//      (devuelve text + language detectado, sin pista de idioma).
+//   1) Transcripción: gpt-4o-transcribe, response_format json
+//      (text + language cuando el modelo lo incluye; sin pista de
+//      idioma. 'verbose_json' lo rechaza el proveedor para este
+//      modelo — verificado en vivo).
 //   2) Dirección determinista (ver resolveDirection abajo).
 //   3) Traducción: gpt-5.5, salida SOLO la traducción.
 //   4) Voz: gpt-4o-mini-tts con la voz elegida en Ajustes (validada
@@ -112,13 +114,15 @@ function looksLike(code, text) {
 /* Dirección determinista:
    1) Si el idioma detectado pertenece al par → fuente = detectado,
       destino = el otro idioma del par.
-   2) Si NO pertenece al par (o no se pudo normalizar) → respaldo: si el
-      texto "suena" al idioma A del par (looksLike), se traduce A→B;
-      en cualquier otro caso se traduce B→A (fuente supuesta = B). */
+   2) Si NO pertenece al par (o la respuesta no trajo idioma) →
+      respaldo por marcadores: si el texto "suena" al idioma A del par,
+      se traduce A→B; si "suena" al B, B→A; si no suena a ninguno,
+      B→A por defecto (fuente supuesta = B). */
 function resolveDirection(detected, pairA, pairB, text) {
   if (detected === pairA) return { src: pairA, dst: pairB };
   if (detected === pairB) return { src: pairB, dst: pairA };
   if (looksLike(pairA, text)) return { src: pairA, dst: pairB };
+  if (looksLike(pairB, text)) return { src: pairB, dst: pairA };
   return { src: pairB, dst: pairA };
 }
 
@@ -173,11 +177,16 @@ module.exports = async (req, res) => {
 
     const headers = { ['Authori' + 'zation']: 'Bearer ' + key };
 
-    /* 1) Transcripción con detección de idioma (sin pista) */
+    /* 1) Transcripción con detección de idioma (sin pista).
+       response_format 'json': 'verbose_json' lo RECHAZA el proveedor
+       para gpt-4o-transcribe (verificado en vivo: "Use 'json' or
+       'text' instead"); el formato json devuelve text y, cuando el
+       modelo lo incluye, language — si no viniera, la dirección cae al
+       respaldo determinista por marcadores (resolveDirection). */
     const form = new FormData();
     form.append('file', new Blob([buf], { type: mime }), 'audio.' + ext);
     form.append('model', 'gpt-4o-transcribe');
-    form.append('response_format', 'verbose_json');
+    form.append('response_format', 'json');
     const tr = await fetch('https://api.openai.com/v1/audio/transcriptions', {
       method: 'POST', headers, body: form
     });
@@ -240,6 +249,7 @@ module.exports = async (req, res) => {
 
     res.status(200).json({
       ok: true,
+      detected: detected,
       srcLang: dir.src,
       srcText: srcText,
       dstLang: dir.dst,
