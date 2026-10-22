@@ -161,7 +161,15 @@ module.exports = async (req, res) => {
       });
 
       const j = await r.json().catch(() => ({}));
-      if (!r.ok) return fail('token_failed');
+      if (!r.ok) {
+        // Diagnóstico: se devuelve el código/mensaje del proveedor (sin
+        // ningún dato sensible) para poder corregir el payload.
+        const detail = j && j.error
+          ? String(j.error.code || '') + ': ' + String(j.error.message || '').slice(0, 300)
+          : 'status ' + r.status;
+        res.status(200).json({ ok: false, error: 'token_failed', detail });
+        return;
+      }
 
       const picked = pickSecret(j);
       if (!picked.secret) return fail('token_failed');
