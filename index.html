@@ -587,7 +587,7 @@
   </section>
 
   <footer data-i18n="footer">Traducción automática con IA · En vivo</footer>
-  <div class="verlabel">v4 · automática</div>
+  <div class="verlabel">v5 · automática</div>
 </div>
 
 <!-- ===== Modal de idiomas ===== -->
@@ -1067,6 +1067,11 @@
     var ml = (inCall && !paused) ? micLevel() : 0;
     var ol = inCall ? outLevel() : 0;
     if (ol > 0.045) lastOutputAudioAt = Date.now();
+    // Nivel de la pista ganadora por separado: alimenta la guarda de eco.
+    if (inCall && utt && utt.winner && outAnalysers[utt.winner]) {
+      var wo = outAnalysers[utt.winner];
+      if (rmsOf(wo.analyser, wo.data) > 0.045) lastWinnerAudioAt = Date.now();
+    }
     var combined = Math.max(ml, ol);
     if (inCall) {
       levelHistory.push(combined);
@@ -1328,6 +1333,7 @@
       // salida de cada una contra lo que oyó para detectar repeticiones.
       ensureCard();
       if (utt) utt.inBy[out] = (utt.inBy[out] || '') + ev.delta;
+      detectInputDirection(); // v5: decidir la dirección desde la entrada, cuanto antes
       // El original se toma de UNA sola sesión (la que traduce al idioma B)
       // para no duplicarlo: ambas sesiones transcriben el mismo audio.
       if (out !== settings.pairB) return;
@@ -1341,6 +1347,7 @@
     } else if (ev.type === 'session.input_transcript.done') {
       // Texto de entrada definitivo de esta sesión (evidencia de la compuerta).
       if (utt && ev.transcript) utt.inBy[out] = ev.transcript;
+      detectInputDirection();
       if (out !== settings.pairB) return;
       if (curCard) { curCard.inDone = true; if (ev.transcript && !curCard.origText) curCard.origText = ev.transcript; renderCard(curCard); maybeFinalize(curCard); }
     } else if (ev.type === 'session.output_transcript.delta') {
@@ -1389,14 +1396,20 @@
     }
   }
 
-  /* ============ Compuerta de dirección por frase (v3) ============
+  /* ============ Dirección por frase (v5) ============
      Las dos sesiones oyen el MISMO micrófono. La que traduce a un idioma
      distinto del hablado es la única que debe sonar y escribir la
      traducción; la otra suele repetir lo mismo que oyó (pass-through) y
-     queda muda. La decisión es determinística: se compara el texto de
-     salida de cada sesión contra la transcripción de entrada, se toma
-     en los primeros deltas y NO cambia dentro de la misma frase. */
-  var utt = null; // { inBy:{}, outBy:{}, verdict:{}, winner:null } por frase
+     queda muda. En v5 la decisión PRINCIPAL se toma desde la ENTRADA:
+     en cuanto las primeras palabras de la transcripción apuntan a un
+     idioma del par, la sesión que traduce al OTRO se designa ganadora
+     y se desmutea ANTES de que llegue su audio (nada se recorta). La
+     compuerta por similitud (v3) queda como red de seguridad: mata el
+     pass-through de la designada y decide cuando la detección de
+     entrada no es concluyente. La ganadora solo puede cambiar UNA vez
+     por frase (si la designada resulta ser repetición y la otra ya
+     demostró traducción real). */
+  var utt = null; // { inBy:{}, outBy:{}, verdict:{}, winner, dirLock, designated, flipped } por frase
   function normWords(s) {
     var n = (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
@@ -1424,8 +1437,67 @@
     return best;
   }
   function resetUtt() {
-    utt = { inBy: {}, outBy: {}, verdict: {}, winner: null };
+    utt = { inBy: {}, outBy: {}, verdict: {}, winner: null, dirLock: null, designated: null, flipped: false };
     applyGate();
+  }
+
+  /* ===== Decisión temprana desde la entrada (v5) =====
+     Puntúa el texto que la gente está diciendo contra marcadores de
+     español e inglés. Con ventaja clara (≥2 puntos y ≥3 palabras
+     puntuadas, o señal fuerte ¿/¡ con ventaja) se fija el idioma de
+     entrada y se designa ganadora a la sesión que traduce al otro
+     idioma del par — su <audio> se desmutea de inmediato, antes de
+     que el proveedor empiece a mandar la traducción hablada. */
+  var ES_WORDS = { el:1, la:1, los:1, las:1, de:1, que:1, en:1, y:1, un:1, una:1, es:1, son:1, esta:1, estan:1, por:1, con:1, para:1, del:1, se:1, su:1, al:1, lo:1, como:1, mas:1, pero:1, sus:1, ya:1, este:1, esto:1, bien:1, gracias:1, hola:1, si:1, yo:1, tu:1, mi:1, me:1, te:1, nos:1, hay:1, muy:1, cuando:1, donde:1, tengo:1, quiero:1, vamos:1 };
+  var EN_WORDS = { the:1, be:1, of:1, and:1, a:1, in:1, to:1, have:1, it:1, i:1, that:1, for:1, you:1, he:1, with:1, on:1, are:1, as:1, by:1, this:1, they:1, at:1, an:1, will:1, my:1, from:1, or:1, were:1, we:1, when:1, your:1, can:1, said:1, there:1, use:1, each:1, which:1, she:1, do:1, how:1, their:1, if:1, up:1, other:1, about:1, out:1, many:1, then:1, them:1, these:1, so:1, some:1, her:1, would:1, make:1, like:1, him:1, into:1, time:1, has:1, look:1, two:1, more:1, go:1, see:1, way:1, could:1, is:1, was:1, what:1, where:1, who:1, why:1, not:1, yes:1, ok:1, okay:1, please:1, thanks:1, thank:1, hello:1, hi:1, good:1, need:1, want:1 };
+  // "no" aparece en las listas de ambos idiomas: es ambiguo y no puntúa.
+  function scoreInputText(raw) {
+    var es = 0, en = 0, tokens = 0;
+    raw = raw || '';
+    if (/[¿¡]/.test(raw)) es += 3; // señal fuerte de español
+    var nn = (raw.match(/ñ/gi) || []).length;
+    if (nn) es += Math.min(2 * nn, 4); // la ñ solo existe en español
+    normWords(raw).forEach(function (w) {
+      if (w === 'no') return;
+      if (ES_WORDS[w]) { es++; tokens++; }
+      else if (EN_WORDS[w]) { en++; tokens++; }
+    });
+    return { es: es, en: en, tokens: tokens };
+  }
+  // La transcripción canónica de la frase: la más completa de las dos
+  // sesiones (ambas oyen lo mismo).
+  function bestInputText() {
+    if (!utt) return '';
+    var a = utt.inBy[settings.pairA] || '', b = utt.inBy[settings.pairB] || '';
+    return b.length >= a.length ? b : a;
+  }
+  function detectInputDirection() {
+    if (!utt || utt.dirLock) return;
+    var txt = bestInputText();
+    var sc = scoreInputText(txt);
+    var lead = sc.es - sc.en;
+    if (!lead) return;
+    var strong = /[¿¡]/.test(txt);
+    if ((sc.tokens >= 3 && Math.abs(lead) >= 2) || (strong && Math.abs(lead) >= 2)) {
+      lockInputDirection(lead > 0 ? 'es' : 'en');
+    }
+  }
+  function lockInputDirection(lang) {
+    if (!utt || utt.dirLock) return;
+    utt.dirLock = lang; // idioma que la gente está hablando en esta frase
+    var target = null;
+    if (lang === settings.pairA) target = settings.pairB;
+    else if (lang === settings.pairB) target = settings.pairA;
+    if (!target) return; // parece un tercer idioma: decide la compuerta por similitud
+    utt.designated = target;
+    if (!utt.winner) {
+      // Se desmutea YA la designada: cuando su audio llegue, ya está abierta.
+      utt.winner = target;
+      applyGate();
+    } else if (utt.winner === target) {
+      applyGate();
+    }
+    // Si ya hay otra ganadora con veredicto de traducción, no se pisa.
   }
   // UNA sola voz audible: suena solo la sesión ganadora de la frase, y
   // solo si el usuario tiene activada la reproducción automática.
@@ -1441,13 +1513,17 @@
     if (words < 2) return;
     var sim = gateSimilarity(outTxt);
     if (sim < 0) return; // todavía no hay transcripción de entrada que comparar
-    if (sim < 0.45) utt.verdict[sess.out] = 'trans';
-    else if (words >= 3 && sim >= 0.8) utt.verdict[sess.out] = 'pass';
-    else return; // evidencia ambigua: se espera al siguiente delta
-    if (utt.verdict[sess.out] === 'trans') {
-      if (!utt.winner) utt.winner = sess.out;
-      else if (utt.winner !== sess.out) utt.verdict[sess.out] = 'pass'; // llegó tarde: ya hay ganadora
-    }
+    if (sim < 0.45) {
+      // Traducción real.
+      if (!utt.winner) { utt.verdict[sess.out] = 'trans'; utt.winner = sess.out; }
+      else if (utt.winner === sess.out) utt.verdict[sess.out] = 'trans';
+      else utt.verdict[sess.out] = 'late'; // real, pero ya hay ganadora: queda relegada
+    } else if (words >= 3 && sim >= 0.8) {
+      // Repetición en el mismo idioma (pass-through): jamás suena ni se
+      // escribe. Si era la designada por la entrada, se la mata.
+      utt.verdict[sess.out] = 'pass';
+      if (utt.winner === sess.out) onWinnerKilled(sess.out);
+    } else return; // evidencia ambigua: se espera al siguiente delta
     applyGate();
   }
   // Al cerrar la salida de una sesión sin veredicto, se decide con el
@@ -1456,10 +1532,39 @@
   function forceGateDecision(sess) {
     if (!utt || utt.verdict[sess.out]) return;
     var sim = gateSimilarity(utt.outBy[sess.out] || '');
-    var v = sim >= 0.6 ? 'pass' : 'trans';
-    if (v === 'trans' && utt.winner && utt.winner !== sess.out) v = 'pass';
-    utt.verdict[sess.out] = v;
-    if (v === 'trans' && !utt.winner) utt.winner = sess.out;
+    if (sim >= 0.6) {
+      utt.verdict[sess.out] = 'pass';
+      if (utt.winner === sess.out) onWinnerKilled(sess.out);
+    } else if (!utt.winner) {
+      utt.verdict[sess.out] = 'trans';
+      utt.winner = sess.out;
+    } else if (utt.winner === sess.out) {
+      utt.verdict[sess.out] = 'trans';
+    } else {
+      utt.verdict[sess.out] = 'late';
+    }
+    applyGate();
+  }
+  // La ganadora (normalmente la designada por la entrada) resultó ser
+  // una repetición: se la silencia y se limpia su texto de la tarjeta.
+  // ÚNICO cambio de ganadora permitido por frase: si la otra sesión ya
+  // demostró traducción real y quedó relegada ('late'), ella gana.
+  function onWinnerKilled(out) {
+    if (!utt || utt.winner !== out) return;
+    utt.winner = null;
+    if (curCard && !curCard.finalized && curCard.toLang === out) {
+      curCard.transText = '';
+      curCard.toLang = null;
+      curCard.outDone = false;
+      renderCard(curCard);
+    }
+    var other = out === settings.pairA ? settings.pairB : settings.pairA;
+    if (utt.verdict[other] === 'late' && !utt.flipped) {
+      utt.flipped = true;
+      utt.verdict[other] = 'trans';
+      utt.winner = other;
+      flushBufferedTranslation(other);
+    }
     applyGate();
   }
   // Si la ganadora se confirmó recién al cerrar (done), vuelca su texto
@@ -1478,6 +1583,55 @@
     renderCard(cf);
     scrollFeed();
   }
+
+  /* ============ Guarda de eco semidúplex (v5, anti ping-pong) ============
+     Mientras la traducción ganadora está SONANDO por el altavoz, el
+     micrófono se apaga a nivel de pista (track.enabled = false en las
+     pistas locales que alimentan a AMBAS sesiones): el teléfono no
+     puede oír su propia traducción ni re-traducirla en círculo. Cuando
+     la reproducción termina, el micrófono vuelve tras una cola de
+     350 ms. El mute del usuario es independiente y siempre manda:
+     las pistas solo se encienden si el usuario no ha silenciado. */
+  var echoBlock = false, echoReleaseTimer = null, lastWinnerAudioAt = 0;
+  function applyMicTracks() {
+    if (!micStream) return;
+    var on = !muted && !echoBlock;
+    micStream.getAudioTracks().forEach(function (tr) { tr.enabled = on; });
+  }
+  function resetEchoGuard() {
+    echoBlock = false;
+    if (echoReleaseTimer) { clearTimeout(echoReleaseTimer); echoReleaseTimer = null; }
+  }
+  function winnerSession() {
+    if (!utt || !utt.winner) return null;
+    for (var i = 0; i < sessions.length; i++) if (sessions[i].out === utt.winner) return sessions[i];
+    return null;
+  }
+  // ¿Está sonando de verdad la traducción ganadora? Se combinan tres
+  // señales: el <audio> de la ganadora está en reproducción, hubo texto
+  // de salida reciente y/o el analizador de su pista marca nivel.
+  function winnerAudioPlaying() {
+    if (!inCall || paused || !settings.autoplay) return false;
+    var s = winnerSession();
+    if (!s || !s.audioEl) return false;
+    if (s.audioEl.paused || s.audioEl.ended) return false;
+    var now = Date.now();
+    if (now - lastOutputTextAt < 2000) return true;
+    if (now - lastWinnerAudioAt < 600) return true;
+    return false;
+  }
+  function echoGuardTick() {
+    if (winnerAudioPlaying()) {
+      if (echoReleaseTimer) { clearTimeout(echoReleaseTimer); echoReleaseTimer = null; }
+      if (!echoBlock) { echoBlock = true; applyMicTracks(); }
+    } else if (echoBlock && !echoReleaseTimer) {
+      echoReleaseTimer = setTimeout(function () {
+        echoReleaseTimer = null;
+        if (!winnerAudioPlaying()) { echoBlock = false; applyMicTracks(); }
+      }, 350);
+    }
+  }
+  setInterval(echoGuardTick, 120);
 
   async function mintToken(outLang) {
     var tr = await fetch(TOKEN_URL, {
@@ -1555,9 +1709,11 @@
     });
     sessions = [];
     resetUtt();
+    resetEchoGuard();
     detachOutAnalysers();
   }
   function stopMic() {
+    resetEchoGuard();
     if (micStream) {
       micStream.getTracks().forEach(function (tr) { tr.stop(); });
       micStream = null;
@@ -1568,7 +1724,8 @@
     micStream = await navigator.mediaDevices.getUserMedia({
       audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
     });
-    micStream.getAudioTracks().forEach(function (tr) { tr.enabled = !muted; });
+    resetEchoGuard(); // micrófono nuevo: la guarda de eco arranca limpia
+    applyMicTracks(); // respeta el mute del usuario y la guarda de eco
     attachMicAnalyser(micStream);
   }
   async function connectAll() {
@@ -1786,7 +1943,7 @@
   btnMute.addEventListener('click', function () {
     vibrate(8);
     muted = !muted;
-    if (micStream) micStream.getAudioTracks().forEach(function (tr) { tr.enabled = !muted; });
+    applyMicTracks(); // el mute del usuario manda sobre la guarda de eco
     syncMuteUI();
   });
 
