@@ -437,6 +437,10 @@
   }
   .toast.on{opacity:1; transform:translateX(-50%) translateY(0);}
   footer{margin-top:auto; padding-top:16px; text-align:center; color:var(--dim); font-size:12px; letter-spacing:.3px;}
+  .verlabel{text-align:center; color:var(--dim); font-size:11px; letter-spacing:1.4px; padding:6px 0 2px; opacity:.75;}
+  #fatal-banner{position:fixed; top:10px; left:50%; transform:translateX(-50%); z-index:99; max-width:92vw; background:rgba(60,16,18,.94); border:1px solid rgba(229,72,77,.65); color:#ffd9db; font-size:13px; line-height:1.45; padding:10px 14px; border-radius:14px; display:none; box-shadow:0 12px 30px rgba(0,0,0,.55);}
+  #fatal-banner.show{display:flex; gap:10px; align-items:flex-start;}
+  #fatal-banner button{background:none; border:none; color:#ffb4b6; font-size:15px; cursor:pointer; padding:0 2px; flex:none;}
 
   @media (min-width:640px){
     .orb{width:180px; height:180px;}
@@ -451,6 +455,7 @@
 </style>
 </head>
 <body>
+<div id="fatal-banner" role="alert"><span id="fatal-msg">Algo falló en la página.</span><button id="fatal-close" aria-label="Cerrar">✕</button></div>
 <div class="wrap">
 
   <header id="home-header">
@@ -595,6 +600,7 @@
   </section>
 
   <footer data-i18n="footer">Traducción automática con IA · En vivo</footer>
+  <div class="verlabel">v3 · automática</div>
 </div>
 
 <!-- ===== Modal de idiomas ===== -->
@@ -689,6 +695,21 @@
 <script>
 (function () {
   'use strict';
+
+  /* ===== Red de seguridad visible: ningún fallo muere en silencio ===== */
+  window.addEventListener('error', function (e) { showFatal(e && e.message); });
+  window.addEventListener('unhandledrejection', function (e) { showFatal(e && e.reason && e.reason.message); });
+  function showFatal(msg) {
+    try {
+      var b = document.getElementById('fatal-banner');
+      if (!b) return;
+      var m = document.getElementById('fatal-msg');
+      if (m) m.textContent = 'Algo falló en la página' + (msg ? ': ' + String(msg).slice(0, 120) : '') + '. Si algo dejó de responder, cierra esta pestaña y vuelve a abrir la conversación.';
+      b.classList.add('show');
+      var c = document.getElementById('fatal-close');
+      if (c && !c._bound) { c._bound = true; c.addEventListener('click', function () { b.classList.remove('show'); }); }
+    } catch (err) {}
+  }
 
   /* ================= Constantes ================= */
   var CALLS_URL = 'https://api.openai.com/v1/realtime/translations/calls';
@@ -1166,6 +1187,7 @@
     c.els.copy.addEventListener('click', function () { copyCard(c); });
     c.els.fav.addEventListener('click', function () { toggleFav(c); });
     cards.push(c);
+    resetUtt(); // frase nueva: la compuerta de dirección vuelve a decidir
     scrollFeed();
     return c;
   }
@@ -1318,10 +1340,14 @@
     if (!ev || !ev.type) return;
     var out = sess.out;
     if (ev.type === 'session.input_transcript.delta') {
+      if (!ev.delta) return;
+      // Se registra la entrada de AMBAS sesiones: la compuerta compara la
+      // salida de cada una contra lo que oyó para detectar repeticiones.
+      ensureCard();
+      if (utt) utt.inBy[out] = (utt.inBy[out] || '') + ev.delta;
       // El original se toma de UNA sola sesión (la que traduce al idioma B)
       // para no duplicarlo: ambas sesiones transcriben el mismo audio.
       if (out !== settings.pairB) return;
-      if (!ev.delta) return;
       lastInputAt = Date.now();
       var c0 = ensureCard();
       c0.origText += ev.delta;
@@ -1330,19 +1356,27 @@
       renderCard(c0);
       scrollFeed();
     } else if (ev.type === 'session.input_transcript.done') {
+      // Texto de entrada definitivo de esta sesión (evidencia de la compuerta).
+      if (utt && ev.transcript) utt.inBy[out] = ev.transcript;
       if (out !== settings.pairB) return;
       if (curCard) { curCard.inDone = true; if (ev.transcript && !curCard.origText) curCard.origText = ev.transcript; renderCard(curCard); maybeFinalize(curCard); }
     } else if (ev.type === 'session.output_transcript.delta') {
       if (!ev.delta) return;
-      lastOutputTextAt = Date.now();
       var c1 = ensureCard();
       // Si la tarjeta abierta ya tiene traducción del OTRO sentido, es otra
       // intervención: se cierra y se abre una nueva (nunca se duplican líneas).
       if (c1.toLang && c1.toLang !== out && c1.transText) { finalizeCard(c1); c1 = ensureCard(); }
+      // Compuerta v3: se acumula la salida y se decide la dirección ANTES
+      // de escribir o sonar nada. La sesión que repite en el mismo idioma
+      // (pass-through) jamás llega a la tarjeta ni al altavoz.
+      if (utt) utt.outBy[out] = (utt.outBy[out] || '') + ev.delta;
+      evalGate(sess);
+      if (!utt || utt.winner !== out) return;
+      lastOutputTextAt = Date.now();
+      c1.transText = utt.outBy[out]; // buffer acumulado: incluye deltas previos a la decisión
       c1.toLang = out;
       c1.fromLang = out === settings.pairA ? settings.pairB : settings.pairA;
       c1.side = out === settings.pairB ? 'A' : 'B';
-      c1.transText += ev.delta;
       c1.outDone = false;
       c1.lastAct = Date.now();
       activeSide = c1.side;
@@ -1350,9 +1384,14 @@
       renderCard(c1);
       scrollFeed();
     } else if (ev.type === 'session.output_transcript.done') {
+      // Compuerta v3: si la dirección no se pudo decidir con los deltas,
+      // se decide ahora con el texto completo; la repetición queda fuera.
+      forceGateDecision(sess);
+      if (utt && utt.winner === out) flushBufferedTranslation(out);
       if (curCard && curCard.toLang === out) {
         if (ev.transcript && !curCard.transText) curCard.transText = ev.transcript;
         curCard.outDone = true;
+        lastOutputTextAt = Date.now();
         renderCard(curCard);
         maybeFinalize(curCard);
       }
@@ -1365,6 +1404,96 @@
       }
       showErr('call', t('errSession'));
     }
+  }
+
+  /* ============ Compuerta de dirección por frase (v3) ============
+     Las dos sesiones oyen el MISMO micrófono. La que traduce a un idioma
+     distinto del hablado es la única que debe sonar y escribir la
+     traducción; la otra suele repetir lo mismo que oyó (pass-through) y
+     queda muda. La decisión es determinística: se compara el texto de
+     salida de cada sesión contra la transcripción de entrada, se toma
+     en los primeros deltas y NO cambia dentro de la misma frase. */
+  var utt = null; // { inBy:{}, outBy:{}, verdict:{}, winner:null } por frase
+  function normWords(s) {
+    var n = (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+    return n ? n.split(' ') : [];
+  }
+  // Contención: fracción de palabras del texto más corto presentes en el otro.
+  function textSimilarity(a, b) {
+    var wa = normWords(a), wb = normWords(b);
+    if (!wa.length || !wb.length) return 0;
+    var setB = {};
+    wb.forEach(function (w) { setB[w] = true; });
+    var hits = 0;
+    wa.forEach(function (w) { if (setB[w]) hits++; });
+    return hits / Math.min(wa.length, wb.length);
+  }
+  // Similitud de una salida contra la mejor transcripción de entrada
+  // disponible (ambas sesiones oyen lo mismo). -1 = aún sin evidencia.
+  function gateSimilarity(outTxt) {
+    if (!utt) return -1;
+    var best = -1;
+    Object.keys(utt.inBy).forEach(function (k) {
+      var t0 = utt.inBy[k];
+      if (t0) { var s = textSimilarity(outTxt, t0); if (s > best) best = s; }
+    });
+    return best;
+  }
+  function resetUtt() {
+    utt = { inBy: {}, outBy: {}, verdict: {}, winner: null };
+    applyGate();
+  }
+  // UNA sola voz audible: suena solo la sesión ganadora de la frase, y
+  // solo si el usuario tiene activada la reproducción automática.
+  function applyGate() {
+    sessions.forEach(function (s) {
+      try { s.audioEl.muted = !(settings.autoplay && utt && utt.winner === s.out); } catch (e) {}
+    });
+  }
+  function evalGate(sess) {
+    if (!utt || utt.verdict[sess.out]) return;
+    var outTxt = utt.outBy[sess.out] || '';
+    var words = normWords(outTxt).length;
+    if (words < 2) return;
+    var sim = gateSimilarity(outTxt);
+    if (sim < 0) return; // todavía no hay transcripción de entrada que comparar
+    if (sim < 0.45) utt.verdict[sess.out] = 'trans';
+    else if (words >= 3 && sim >= 0.8) utt.verdict[sess.out] = 'pass';
+    else return; // evidencia ambigua: se espera al siguiente delta
+    if (utt.verdict[sess.out] === 'trans') {
+      if (!utt.winner) utt.winner = sess.out;
+      else if (utt.winner !== sess.out) utt.verdict[sess.out] = 'pass'; // llegó tarde: ya hay ganadora
+    }
+    applyGate();
+  }
+  // Al cerrar la salida de una sesión sin veredicto, se decide con el
+  // texto completo: parecido al original = repetición (muda); distinto =
+  // traducción (gana el audio si el puesto sigue libre).
+  function forceGateDecision(sess) {
+    if (!utt || utt.verdict[sess.out]) return;
+    var sim = gateSimilarity(utt.outBy[sess.out] || '');
+    var v = sim >= 0.6 ? 'pass' : 'trans';
+    if (v === 'trans' && utt.winner && utt.winner !== sess.out) v = 'pass';
+    utt.verdict[sess.out] = v;
+    if (v === 'trans' && !utt.winner) utt.winner = sess.out;
+    applyGate();
+  }
+  // Si la ganadora se confirmó recién al cerrar (done), vuelca su texto
+  // acumulado a la tarjeta para que la traducción no se pierda.
+  function flushBufferedTranslation(out) {
+    var cf = curCard;
+    if (!cf || cf.finalized || !utt || !utt.outBy[out]) return;
+    if (cf.toLang && cf.toLang !== out && cf.transText) return; // no mezclar sentidos
+    cf.toLang = out;
+    cf.fromLang = out === settings.pairA ? settings.pairB : settings.pairA;
+    cf.side = out === settings.pairB ? 'A' : 'B';
+    if (!cf.transText) cf.transText = utt.outBy[out];
+    cf.lastAct = Date.now();
+    activeSide = cf.side;
+    updatePersons();
+    renderCard(cf);
+    scrollFeed();
   }
 
   async function mintToken(outLang) {
@@ -1387,7 +1516,10 @@
     var pc = new RTCPeerConnection();
     var audioEl = document.createElement('audio');
     audioEl.autoplay = true;
-    audioEl.muted = !settings.autoplay;
+    audioEl.volume = 1.0; // claridad: nivel completo, sin nodos que lo reduzcan
+    // Nace MUDO siempre: la compuerta de dirección (applyGate) decide qué
+    // sesión suena — una sola traducción audible por frase.
+    audioEl.muted = true;
     audioEl.setAttribute('playsinline', '');
     document.body.appendChild(audioEl);
 
@@ -1439,6 +1571,7 @@
       if (s.audioEl) s.audioEl.remove();
     });
     sessions = [];
+    resetUtt();
     detachOutAnalysers();
   }
   function stopMic() {
@@ -1463,6 +1596,7 @@
       startSession(settings.pairA)
     ]);
     sessions = both;
+    applyGate();
     reconnectAttempts = 0;
   }
 
@@ -1697,7 +1831,7 @@
   function syncSpeakerUI() {
     btnSpeaker.classList.toggle('on', settings.autoplay);
     btnSpeaker.classList.toggle('off', !settings.autoplay);
-    sessions.forEach(function (s) { s.audioEl.muted = !settings.autoplay; });
+    applyGate(); // respeta autoplay Y la ganadora de la frase en curso
     var chk = $('set-autoplay'); if (chk) chk.checked = settings.autoplay;
   }
   btnSpeaker.addEventListener('click', function () {
