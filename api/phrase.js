@@ -70,8 +70,8 @@ const SCRIPT_CHECKS = [
   ['ar', /[\u0600-\u06FF]/]             // árabe
 ];
 const WORD_MARKERS = {
-  es: ['el', 'la', 'los', 'las', 'de', 'que', 'en', 'una', 'es', 'por', 'con', 'para', 'gracias', 'hola', 'quiero', 'tengo', 'vamos', 'esto', 'esta', 'muy', 'cuando', 'donde', 'necesito', 'terminar', 'hoy'],
-  en: ['the', 'be', 'of', 'and', 'a', 'in', 'to', 'have', 'it', 'that', 'for', 'you', 'with', 'are', 'this', 'they', 'when', 'your', 'can', 'there', 'would', 'make', 'like', 'need', 'want', 'please', 'thanks', 'hello', 'today', 'finish'],
+  es: ['el', 'la', 'los', 'las', 'de', 'que', 'en', 'una', 'es', 'por', 'con', 'para', 'gracias', 'hola', 'quiero', 'tengo', 'vamos', 'esto', 'esta', 'muy', 'cuando', 'donde', 'necesito', 'terminar', 'hoy', 'sí', 'buenos', 'buenas', 'días', 'tardes', 'también', 'favor', 'eso', 'aquí', 'ahora', 'mañana', 'señor', 'bien'],
+  en: ['the', 'be', 'of', 'and', 'a', 'in', 'to', 'have', 'it', 'that', 'for', 'you', 'with', 'are', 'this', 'they', 'when', 'your', 'can', 'there', 'would', 'make', 'like', 'need', 'want', 'please', 'thanks', 'thank', 'hello', 'today', 'finish', 'yeah', 'yes', 'okay', 'sure', 'well', 'good', 'morning'],
   fr: ['le', 'la', 'les', 'de', 'des', 'est', 'je', 'tu', 'nous', 'vous', 'merci', 'bonjour', 'avec', 'pour', 'une', 'dans', 'pas', 'qui', 'sur', 'plus', 'être', 'avoir'],
   de: ['der', 'die', 'das', 'und', 'ist', 'ich', 'nicht', 'ein', 'eine', 'mit', 'für', 'auf', 'haben', 'werden', 'danke', 'auch', 'sich', 'nach', 'bei', 'einen'],
   it: ['il', 'lo', 'gli', 'che', 'di', 'non', 'una', 'per', 'sono', 'grazie', 'ciao', 'con', 'del', 'della', 'anche', 'questo', 'questa', 'come', 'più'],
@@ -85,44 +85,50 @@ const CHAR_MARKERS = [
   ['fr', /[àâçéèêëîïôû]/i]
 ];
 
-// ¿El texto "suena" al idioma `code`? (booleano, determinista)
-function looksLike(code, text) {
-  if (!text) return false;
-  var i, m;
-  for (i = 0; i < SCRIPT_CHECKS.length; i++) {
-    if (SCRIPT_CHECKS[i][1].test(text)) return SCRIPT_CHECKS[i][0] === code;
+// Idioma según la escritura del texto (determinista), o null.
+function scriptLangOf(text) {
+  if (!text) return null;
+  for (var i = 0; i < SCRIPT_CHECKS.length; i++) {
+    if (SCRIPT_CHECKS[i][1].test(text)) return SCRIPT_CHECKS[i][0];
   }
+  return null;
+}
+
+// Puntaje de "cuánto suena el texto" al idioma `code`: palabras
+// frecuentes (+1 c/u) y caracteres característicos (+2).
+function markerScore(code, text) {
+  if (!text) return 0;
+  var score = 0, i;
   for (i = 0; i < CHAR_MARKERS.length; i++) {
-    m = CHAR_MARKERS[i];
-    if (m[1].test(text)) {
-      // 'es' gana con ¿¡ñ; los demás caracteres acentuados solo cuentan
-      // si coinciden con el idioma preguntado y no son de español.
-      if (m[0] === code) return true;
-      if (m[0] === 'es') return false;
-    }
+    if (CHAR_MARKERS[i][0] === code && CHAR_MARKERS[i][1].test(text)) score += 2;
   }
   var words = WORD_MARKERS[code];
-  if (!words) return false;
+  if (!words) return score;
   var set = {};
   words.forEach(function (w) { set[w] = true; });
   var tokens = String(text).toLowerCase().replace(/[^\p{L}\p{N}\s']/gu, ' ').split(/\s+/);
-  var hits = 0;
-  tokens.forEach(function (w) { if (set[w]) hits++; });
-  return hits >= 2;
+  tokens.forEach(function (w) { if (set[w]) score++; });
+  return score;
 }
 
 /* Dirección determinista:
    1) Si el idioma detectado pertenece al par → fuente = detectado,
       destino = el otro idioma del par.
-   2) Si NO pertenece al par (o la respuesta no trajo idioma) →
-      respaldo por marcadores: si el texto "suena" al idioma A del par,
-      se traduce A→B; si "suena" al B, B→A; si no suena a ninguno,
-      B→A por defecto (fuente supuesta = B). */
+   2) Si NO pertenece al par — o la respuesta no trajo idioma, que es
+      lo que pasa en vivo con el formato 'json' — respaldo: primero la
+      escritura (si el texto está en la escritura de uno del par, ese
+      es la fuente); luego el puntaje de marcadores de AMBOS idiomas
+      del par (gana el mayor; sirve también para frases cortas como
+      "¡Gracias!" o "Thank you"); empate o cero → B→A por defecto. */
 function resolveDirection(detected, pairA, pairB, text) {
   if (detected === pairA) return { src: pairA, dst: pairB };
   if (detected === pairB) return { src: pairB, dst: pairA };
-  if (looksLike(pairA, text)) return { src: pairA, dst: pairB };
-  if (looksLike(pairB, text)) return { src: pairB, dst: pairA };
+  var sl = scriptLangOf(text);
+  if (sl === pairA) return { src: pairA, dst: pairB };
+  if (sl === pairB) return { src: pairB, dst: pairA };
+  var sa = markerScore(pairA, text), sb = markerScore(pairB, text);
+  if (sa > sb) return { src: pairA, dst: pairB };
+  if (sb > sa) return { src: pairB, dst: pairA };
   return { src: pairB, dst: pairA };
 }
 
