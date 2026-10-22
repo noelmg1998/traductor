@@ -500,29 +500,37 @@
   .acard-arrow svg{width:17px; height:17px; stroke:var(--gold1); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
   #view-home .pills{margin-top:16px;}
 
-  .recent{margin-top:20px; background:linear-gradient(170deg, rgba(255,255,255,.045), rgba(255,255,255,.015));
-    border:1px solid var(--line-soft); border-radius:22px; padding:16px 16px 8px;}
-  .recenthead{display:flex; align-items:center; gap:9px; margin-bottom:12px;}
-  .recenthead .ricon{display:flex;}
-  .recenthead .ricon svg{width:19px; height:19px; stroke:var(--gold1); fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;}
-  .recenthead .rtitle{font-size:16.5px; font-weight:600; flex:1;}
-  .seeall{color:var(--muted); font-size:14px; font-weight:500; display:flex; align-items:center; gap:3px; padding:6px 2px;}
-  .seeall .seearrow{color:var(--gold1); font-size:17px; line-height:1;}
-  .rchip{display:flex; align-items:center; gap:10px; background:rgba(255,255,255,.045);
-    border:1px solid var(--line-soft); border-radius:16px; padding:12px 12px 12px 14px; margin-bottom:10px;}
-  .rchip-main{flex:1; min-width:0;}
-  .rchip-orig{margin:0; font-size:15px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-  .rchip-trans{margin:2px 0 0; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-    background:var(--gold-grad); -webkit-background-clip:text; background-clip:text; color:transparent;}
-  .rchip-meta{display:block; margin-top:3px; color:var(--dim); font-size:12px;}
-  .rchip-play{width:42px; height:42px; flex:0 0 auto; border-radius:50%;
-    background:rgba(255,255,255,.05); border:1px solid rgba(212,167,92,.45);
-    display:flex; align-items:center; justify-content:center;
+  /* ================= v12 · Englix: traductor rápido del Inicio ================= */
+  .quick{margin-top:20px; background:linear-gradient(170deg, rgba(255,255,255,.045), rgba(255,255,255,.015));
+    border:1px solid var(--line-soft); border-radius:22px; padding:16px;}
+  .quickhead{display:flex; align-items:center; gap:9px; margin-bottom:4px;}
+  .quickhead .qicon{display:flex;}
+  .quickhead .qicon svg{width:19px; height:19px; stroke:var(--gold1); fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;}
+  .quickhead .qtitle{font-size:16.5px; font-weight:600; flex:1;}
+  .quickdir{color:var(--dim); font-size:12.5px; margin-bottom:10px;}
+  #quick-input{width:100%; box-sizing:border-box; resize:vertical; min-height:58px; max-height:150px;
+    background:rgba(255,255,255,.045); border:1px solid var(--line-soft); border-radius:14px;
+    color:var(--txt); font:inherit; font-size:15.5px; line-height:1.45; padding:11px 12px; outline:none;}
+  #quick-input:focus{border-color:rgba(212,167,92,.55);}
+  #quick-input::placeholder{color:var(--dim);}
+  .quickrow{display:flex; align-items:center; justify-content:space-between; margin-top:10px;}
+  .quickcount{color:var(--dim); font-size:12px;}
+  .quickbtn{padding:11px 22px; border-radius:999px; background:var(--gold-grad); color:#241a05;
+    font-weight:700; font-size:14.5px; letter-spacing:.2px; border:none; cursor:pointer;
+    box-shadow:0 8px 20px rgba(212,167,92,.30), inset 0 1px 0 rgba(255,255,255,.5);
+    transition:transform .15s ease, box-shadow .25s ease, opacity .2s ease;}
+  .quickbtn:disabled{opacity:.45; cursor:default; box-shadow:none;}
+  .quickresult{margin-top:14px; border-top:1px solid var(--line-soft); padding-top:12px;}
+  .quicklabel{display:block; font-size:11px; font-weight:600; letter-spacing:1.2px; text-transform:uppercase; color:var(--dim);}
+  .quicktext{margin:6px 0 0; font-size:17.5px; font-weight:600; line-height:1.4; color:var(--gold1); word-wrap:break-word;}
+  .quickactions{display:flex; gap:9px; margin-top:11px;}
+  .qact{width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,.05);
+    border:1px solid rgba(212,167,92,.45); display:flex; align-items:center; justify-content:center;
     transition:border-color .25s ease, box-shadow .25s ease;}
-  .rchip-play svg{width:18px; height:18px; stroke:#e9e4d8; fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round;}
-  .rchip-play.playing{border-color:var(--gold1); box-shadow:0 0 14px rgba(212,167,92,.5);}
-  .rchip-play.playing svg{stroke:var(--gold1);}
-  .recentempty{color:var(--dim); font-size:13.5px; line-height:1.6; margin:0 0 12px;}
+  .qact svg{width:18px; height:18px; stroke:#e9e4d8; fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round;}
+  .qact.playing{border-color:var(--gold1); box-shadow:0 0 14px rgba(212,167,92,.5);}
+  .qact.playing svg{stroke:var(--gold1);}
+  .quickerr{color:#ffb4b6; font-size:13.5px; line-height:1.5; margin:12px 0 0;}
 
   #view-soon{display:none;}
   #view-soon.on{display:block;}
@@ -651,14 +659,26 @@
     <div class="pills" id="home-pills"></div>
     <div class="err" id="err-home"></div>
 
-    <div class="recent rise d2">
-      <div class="recenthead">
-        <span class="ricon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg></span>
-        <span class="rtitle" data-i18n="recentTitle">Frases recientes</span>
-        <button class="seeall" id="btn-saved-open"><span data-i18n="seeAll">Ver todo</span><span class="seearrow">›</span></button>
+    <div class="quick rise d2">
+      <div class="quickhead">
+        <span class="qicon"><svg viewBox="0 0 24 24"><line x1="4" y1="10" x2="4" y2="14"/><line x1="8" y1="7" x2="8" y2="17"/><line x1="12" y1="4" x2="12" y2="20"/><line x1="16" y1="7" x2="16" y2="17"/><line x1="20" y1="10" x2="20" y2="14"/></svg></span>
+        <span class="qtitle" data-i18n="quickTitle">Traductor rápido</span>
       </div>
-      <div id="recent-list"></div>
-      <p class="recentempty" id="recent-empty" data-i18n="recentEmpty">Todavía no tienes frases guardadas. Al terminar una conversación, toca la estrella de una frase o guarda tus frases, y aparecerán aquí.</p>
+      <div class="quickdir" id="quick-dir">Inglés → Español</div>
+      <textarea id="quick-input" rows="2" maxlength="500" data-i18n-ph="quickPlaceholder" placeholder="Escribe una frase…" autocomplete="off"></textarea>
+      <div class="quickrow">
+        <span class="quickcount" id="quick-count">0 / 500</span>
+        <button class="quickbtn" id="btn-quick-go" disabled><span id="quick-go-label" data-i18n="quickGo">Traducir</span></button>
+      </div>
+      <div class="quickresult" id="quick-result" style="display:none;">
+        <span class="quicklabel" data-i18n="quickResult">Traducción</span>
+        <p class="quicktext" id="quick-text"></p>
+        <div class="quickactions">
+          <button class="qact" id="btn-quick-play" aria-label="Play"><svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg></button>
+          <button class="qact" id="btn-quick-copy" aria-label="Copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+        </div>
+      </div>
+      <p class="quickerr" id="quick-err" style="display:none;" data-i18n="quickErr">No se pudo traducir. Inténtalo de nuevo.</p>
     </div>
   </section>
 
@@ -780,7 +800,7 @@
   </section>
 
   <footer data-i18n="footer">Traducción automática con IA · En vivo</footer>
-  <div class="verlabel">v11 · Englix</div>
+  <div class="verlabel">v12 · Englix</div>
 </div>
 
 <!-- ===== Barra inferior (v11 · Englix) ===== -->
@@ -1033,8 +1053,11 @@
       headSub: 'Traduce. Aprende. Conecta. Sin límites.',
       translateNow: 'Traducir ahora', translateNowSub: 'Conversación en tiempo real',
       practice: 'Practicar inglés', practiceSub: 'Mejora tu inglés con lecciones personalizadas',
-      recentTitle: 'Frases recientes', seeAll: 'Ver todo',
-      recentEmpty: 'Todavía no tienes frases guardadas. Al terminar una conversación, toca la estrella de una frase o guarda tus frases, y aparecerán aquí.',
+      quickTitle: 'Traductor rápido',
+      quickPlaceholder: 'Escribe una frase…',
+      quickGo: 'Traducir', quickTranslating: 'Traduciendo…',
+      quickResult: 'Traducción',
+      quickErr: 'No se pudo traducir. Inténtalo de nuevo.',
       navHome: 'Inicio', navLearn: 'Aprender', navHistory: 'Historial', navProfile: 'Perfil',
       soonBadge: 'En preparación',
       soonPremiumTitle: 'Englix Premium',
@@ -1122,8 +1145,11 @@
       headSub: 'Translate. Learn. Connect. Without limits.',
       translateNow: 'Translate Now', translateNowSub: 'Real-time conversation translation',
       practice: 'Practice English', practiceSub: 'Build your skills with personalized lessons',
-      recentTitle: 'Recent Phrases', seeAll: 'See All',
-      recentEmpty: 'No saved phrases yet. After a conversation, star a phrase or save your phrases and they will appear here.',
+      quickTitle: 'Quick translator',
+      quickPlaceholder: 'Type a phrase…',
+      quickGo: 'Translate', quickTranslating: 'Translating…',
+      quickResult: 'Translation',
+      quickErr: 'Could not translate. Please try again.',
       navHome: 'Home', navLearn: 'Learn', navHistory: 'History', navProfile: 'Profile',
       soonBadge: 'In preparation',
       soonPremiumTitle: 'Englix Premium',
@@ -1697,7 +1723,7 @@
     else if (name === 'saved') navTab = 'history';
     else if (name === 'done') navTab = 'home';
     syncNav();
-    if (name === 'home') renderRecent();
+    if (name === 'home') updateQuickDir();
   }
 
   function handleEvent(sess, raw) {
@@ -2814,6 +2840,7 @@
     saveSettings();
     closeLangModal();
     renderPills();
+    quickPairChanged();
     populateVoices();
     await reconfigureSessions();
   }
@@ -2836,7 +2863,7 @@
     renderPills();
     setState(appState);
     tickTimer();
-    renderRecent();
+    renderQuickLabels();
     if (!inCall) btnStart.innerHTML = startCardHTML(false);
     if (viewSoon.classList.contains('on')) openSoon(soonKind);
   }
@@ -3169,7 +3196,6 @@
     renderConvList($('saved-conv'), conv.cards || []);
     showView('saved');
   }
-  $('btn-saved-open').addEventListener('click', openSavedList);
   $('btn-saved-return').addEventListener('click', openSavedList);
   $('btn-saved-back').addEventListener('click', function () {
     if (savedDetailIdx >= 0) openSavedList();
@@ -3209,53 +3235,99 @@
       '<span class="acard-arrow"><svg viewBox="0 0 24 24"><line x1="4" y1="12" x2="20" y2="12"/><polyline points="13 5 20 12 13 19"/></svg></span>';
   }
 
-  /* Frases recientes del Inicio: SOLO datos reales del teléfono
-     (frases guardadas, favoritas y, si faltan, las de las conversaciones
-     guardadas). Nunca ejemplos fijos. */
-  function recentItems() {
-    var seen = {}, out = [];
-    function push(o, ts) {
-      if (!o || !o.orig || !o.trans) return;
-      var k = favKey(o.orig, o.trans);
-      if (seen[k]) return;
-      seen[k] = 1;
-      out.push({ orig: o.orig, trans: o.trans, from: o.from || null, to: o.to || null, ts: ts || 0 });
-    }
-    loadList(LS_PHRASES).forEach(function (p) { push(p, p.ts); });
-    favorites.forEach(function (p) { push(p, p.ts); });
-    out.sort(function (a, b) { return b.ts - a.ts; });
-    if (out.length < 2) {
-      var convs = loadList(LS_SAVED_CONVS);
-      for (var i = convs.length - 1; i >= 0 && out.length < 2; i--) {
-        var cs = convs[i].cards || [];
-        for (var j = cs.length - 1; j >= 0 && out.length < 2; j--) push(cs[j], 0);
-      }
-    }
-    return out.slice(0, 2);
+  /* ================= v12 · Englix: traductor rápido del Inicio =================
+     Ocupa el lugar de la antigua sección "Frases recientes", que salió
+     del Inicio por orden del dueño (lo guardado vive solo en Historial).
+     La dirección sale del par de las píldoras — lado A → lado B — y vale
+     SOLO dentro de esta caja: la llamada en vivo sigue simétrica, sin
+     dirección, como quedó fijado. La traducción la hace el servidor en
+     /api/quick-translate; la llave de OpenAI nunca llega al navegador. */
+  var quickInput = $('quick-input'), quickCount = $('quick-count'),
+    quickGoBtn = $('btn-quick-go'), quickGoLabel = $('quick-go-label'),
+    quickDir = $('quick-dir'), quickResult = $('quick-result'),
+    quickText = $('quick-text'), quickErr = $('quick-err'),
+    quickPlayBtn = $('btn-quick-play'), quickCopyBtn = $('btn-quick-copy');
+  var quickBusy = false;
+  var quickData = null; // { text, toLang } de la última traducción visible
+
+  function quickDirText() { return langName(settings.pairA) + ' → ' + langName(settings.pairB); }
+  function updateQuickDir() { if (quickDir) quickDir.textContent = quickDirText(); }
+  function syncQuickBtn() {
+    if (!quickGoBtn) return;
+    quickGoBtn.disabled = quickBusy || !quickInput.value.trim();
+    quickGoLabel.textContent = quickBusy ? t('quickTranslating') : t('quickGo');
   }
-  function renderRecent() {
-    var box = $('recent-list'), empty = $('recent-empty');
-    if (!box) return;
-    var items = recentItems();
-    box.innerHTML = '';
-    if (empty) empty.style.display = items.length ? 'none' : '';
-    items.forEach(function (it) {
-      var row = document.createElement('div');
-      row.className = 'rchip';
-      row.innerHTML = '<div class="rchip-main"><p class="rchip-orig"></p><p class="rchip-trans"></p><span class="rchip-meta"></span></div>' +
-        '<button class="rchip-play" aria-label="Play">' + ICON_SPEAKER + '</button>';
-      row.querySelector('.rchip-orig').textContent = it.orig;
-      row.querySelector('.rchip-trans').textContent = it.trans;
-      var meta = '';
-      if (it.from) meta += langName(it.from);
-      if (it.from && it.to) meta += ' → ';
-      if (it.to) meta += langName(it.to);
-      row.querySelector('.rchip-meta').textContent = meta;
-      var playBtn = row.querySelector('.rchip-play');
-      var cardObj = { origText: it.orig, transText: it.trans, fromLang: it.from, toLang: it.to, els: { replay: playBtn } };
-      playBtn.addEventListener('click', function () { replayCard(cardObj); });
-      box.appendChild(row);
+  function renderQuickLabels() {
+    if (!quickInput) return;
+    updateQuickDir();
+    quickCount.textContent = quickInput.value.length + ' / 500';
+    syncQuickBtn();
+  }
+  function clearQuickResult() {
+    quickData = null;
+    if (!quickText) return;
+    quickText.textContent = '';
+    quickResult.style.display = 'none';
+    quickErr.style.display = 'none';
+  }
+  function quickPairChanged() { clearQuickResult(); updateQuickDir(); }
+  function copyQuickText(text) {
+    function done() { toast(t('toastCopied')); }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done).catch(function () { fallback(); });
+    } else fallback();
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); done(); } catch (e) {}
+      ta.remove();
+    }
+  }
+  async function quickTranslate() {
+    var text = quickInput.value.trim();
+    if (!text || quickBusy) return;
+    quickBusy = true;
+    quickErr.style.display = 'none';
+    syncQuickBtn();
+    try {
+      var r = await fetch('/api/quick-translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: text, from: settings.pairA, to: settings.pairB })
+      });
+      var j = await r.json().catch(function () { return {}; });
+      if (!r.ok || !j.ok || !j.translation) throw new Error((j && j.error) || 'translate_failed');
+      quickData = { text: j.translation, toLang: settings.pairB };
+      quickText.textContent = j.translation;
+      quickResult.style.display = '';
+    } catch (e) {
+      quickData = null;
+      quickText.textContent = '';
+      quickResult.style.display = 'none';
+      quickErr.style.display = '';
+    }
+    quickBusy = false;
+    syncQuickBtn();
+  }
+  if (quickInput) {
+    quickInput.addEventListener('input', function () {
+      quickCount.textContent = quickInput.value.length + ' / 500';
+      if (!quickInput.value.trim()) clearQuickResult();
+      syncQuickBtn();
     });
+    quickInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); quickTranslate(); }
+    });
+    quickGoBtn.addEventListener('click', function () { vibrate(8); quickTranslate(); });
+    quickPlayBtn.addEventListener('click', function () {
+      if (!quickData) return;
+      replayCard({ transText: quickData.text, toLang: quickData.toLang, els: { replay: quickPlayBtn } });
+    });
+    quickCopyBtn.addEventListener('click', function () {
+      if (quickData) copyQuickText(quickData.text);
+    });
+    renderQuickLabels();
   }
 
   $('btn-crown-home').addEventListener('click', function () { vibrate(8); openSoon('premium'); });
