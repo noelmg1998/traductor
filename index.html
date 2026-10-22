@@ -948,3 +948,978 @@
         activeSide ? t('stListening') : t('stWaiting');
     });
   }
+
+  /* ================= Audio real: niveles (Web Audio / AnalyserNode) ================= */
+  var audioCtx = null, micAnalyser = null, micSource = null;
+  var outAnalysers = {}; // outLang -> { analyser, data }
+  var micData = null;
+  var levelHistory = []; // últimos niveles combinados para la barra de actividad
+  var lastInputAt = 0, lastOutputTextAt = 0, lastOutputAudioAt = 0;
+  var orbPhase = 0;
+
+  function ensureAudioCtx() {
+    if (!audioCtx) {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      audioCtx = new AC();
+    }
+    if (audioCtx.state === 'suspended') { var p = audioCtx.resume(); if (p && p.catch) p.catch(function () {}); }
+    return audioCtx;
+  }
+  function attachMicAnalyser(stream) {
+    var ctx = ensureAudioCtx(); if (!ctx) return;
+    detachMicAnalyser();
+    try {
+      micSource = ctx.createMediaStreamSource(stream);
+      micAnalyser = ctx.createAnalyser();
+      micAnalyser.fftSize = 512;
+      micData = new Uint8Array(micAnalyser.frequencyBinCount);
+      micSource.connect(micAnalyser);
+    } catch (e) { micAnalyser = null; }
+  }
+  function detachMicAnalyser() {
+    try { if (micSource) micSource.disconnect(); } catch (e) {}
+    micSource = null; micAnalyser = null;
+  }
+  function attachOutAnalyser(outLang, stream) {
+    // Analiza la pista remota SIN re-enrutar la reproducción (el <audio> sigue
+    // sonando directo). En navegadores donde el analizador remoto da ceros,
+    // el estado "speaking" se apoya en los eventos de texto/actividad.
+    var ctx = ensureAudioCtx(); if (!ctx) return;
+    try {
+      var src = ctx.createMediaStreamSource(stream);
+      var an = ctx.createAnalyser();
+      an.fftSize = 512;
+      src.connect(an);
+      outAnalysers[outLang] = { analyser: an, data: new Uint8Array(an.frequencyBinCount), src: src };
+    } catch (e) {}
+  }
+  function detachOutAnalysers() {
+    Object.keys(outAnalysers).forEach(function (k) {
+      try { outAnalysers[k].src.disconnect(); } catch (e) {}
+    });
+    outAnalysers = {};
+  }
+  function rmsOf(analyser, data) {
+    if (!analyser || !data) return 0;
+    analyser.getByteTimeDomainData(data);
+    var sum = 0;
+    for (var i = 0; i < data.length; i++) { var v = (data[i] - 128) / 128; sum += v * v; }
+    return Math.sqrt(sum / data.length);
+  }
+  function micLevel() { return muted ? 0 : rmsOf(micAnalyser, micData); }
+  function outLevel() {
+    var m = 0;
+    Object.keys(outAnalysers).forEach(function (k) {
+      var o = outAnalysers[k];
+      var v = rmsOf(o.analyser, o.data);
+      if (v > m) m = v;
+    });
+    return m;
+  }
+
+  function drawOrb(level) {
+    var c = orbCanvas.getContext('2d'); if (!c) return;
+    var W = orbCanvas.width, H = orbCanvas.height, cx = W / 2, cy = H / 2;
+    c.clearRect(0, 0, W, H);
+    var bars = 17, maxH = H * 0.34;
+    orbPhase += 0.06;
+    for (var i = 0; i < bars; i++) {
+      var center = Math.abs(i - (bars - 1) / 2) / ((bars - 1) / 2); // 0 centro → 1 borde
+      var shape = 1 - center * 0.72;
+      var wave = 0.55 + 0.45 * Math.sin(orbPhase + i * 0.85);
+      var amp = appState === 'paused' || appState === 'idle' || appState === 'ended'
+        ? 0.05
+        : Math.max(0.06, Math.min(1, level * 3.4)) * wave;
+      var h = Math.max(4, maxH * shape * amp);
+      var x = cx + (i - (bars - 1) / 2) * (W * 0.052);
+      var grad = c.createLinearGradient(0, cy - h, 0, cy + h);
+      grad.addColorStop(0, 'rgba(246,220,154,.95)');
+      grad.addColorStop(1, 'rgba(212,167,92,.55)');
+      c.fillStyle = grad;
+      var wdt = W * 0.02;
+      c.beginPath();
+      if (c.roundRect) c.roundRect(x - wdt / 2, cy - h, wdt, h * 2, wdt / 2); else c.rect(x - wdt / 2, cy - h, wdt, h * 2);
+      c.fill();
+    }
+  }
+  function drawWave() {
+    var c = waveCanvas.getContext('2d'); if (!c) return;
+    var W = waveCanvas.width, H = waveCanvas.height;
+    c.clearRect(0, 0, W, H);
+    c.strokeStyle = 'rgba(212,167,92,.25)';
+    c.beginPath(); c.moveTo(0, H / 2); c.lineTo(W, H / 2); c.stroke();
+    var n = levelHistory.length; if (!n) return;
+    var bw = W / 90;
+    for (var i = 0; i < n; i++) {
+      var v = levelHistory[i];
+      var h = Math.max(2, v * H * 0.95);
+      var x = W - (n - i) * bw;
+      c.fillStyle = i === n - 1 ? 'rgba(246,220,154,1)' : 'rgba(212,167,92,.65)';
+      c.fillRect(x, (H - h) / 2, Math.max(1, bw - 1.5), h);
+    }
+  }
+  function levelLoop() {
+    var ml = (inCall && !paused) ? micLevel() : 0;
+    var ol = inCall ? outLevel() : 0;
+    if (ol > 0.045) lastOutputAudioAt = Date.now();
+    var combined = Math.max(ml, ol);
+    if (inCall) {
+      levelHistory.push(combined);
+      if (levelHistory.length > 90) levelHistory.shift();
+    }
+    drawOrb(Math.max(combined, appState === 'speaking' ? ol : 0) || combined);
+    drawWave();
+    autoStateFromActivity();
+    requestAnimationFrame(levelLoop);
+  }
+
+  // De los eventos reales se deriva el estado fino (sin tocar estados de control).
+  function autoStateFromActivity() {
+    if (!inCall || paused) return;
+    if (['listening', 'processing', 'translating', 'speaking'].indexOf(appState) < 0) return;
+    var now = Date.now();
+    var next = 'listening';
+    if (now - lastOutputAudioAt < 650) next = 'speaking';
+    else if (now - lastOutputTextAt < 900) next = 'translating';
+    else if (now - lastInputAt < 900) next = 'processing';
+    if (next !== appState) setState(next);
+  }
+
+  /* ================= Cronómetro y minutos ================= */
+  var inCall = false, paused = false, muted = false;
+  var segmentStart = 0, accumulatedMs = 0, timerId = null;
+  function elapsedMs() { return accumulatedMs + (segmentStart ? Date.now() - segmentStart : 0); }
+  function startTimer() {
+    segmentStart = Date.now();
+    if (timerId) clearInterval(timerId);
+    timerId = setInterval(tickTimer, 500);
+    tickTimer();
+  }
+  function freezeTimer() {
+    if (segmentStart) { accumulatedMs += Date.now() - segmentStart; segmentStart = 0; }
+    if (timerId) { clearInterval(timerId); timerId = null; }
+    tickTimer();
+  }
+  function tickTimer() {
+    var e = elapsedMs();
+    timerEl.textContent = fmt(e);
+    abElapsed.textContent = fmt(e);
+    abTotal.textContent = fmt(e * 2); // tiempo total del proveedor: dos sesiones
+    minLine.textContent = t('minutesLine')
+      .replace('{call}', fmtMin(e)).replace('{prov}', fmtMin(e * 2)) + ' · ' + t('testNote');
+  }
+
+  /* ================= Tarjetas de conversación (§6) ================= */
+  var cards = [];       // todas las tarjetas de la sesión (para el resumen/guardado)
+  var curCard = null;   // tarjeta abierta recibiendo deltas
+  var userScrolledUp = false;
+  feed.addEventListener('scroll', function () {
+    userScrolledUp = feed.scrollHeight - feed.scrollTop - feed.clientHeight > 90;
+  });
+  function scrollFeed() { if (!userScrolledUp) feed.scrollTop = feed.scrollHeight; }
+  function nowTime() {
+    try { return new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); }
+    catch (e) { return ''; }
+  }
+  var ICON_PLAY = '<svg viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3"/></svg>';
+  var ICON_COPY = '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+  var ICON_STAR = '<svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
+
+  function createCard() {
+    if (feedEmpty) { feedEmpty.remove(); feedEmpty = null; }
+    var el = document.createElement('div');
+    el.className = 'card';
+    el.innerHTML =
+      '<div class="chead2">' +
+        '<div class="cavatar">?</div>' +
+        '<div class="cmeta"><b class="cwho"></b> · <span class="clang"></span></div>' +
+        '<span class="chip">' + t('chipListening') + '</span>' +
+        '<span class="ctime"></span>' +
+      '</div>' +
+      '<p class="orig partial"></p>' +
+      '<div class="divider"></div>' +
+      '<div class="tlabel"><span class="flag"></span><span class="tlang"></span> · ' + t('translationWord') + '</div>' +
+      '<p class="trans pending">' + t('waitingTrans') + '</p>' +
+      '<div class="cactions">' +
+        '<button class="act-replay" aria-label="Replay">' + ICON_PLAY + '</button>' +
+        '<button class="act-copy" aria-label="Copy">' + ICON_COPY + '</button>' +
+        '<button class="act-fav fav" aria-label="Favorite">' + ICON_STAR + '</button>' +
+      '</div>';
+    feed.appendChild(el);
+    var c = {
+      el: el, origText: '', transText: '', fromLang: null, toLang: null, side: null,
+      inDone: false, outDone: false, finalized: false, errored: false,
+      time: nowTime(), lastAct: Date.now(),
+      els: {
+        avatar: el.querySelector('.cavatar'), who: el.querySelector('.cwho'),
+        lang: el.querySelector('.clang'), chip: el.querySelector('.chip'),
+        time: el.querySelector('.ctime'), orig: el.querySelector('.orig'),
+        flag: el.querySelector('.tlabel .flag'), tlang: el.querySelector('.tlang'),
+        trans: el.querySelector('.trans'),
+        replay: el.querySelector('.act-replay'), copy: el.querySelector('.act-copy'),
+        fav: el.querySelector('.act-fav')
+      }
+    };
+    c.els.time.textContent = c.time;
+    c.els.replay.addEventListener('click', function () { replayCard(c); });
+    c.els.copy.addEventListener('click', function () { copyCard(c); });
+    c.els.fav.addEventListener('click', function () { toggleFav(c); });
+    cards.push(c);
+    scrollFeed();
+    return c;
+  }
+  function ensureCard() {
+    if (curCard && !curCard.finalized) {
+      // Si la tarjeta abierta lleva mucho sin actividad y ya cerró su entrada,
+      // se finaliza para no mezclar dos intervenciones.
+      if (curCard.inDone && Date.now() - curCard.lastAct > 1600) finalizeCard(curCard);
+      else return curCard;
+    }
+    curCard = createCard();
+    return curCard;
+  }
+  function renderCard(c) {
+    if (c.fromLang) {
+      var L = langOf(c.fromLang);
+      c.els.lang.textContent = langName(c.fromLang);
+      c.els.avatar.textContent = c.side === 'B' ? L.init : (settings.uiLang === 'en' ? 'Y' : 'T');
+      if (c.side) {
+        c.els.who.textContent = c.side === 'A' ? t('you') : t('they');
+        c.els.avatar.textContent = c.side === 'A'
+          ? (settings.uiLang === 'en' ? 'Y' : 'T')
+          : L.init;
+      }
+    }
+    c.els.orig.textContent = c.origText;
+    if (c.toLang) {
+      var TL = langOf(c.toLang);
+      c.els.flag.textContent = TL.flag;
+      c.els.tlang.textContent = langName(c.toLang);
+    }
+    if (c.transText) {
+      c.els.trans.textContent = c.transText;
+      c.els.trans.classList.remove('pending');
+    }
+    if (c.errored) {
+      c.els.chip.textContent = t('chipError');
+      c.els.chip.className = 'chip error';
+    } else if (c.finalized) {
+      c.els.chip.textContent = t('chipDone');
+      c.els.chip.className = 'chip done';
+    } else if (c.transText) {
+      c.els.chip.textContent = t('chipTranslating');
+      c.els.chip.className = 'chip';
+    } else {
+      c.els.chip.textContent = t('chipListening');
+      c.els.chip.className = 'chip';
+    }
+    c.els.fav.classList.toggle('on', isFav(c));
+  }
+  function finalizeCard(c) {
+    if (!c || c.finalized) return;
+    // Silencios/pausas sin contenido no dejan tarjetas fantasma.
+    if (!c.origText && !c.transText) { c.el.remove(); var i = cards.indexOf(c); if (i >= 0) cards.splice(i, 1); if (curCard === c) curCard = null; return; }
+    c.finalized = true;
+    c.els.orig.classList.remove('partial');
+    if (!c.transText && !c.errored) {
+      c.els.trans.textContent = '—';
+      c.els.trans.classList.remove('pending');
+    }
+    renderCard(c);
+    c.el.classList.remove('flash'); void c.el.offsetWidth; c.el.classList.add('flash');
+    if (curCard === c) curCard = null;
+    scrollFeed();
+  }
+  var finalizeTimer = null;
+  function maybeFinalize(c) {
+    if (c.inDone && c.outDone) { finalizeCard(c); return; }
+    if (c.outDone && !c.inDone) {
+      if (finalizeTimer) clearTimeout(finalizeTimer);
+      finalizeTimer = setTimeout(function () { if (curCard === c) finalizeCard(c); }, 1600);
+    }
+  }
+  function replayCard(c) {
+    if (!c.transText || !('speechSynthesis' in window)) return;
+    try {
+      speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(c.transText);
+      var tl = langOf(c.toLang || settings.pairB);
+      u.lang = tl.bcp;
+      u.rate = settings.rate || 1;
+      var voices = speechSynthesis.getVoices();
+      var v = null;
+      if (settings.voiceURI) v = voices.find(function (x) { return x.voiceURI === settings.voiceURI; });
+      if (!v) v = voices.find(function (x) { return x.lang && x.lang.toLowerCase().indexOf(tl.code) === 0; });
+      if (v) u.voice = v;
+      c.els.replay.classList.add('playing');
+      u.onend = u.onerror = function () { c.els.replay.classList.remove('playing'); };
+      speechSynthesis.speak(u);
+    } catch (e) {}
+  }
+  function copyCard(c) {
+    var text = (c.origText || '') + (c.transText ? '\n' + c.transText : '');
+    if (!text) return;
+    function done() { toast(t('toastCopied')); }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done).catch(function () { fallback(); });
+    } else fallback();
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); done(); } catch (e) {}
+      ta.remove();
+    }
+  }
+  function toggleFav(c) {
+    if (!c.origText && !c.transText) return;
+    var k = favKey(c.origText, c.transText);
+    var idx = favorites.findIndex(function (f) { return favKey(f.orig, f.trans) === k; });
+    if (idx >= 0) favorites.splice(idx, 1);
+    else {
+      favorites.push({ orig: c.origText, trans: c.transText, from: c.fromLang, to: c.toLang, ts: Date.now() });
+      toast(t('toastFav'));
+      vibrate(12);
+    }
+    persistFavs();
+    renderCard(c);
+  }
+
+  /* ================= Sesiones de traducción (WebRTC) ================= */
+  var micStream = null;
+  var sessions = []; // [{ out, pc, audioEl, dc, dead }]
+  var intentionalClose = false;
+  var reconnectAttempts = 0;
+  var reconnectTimer = null;
+
+  function showErr(which, msg) {
+    var el = which === 'call' ? errCall : errHome;
+    el.textContent = msg;
+    el.classList.add('show');
+  }
+  function hideErrs() { errHome.classList.remove('show'); errCall.classList.remove('show'); }
+  function errorMessage(e) {
+    if (e && (e.name === 'NotAllowedError' || e.name === 'SecurityError')) return t('errMic');
+    if (e && e.name === 'NotFoundError') return t('errNoMic');
+    if (e && e.code === 'missing_key') return t('errKey');
+    return t('errGeneric');
+  }
+  function showView(name) {
+    viewHome.style.display = name === 'home' ? 'block' : 'none';
+    viewDone.classList.toggle('on', name === 'done');
+    viewCall.classList.toggle('on', name === 'call');
+    homeHeader.style.display = name === 'call' ? 'none' : 'flex';
+  }
+
+  function handleEvent(sess, raw) {
+    var ev;
+    try { ev = JSON.parse(raw); } catch (e) { return; }
+    if (!ev || !ev.type) return;
+    var out = sess.out;
+    if (ev.type === 'session.input_transcript.delta') {
+      // El original se toma de UNA sola sesión (la que traduce al idioma B)
+      // para no duplicarlo: ambas sesiones transcriben el mismo audio.
+      if (out !== settings.pairB) return;
+      if (!ev.delta) return;
+      lastInputAt = Date.now();
+      var c0 = ensureCard();
+      c0.origText += ev.delta;
+      c0.inDone = false;
+      c0.lastAct = Date.now();
+      renderCard(c0);
+      scrollFeed();
+    } else if (ev.type === 'session.input_transcript.done') {
+      if (out !== settings.pairB) return;
+      if (curCard) { curCard.inDone = true; if (ev.transcript && !curCard.origText) curCard.origText = ev.transcript; renderCard(curCard); maybeFinalize(curCard); }
+    } else if (ev.type === 'session.output_transcript.delta') {
+      if (!ev.delta) return;
+      lastOutputTextAt = Date.now();
+      var c1 = ensureCard();
+      // Si la tarjeta abierta ya tiene traducción del OTRO sentido, es otra
+      // intervención: se cierra y se abre una nueva (nunca se duplican líneas).
+      if (c1.toLang && c1.toLang !== out && c1.transText) { finalizeCard(c1); c1 = ensureCard(); }
+      c1.toLang = out;
+      c1.fromLang = out === settings.pairA ? settings.pairB : settings.pairA;
+      c1.side = out === settings.pairB ? 'A' : 'B';
+      c1.transText += ev.delta;
+      c1.outDone = false;
+      c1.lastAct = Date.now();
+      activeSide = c1.side;
+      updatePersons();
+      renderCard(c1);
+      scrollFeed();
+    } else if (ev.type === 'session.output_transcript.done') {
+      if (curCard && curCard.toLang === out) {
+        if (ev.transcript && !curCard.transText) curCard.transText = ev.transcript;
+        curCard.outDone = true;
+        renderCard(curCard);
+        maybeFinalize(curCard);
+      }
+    } else if (ev.type === 'error') {
+      if (curCard && !curCard.finalized) {
+        curCard.errored = true;
+        curCard.inDone = true; curCard.outDone = true;
+        renderCard(curCard);
+        finalizeCard(curCard);
+      }
+      showErr('call', t('errSession'));
+    }
+  }
+
+  async function mintToken(outLang) {
+    var tr = await fetch(TOKEN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ targetLanguage: outLang, noiseReduction: !!settings.noise })
+    });
+    var tj = await tr.json().catch(function () { return {}; });
+    if (!tj.ok || !tj.client_secret) {
+      var err = new Error(tj.error || 'token');
+      err.code = tj.error || 'token';
+      throw err;
+    }
+    return tj.client_secret;
+  }
+
+  async function startSession(outLang) {
+    var secret = await mintToken(outLang);
+    var pc = new RTCPeerConnection();
+    var audioEl = document.createElement('audio');
+    audioEl.autoplay = true;
+    audioEl.muted = !settings.autoplay;
+    audioEl.setAttribute('playsinline', '');
+    document.body.appendChild(audioEl);
+
+    var sess = { out: outLang, pc: pc, audioEl: audioEl, dc: null, dead: false };
+    pc.ontrack = function (e) {
+      if (e.streams && e.streams[0]) {
+        audioEl.srcObject = e.streams[0];
+        attachOutAnalyser(outLang, e.streams[0]);
+        var p = audioEl.play();
+        if (p && p.catch) p.catch(function () {});
+      }
+    };
+    pc.onconnectionstatechange = function () {
+      if (sess.dead || intentionalClose) return;
+      if (pc.connectionState === 'failed' || pc.connectionState === 'closed') {
+        onConnectionLost();
+      }
+    };
+    var dc = pc.createDataChannel('oai-events');
+    sess.dc = dc;
+    dc.onmessage = function (m) { handleEvent(sess, m.data); };
+
+    micStream.getAudioTracks().forEach(function (track) { pc.addTrack(track, micStream); });
+
+    var offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    var sdpRes = await fetch(CALLS_URL, {
+      method: 'POST',
+      headers: {
+        ['Authori' + 'zation']: 'Bearer ' + secret,
+        'Content-Type': 'application/sdp'
+      },
+      body: offer.sdp
+    });
+    if (!sdpRes.ok) {
+      try { pc.close(); } catch (e) {}
+      audioEl.remove();
+      var e2 = new Error('sdp'); e2.code = 'connect';
+      throw e2;
+    }
+    await pc.setRemoteDescription({ type: 'answer', sdp: await sdpRes.text() });
+    return sess;
+  }
+
+  function teardownSessions() {
+    sessions.forEach(function (s) {
+      s.dead = true;
+      try { s.pc.close(); } catch (e) {}
+      if (s.audioEl) s.audioEl.remove();
+    });
+    sessions = [];
+    detachOutAnalysers();
+  }
+  function stopMic() {
+    if (micStream) {
+      micStream.getTracks().forEach(function (tr) { tr.stop(); });
+      micStream = null;
+    }
+    detachMicAnalyser();
+  }
+  async function acquireMic() {
+    micStream = await navigator.mediaDevices.getUserMedia({
+      audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+    });
+    micStream.getAudioTracks().forEach(function (tr) { tr.enabled = !muted; });
+    attachMicAnalyser(micStream);
+  }
+  async function connectAll() {
+    // Sesión A→B: traduce al idioma B (su transcripción de entrada es la
+    // canónica para el texto original). Sesión B→A: traduce al idioma A.
+    var both = await Promise.all([
+      startSession(settings.pairB),
+      startSession(settings.pairA)
+    ]);
+    sessions = both;
+    reconnectAttempts = 0;
+  }
+
+  function onConnectionLost() {
+    if (!inCall || paused || intentionalClose) return;
+    if (appState === 'reconnecting') return;
+    setState('reconnecting');
+    attemptReconnect();
+  }
+  async function attemptReconnect() {
+    if (!inCall || paused) return;
+    reconnectAttempts++;
+    if (reconnectAttempts > 3) {
+      setState('error');
+      showErr('call', t('errReconnect'));
+      return;
+    }
+    intentionalClose = true;
+    teardownSessions();
+    intentionalClose = false;
+    try {
+      if (!micStream || micStream.getAudioTracks().some(function (tr) { return tr.readyState === 'ended'; })) {
+        stopMic();
+        await acquireMic();
+      }
+      await connectAll();
+      if (inCall && !paused) setState('listening');
+    } catch (e) {
+      reconnectTimer = setTimeout(attemptReconnect, 1600 * reconnectAttempts);
+    }
+  }
+
+  // Detiene cualquier audio en reproducción antes de reconfigurar (§2).
+  function stopPlayback() {
+    sessions.forEach(function (s) { try { s.audioEl.pause(); } catch (e) {} });
+    if ('speechSynthesis' in window) { try { speechSynthesis.cancel(); } catch (e) {} }
+  }
+
+  // Reconfigura ambas sesiones con el par actual, sin perder el historial.
+  async function reconfigureSessions() {
+    if (!inCall || paused) return;
+    stopPlayback();
+    setState('connecting');
+    intentionalClose = true;
+    teardownSessions();
+    intentionalClose = false;
+    try {
+      await connectAll();
+      setState('listening');
+    } catch (e) {
+      setState('error');
+      showErr('call', t('errGeneric'));
+    }
+  }
+
+  /* ================= Selectores de idioma (§2) ================= */
+  var pillTargets = []; // [{a: el, b: el, swap: el}] por cada fila de píldoras
+  function pillHTML(side) {
+    return '<span class="flag"></span>' +
+      '<span class="pinfo"><span class="pname"></span><span class="prole"></span></span>' +
+      '<span class="chev">▾</span>';
+  }
+  function buildPills(containerId) {
+    var c = $(containerId);
+    c.innerHTML =
+      '<button class="pill" data-side="A">' + pillHTML('A') + '</button>' +
+      '<button class="swapbtn" aria-label="Swap"><svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></button>' +
+      '<button class="pill" data-side="B">' + pillHTML('B') + '</button>';
+    var rec = {
+      a: c.querySelector('[data-side="A"]'),
+      b: c.querySelector('[data-side="B"]'),
+      swap: c.querySelector('.swapbtn'),
+      container: c
+    };
+    rec.a.addEventListener('click', function () { openLangModal('A'); });
+    rec.b.addEventListener('click', function () { openLangModal('B'); });
+    rec.swap.addEventListener('click', function () { swapPair(rec); });
+    pillTargets.push(rec);
+    renderPills();
+    return rec;
+  }
+  function renderPills() {
+    pillTargets.forEach(function (rec) {
+      var A = langOf(settings.pairA), B = langOf(settings.pairB);
+      rec.a.querySelector('.flag').textContent = A.flag;
+      rec.a.querySelector('.pname').textContent = langName(settings.pairA);
+      rec.a.querySelector('.prole').textContent = t('roleSpeaking');
+      rec.b.querySelector('.flag').textContent = B.flag;
+      rec.b.querySelector('.pname').textContent = langName(settings.pairB);
+      rec.b.querySelector('.prole').textContent = t('roleTranslation');
+    });
+  }
+  async function swapPair(rec) {
+    vibrate(10);
+    var tmp = settings.pairA;
+    settings.pairA = settings.pairB;
+    settings.pairB = tmp;
+    saveSettings();
+    pillTargets.forEach(function (r) {
+      r.a.classList.add('flip'); r.b.classList.add('flip'); r.swap.classList.add('spin');
+      setTimeout(function () { r.a.classList.remove('flip'); r.b.classList.remove('flip'); r.swap.classList.remove('spin'); }, 320);
+    });
+    renderPills();
+    renderPersonsMeta();
+    populateVoices();
+    toast(t('toastSwapped'));
+    await reconfigureSessions();
+  }
+
+  /* ---------- Modal de idiomas ---------- */
+  var langOverlay = $('lang-overlay'), langList = $('lang-list'), langSearch = $('lang-search');
+  var modalSide = 'A';
+  function openLangModal(side) {
+    modalSide = side;
+    langSearch.value = '';
+    renderLangList('');
+    langOverlay.classList.add('on');
+    setTimeout(function () { try { langSearch.focus(); } catch (e) {} }, 60);
+  }
+  function closeLangModal() { langOverlay.classList.remove('on'); }
+  function renderLangList(filter) {
+    langList.innerHTML = '';
+    var current = modalSide === 'A' ? settings.pairA : settings.pairB;
+    var other = modalSide === 'A' ? settings.pairB : settings.pairA;
+    var f = (filter || '').toLowerCase();
+    LANGS.forEach(function (L) {
+      var name = settings.uiLang === 'en' ? L.en : L.es;
+      var native = settings.uiLang === 'en' ? L.es : L.en;
+      if (f && name.toLowerCase().indexOf(f) < 0 && native.toLowerCase().indexOf(f) < 0 && L.en.toLowerCase().indexOf(f) < 0) return;
+      var b = document.createElement('button');
+      b.className = 'langopt' + (L.code === current ? ' sel' : '') + (L.code === other ? ' blocked' : '');
+      b.innerHTML = '<span class="flag">' + L.flag + '</span><span class="lname">' + name + '</span><span class="lnative">' + native + '</span><span class="check">✓</span>';
+      b.addEventListener('click', function () { chooseLang(L.code); });
+      langList.appendChild(b);
+    });
+  }
+  async function chooseLang(code) {
+    var other = modalSide === 'A' ? settings.pairB : settings.pairA;
+    if (code === other) { // nunca el mismo idioma en ambos lados: se intercambia
+      var cur = modalSide === 'A' ? settings.pairA : settings.pairB;
+      if (modalSide === 'A') settings.pairB = cur; else settings.pairA = cur;
+    }
+    if (modalSide === 'A') settings.pairA = code; else settings.pairB = code;
+    saveSettings();
+    closeLangModal();
+    renderPills();
+    renderPersonsMeta();
+    populateVoices();
+    await reconfigureSessions();
+  }
+  langSearch.addEventListener('input', function () { renderLangList(langSearch.value); });
+  $('lang-close').addEventListener('click', closeLangModal);
+  langOverlay.addEventListener('click', function (e) { if (e.target === langOverlay) closeLangModal(); });
+
+  /* ================= Personas / avatares (§4) ================= */
+  function renderPersonsMeta() {
+    pnameA.textContent = t('you');
+    pnameB.textContent = t('they');
+    avatarA.textContent = settings.uiLang === 'en' ? 'Y' : 'T';
+    avatarB.textContent = langOf(settings.pairB).init;
+  }
+
+  /* ================= i18n ================= */
+  function applyI18n() {
+    document.documentElement.lang = settings.uiLang;
+    document.querySelectorAll('[data-i18n]').forEach(function (el) {
+      var k = el.getAttribute('data-i18n');
+      if (I18N[settings.uiLang][k]) el.textContent = I18N[settings.uiLang][k];
+    });
+    document.querySelectorAll('[data-i18n-ph]').forEach(function (el) {
+      var k = el.getAttribute('data-i18n-ph');
+      if (I18N[settings.uiLang][k]) el.setAttribute('placeholder', I18N[settings.uiLang][k]);
+    });
+    if (!inCall && feedEmpty) feedEmpty.textContent = t('feedEmpty');
+    renderPills();
+    renderPersonsMeta();
+    setState(appState);
+    tickTimer();
+  }
+
+  /* ================= Flujo de llamada ================= */
+  async function start() {
+    hideErrs();
+    setState('requesting_permission');
+    btnStart.disabled = true;
+    btnStart.innerHTML = '⏳&nbsp; ' + t('connecting');
+    try {
+      ensureAudioCtx();
+      await acquireMic();
+      setState('connecting');
+      await connectAll();
+      inCall = true;
+      paused = false;
+      muted = false;
+      accumulatedMs = 0;
+      cards = [];
+      curCard = null;
+      activeSide = null;
+      levelHistory = [];
+      syncMuteUI();
+      syncSpeakerUI();
+      syncPauseUI();
+      showView('call');
+      startTimer();
+      setState('listening');
+    } catch (e) {
+      intentionalClose = true;
+      teardownSessions();
+      stopMic();
+      intentionalClose = false;
+      setState('idle');
+      showView('home');
+      showErr('home', errorMessage(e));
+    } finally {
+      btnStart.disabled = false;
+      btnStart.innerHTML = '📞&nbsp; ' + t('start');
+    }
+  }
+
+  function syncMuteUI() {
+    btnMute.classList.toggle('on', !muted);
+    btnMute.classList.toggle('off', muted);
+    muteSub.textContent = muted ? t('micOff') : t('micOn');
+  }
+  btnMute.addEventListener('click', function () {
+    vibrate(8);
+    muted = !muted;
+    if (micStream) micStream.getAudioTracks().forEach(function (tr) { tr.enabled = !muted; });
+    syncMuteUI();
+  });
+
+  function syncSpeakerUI() {
+    btnSpeaker.classList.toggle('on', settings.autoplay);
+    btnSpeaker.classList.toggle('off', !settings.autoplay);
+    sessions.forEach(function (s) { s.audioEl.muted = !settings.autoplay; });
+    var chk = $('set-autoplay'); if (chk) chk.checked = settings.autoplay;
+  }
+  btnSpeaker.addEventListener('click', function () {
+    vibrate(8);
+    settings.autoplay = !settings.autoplay;
+    saveSettings();
+    syncSpeakerUI();
+  });
+
+  var ICON_PAUSE = '<line x1="9" y1="5" x2="9" y2="19"/><line x1="15" y1="5" x2="15" y2="19"/>';
+  var ICON_PLAY_BIG = '<polygon points="7 4 20 12 7 20 7 4"/>';
+  function syncPauseUI() {
+    pauseIcon.innerHTML = paused ? ICON_PLAY_BIG : ICON_PAUSE;
+    pauseLabel.textContent = paused ? t('resume') : t('pause');
+  }
+  btnPause.addEventListener('click', async function () {
+    vibrate(10);
+    if (!inCall) return;
+    if (!paused) {
+      // Pausa: cierra sesiones y micrófono (deja de correr el consumo).
+      paused = true;
+      freezeTimer();
+      intentionalClose = true;
+      teardownSessions();
+      stopMic();
+      intentionalClose = false;
+      if (curCard) finalizeCard(curCard);
+      setState('paused');
+      if (feedEmpty) feedEmpty.textContent = t('feedEmptyPaused');
+      syncPauseUI();
+    } else {
+      btnPause.disabled = true;
+      try {
+        setState('connecting');
+        await acquireMic();
+        await connectAll();
+        paused = false;
+        startTimer();
+        setState('listening');
+        syncPauseUI();
+      } catch (e) {
+        paused = true;
+        setState('paused');
+        showErr('call', errorMessage(e));
+      } finally {
+        btnPause.disabled = false;
+      }
+    }
+  });
+
+  btnSwitch.addEventListener('click', function () {
+    var rec = pillTargets[pillTargets.length - 1];
+    swapPair(rec);
+  });
+  btnBack.addEventListener('click', function () { $('end-overlay').classList.add('on'); });
+
+  /* ---------- Terminar (§11) ---------- */
+  $('end-overlay').addEventListener('click', function (e) { if (e.target === this) this.classList.remove('on'); });
+  $('end-continue').addEventListener('click', function () { $('end-overlay').classList.remove('on'); });
+  btnEnd.addEventListener('click', function () { vibrate(10); $('end-overlay').classList.add('on'); });
+  $('end-confirm').addEventListener('click', function () {
+    $('end-overlay').classList.remove('on');
+    endCall();
+  });
+
+  var lastSummary = null;
+  function endCall() {
+    if (!inCall) return;
+    freezeTimer();
+    var totalMs = elapsedMs();
+    if (curCard) finalizeCard(curCard);
+    intentionalClose = true;
+    teardownSessions();
+    stopMic();
+    intentionalClose = false;
+    inCall = false;
+    paused = false;
+    activeSide = null;
+    setState('ended');
+    var translated = cards.filter(function (c) { return !!c.transText; }).length;
+    lastSummary = {
+      durationMs: totalMs,
+      pairA: settings.pairA, pairB: settings.pairB,
+      turns: cards.length, phrases: translated,
+      cards: cards.map(function (c) {
+        return { orig: c.origText, trans: c.transText, from: c.fromLang, to: c.toLang, time: c.time };
+      })
+    };
+    $('final-time').textContent = fmt(totalMs);
+    $('sum-langs').textContent = langName(settings.pairA) + ' ⇄ ' + langName(settings.pairB);
+    $('sum-turns').textContent = String(cards.length);
+    $('sum-phrases').textContent = String(translated);
+    $('sum-minutes').textContent = fmtMin(totalMs);
+    $('sum-provnote').textContent = t('provNote').replace('{prov}', fmtMin(totalMs * 2));
+    showView('done');
+  }
+
+  function guardSave() {
+    if (!settings.saveHist) { toast(t('toastNoSave')); return false; }
+    if (!lastSummary || !lastSummary.cards.length) { toast(t('toastNothing')); return false; }
+    return true;
+  }
+  $('btn-save-conv').addEventListener('click', function () {
+    if (!guardSave()) return;
+    var list = loadList(LS_SAVED_CONVS);
+    list.push({ date: new Date().toISOString(), durationMs: lastSummary.durationMs, pairA: lastSummary.pairA, pairB: lastSummary.pairB, cards: lastSummary.cards });
+    saveList(LS_SAVED_CONVS, list);
+    // También ofrece la descarga del JSON como respaldo.
+    try {
+      var blob = new Blob([JSON.stringify(lastSummary, null, 2)], { type: 'application/json' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'conversacion.json';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+    } catch (e) {}
+    toast(t('toastSavedConv'));
+  });
+  $('btn-save-phrases').addEventListener('click', function () {
+    if (!guardSave()) return;
+    var list = loadList(LS_PHRASES);
+    lastSummary.cards.forEach(function (c) {
+      if (c.trans) list.push({ orig: c.orig, trans: c.trans, from: c.from, to: c.to, ts: Date.now() });
+    });
+    saveList(LS_PHRASES, list);
+    toast(t('toastSavedPhrases'));
+  });
+  $('btn-again').addEventListener('click', function () {
+    // Reinicia el área de historial para la próxima conversación.
+    feed.innerHTML = '';
+    var empty = document.createElement('div');
+    empty.className = 'empty'; empty.id = 'feed-empty';
+    empty.textContent = t('feedEmpty');
+    feed.appendChild(empty);
+    feedEmpty = empty;
+    cards = []; curCard = null;
+    showView('home');
+    setState('idle');
+    start();
+  });
+  btnStart.addEventListener('click', start);
+
+  /* ================= Ajustes (§13) ================= */
+  var panel = $('settings-panel'), panelOverlay = $('panel-overlay');
+  function openPanel() { populatePanel(); panel.classList.add('on'); panelOverlay.classList.add('on'); }
+  function closePanel() { panel.classList.remove('on'); panelOverlay.classList.remove('on'); }
+  $('btn-gear-home').addEventListener('click', openPanel);
+  $('btn-gear-call').addEventListener('click', openPanel);
+  $('btn-panel-close').addEventListener('click', closePanel);
+  panelOverlay.addEventListener('click', closePanel);
+
+  function populatePanel() {
+    $('set-uilang').value = settings.uiLang;
+    $('set-rate').value = String(settings.rate);
+    $('set-autoplay').checked = settings.autoplay;
+    $('set-noise').checked = settings.noise;
+    $('set-savehist').checked = settings.saveHist;
+    populateVoices();
+  }
+  function populateVoices() {
+    var sel = $('set-voice');
+    if (!sel || !('speechSynthesis' in window)) return;
+    var voices = speechSynthesis.getVoices();
+    sel.innerHTML = '';
+    var def = document.createElement('option');
+    def.value = ''; def.textContent = t('voiceDefault');
+    sel.appendChild(def);
+    var pairCodes = [settings.pairA, settings.pairB];
+    var pairGroup = document.createElement('optgroup'); pairGroup.label = t('voicePairGroup');
+    var allGroup = document.createElement('optgroup'); allGroup.label = t('voiceAllGroup');
+    voices.forEach(function (v) {
+      var o = document.createElement('option');
+      o.value = v.voiceURI;
+      o.textContent = v.name + ' (' + v.lang + ')';
+      var code = (v.lang || '').toLowerCase().slice(0, 2);
+      if (pairCodes.indexOf(code) >= 0) pairGroup.appendChild(o); else allGroup.appendChild(o);
+    });
+    if (pairGroup.children.length) sel.appendChild(pairGroup);
+    if (allGroup.children.length) sel.appendChild(allGroup);
+    sel.value = settings.voiceURI || '';
+  }
+  if ('speechSynthesis' in window) {
+    try { speechSynthesis.onvoiceschanged = function () { populateVoices(); }; } catch (e) {}
+  }
+  $('set-uilang').addEventListener('change', function () {
+    settings.uiLang = this.value;
+    saveSettings();
+    applyI18n();
+    renderLangList(langSearch.value);
+  });
+  $('set-voice').addEventListener('change', function () { settings.voiceURI = this.value; saveSettings(); });
+  $('set-rate').addEventListener('change', function () { settings.rate = parseFloat(this.value) || 1; saveSettings(); });
+  $('set-autoplay').addEventListener('change', function () {
+    settings.autoplay = this.checked;
+    saveSettings();
+    syncSpeakerUI();
+  });
+  $('set-noise').addEventListener('change', function () { settings.noise = this.checked; saveSettings(); });
+  $('set-savehist').addEventListener('change', function () { settings.saveHist = this.checked; saveSettings(); });
+  $('btn-clear-saved').addEventListener('click', function () {
+    saveList(LS_SAVED_CONVS, []);
+    saveList(LS_PHRASES, []);
+    toast(t('toastCleared'));
+  });
+  $('btn-clear-favs').addEventListener('click', function () {
+    favorites = [];
+    persistFavs();
+    cards.forEach(renderCard);
+    toast(t('toastCleared'));
+  });
+
+  /* ================= Inicio ================= */
+  buildPills('home-pills');
+  buildPills('call-pills');
+  if (feedEmpty) feedEmpty.textContent = t('feedEmpty');
+  applyI18n();
+  syncSpeakerUI();
+  syncMuteUI();
+  syncPauseUI();
+  tickTimer();
+  requestAnimationFrame(levelLoop);
+})();
+</script>
+</body>
+</html>

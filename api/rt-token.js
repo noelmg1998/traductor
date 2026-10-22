@@ -1,9 +1,8 @@
 // Modo llamada (tiempo real): crea el secreto temporal (client secret) que el
 // navegador usa para abrir UNA sesion de traduccion con gpt-realtime-translate.
-// Cada sesion traduce a UN solo idioma de salida, asi que la pagina pide dos:
-// uno con targetLanguage "en" y otro con "es".
-// La llave real de OpenAI vive SOLO en la variable de entorno OPENAI_API_KEY
-// y nunca llega al navegador.
+// Cada sesion traduce a UN solo idioma de salida, asi que la pagina pide dos
+// (una por sentido del par elegido). La llave real de OpenAI vive SOLO en la
+// variable de entorno OPENAI_API_KEY y nunca llega al navegador.
 //
 // Sigue la guia oficial de OpenAI (Realtime Translation):
 //   POST https://api.openai.com/v1/realtime/translations/client_secrets
@@ -11,11 +10,16 @@
 //           audio: { input:  { transcription: { model: "gpt-realtime-whisper" },
 //                              noise_reduction: { type: "near_field" } },
 //                    output: { language } } } }
+// El cliente puede mandar noiseReduction:false para omitir la reduccion de
+// ruido (ajuste de la pantalla; se aplica al crear la sesion).
 
 const CLIENT_SECRET_URL =
   'https://api.openai.com/v1/realtime/translations/client_secrets';
 
-const ALLOWED_LANGUAGES = ['en', 'es'];
+// Los 13 idiomas que gpt-realtime-translate puede producir como salida.
+const ALLOWED_LANGUAGES = [
+  'en', 'es', 'fr', 'de', 'it', 'pt', 'zh', 'ja', 'ko', 'ar', 'hi', 'ru', 'id'
+];
 
 module.exports = async (req, res) => {
   const fail = (error, status) => {
@@ -39,6 +43,13 @@ module.exports = async (req, res) => {
       : null;
     if (!language) return fail('bad_language', 400);
 
+    const inputAudio = {
+      transcription: { model: 'gpt-realtime-whisper' }
+    };
+    if (body.noiseReduction !== false) {
+      inputAudio.noise_reduction = { type: 'near_field' };
+    }
+
     const r = await fetch(CLIENT_SECRET_URL, {
       method: 'POST',
       headers: {
@@ -49,10 +60,7 @@ module.exports = async (req, res) => {
         session: {
           model: 'gpt-realtime-translate',
           audio: {
-            input: {
-              transcription: { model: 'gpt-realtime-whisper' },
-              noise_reduction: { type: 'near_field' }
-            },
+            input: inputAudio,
             output: { language }
           }
         }
