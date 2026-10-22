@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Live Conversation — Traducción en vivo</title>
+<title>Englix</title>
+<link rel="icon" type="image/png" href="englix-logo-icon.png">
+<link rel="apple-touch-icon" href="englix-logo-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -431,6 +433,126 @@
   #fatal-banner.show{display:flex; gap:10px; align-items:flex-start;}
   #fatal-banner button{background:none; border:none; color:#ffb4b6; font-size:15px; cursor:pointer; padding:0 2px; flex:none;}
 
+
+  /* ================= v11 · Englix: Inicio, globo, barra inferior ================= */
+  body.has-nav .wrap{padding-bottom:94px;}
+  .brandlogo{width:46px; height:46px; border-radius:13px; flex:0 0 auto; object-fit:cover;
+    border:1px solid var(--line); box-shadow:0 6px 18px rgba(0,0,0,.45);}
+  #home-header .ht b.brandname{font-family:var(--sans); font-weight:700; font-size:23px; letter-spacing:.2px; color:#fff;}
+  #home-header .ht b.brandname .goldx{background:var(--gold-grad); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  #home-header .ht small{text-transform:none; letter-spacing:.25px; font-size:12.5px;}
+  .iconbtn.crown{border-radius:50%; border-color:rgba(212,167,92,.65);
+    background:radial-gradient(circle at 34% 28%, rgba(246,220,154,.30), rgba(212,167,92,.08) 72%);
+    box-shadow:0 0 14px rgba(212,167,92,.30);}
+  .rise{animation:riseIn .32s ease both;}
+  .rise.d1{animation-delay:.07s;}
+  .rise.d2{animation-delay:.14s;}
+  @keyframes riseIn{from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);}}
+
+  .globehero{position:relative; margin-top:2px; border-radius:26px; overflow:hidden;
+    border:1px solid rgba(212,167,92,.22);
+    background:radial-gradient(120% 90% at 62% 0%, #16263f 0%, #0b1526 46%, #060a14 100%);
+    box-shadow:0 18px 40px rgba(0,0,0,.5), inset 0 1px 0 rgba(242,210,135,.10);}
+  .globe{position:relative; height:238px;}
+  .globe svg.gsvg{position:absolute; inset:0; width:100%; height:100%;}
+  .globe .spin{transform-origin:205px 120px; animation:globeSpin 110s linear infinite;}
+  .globe .spin2{transform-origin:205px 120px; animation:globeSpin 150s linear infinite reverse;}
+  @keyframes globeSpin{from{transform:rotate(0deg);} to{transform:rotate(360deg);}}
+  .globe .arc{stroke-dasharray:5 7; animation:arcFlow 7s linear infinite;}
+  @keyframes arcFlow{to{stroke-dashoffset:-120;}}
+  .globe.paused .spin, .globe.paused .spin2, .globe.paused .arc, .globe.paused .gchip{animation-play-state:paused;}
+  .gchip{position:absolute; padding:5px 11px; border-radius:10px; font-size:12.5px; font-weight:500; color:#e9e4d8;
+    background:rgba(16,22,38,.72); border:1px solid rgba(255,255,255,.16);
+    backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);
+    animation:chipFloat 7s ease-in-out infinite;}
+  .gchip.c1{top:13%; left:23%;}
+  .gchip.c2{top:40%; left:3%; animation-delay:-2s;}
+  .gchip.c3{top:17%; right:4%; animation-delay:-4s;}
+  .gchip.c4{top:45%; right:1%; animation-delay:-1s;}
+  .gchip.c5{top:69%; right:8%; animation-delay:-3s;}
+  @keyframes chipFloat{0%,100%{transform:translateY(0);} 50%{transform:translateY(-5px);}}
+  .herotext{position:relative; padding:0 20px 20px; margin-top:-66px;}
+  .herotext h1{font-family:var(--serif); font-weight:600; font-size:27px; line-height:1.22; margin:0 0 8px;
+    text-shadow:0 2px 14px rgba(0,0,0,.65);}
+  .herotext p{color:#c9d2e0; font-size:14.5px; margin:0; text-shadow:0 1px 8px rgba(0,0,0,.6);}
+  .heroline{display:block; width:44px; height:3px; border-radius:2px; background:var(--gold-grad); margin-top:14px;}
+
+  .cards2{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px;}
+  @media (max-width:352px){ .cards2{grid-template-columns:1fr;} }
+  .acard{position:relative; text-align:left; display:flex; flex-direction:column; align-items:flex-start; gap:5px;
+    min-height:172px; padding:18px 16px 54px; border-radius:22px; color:var(--txt); overflow:hidden;
+    background:linear-gradient(165deg, rgba(255,255,255,.055), rgba(255,255,255,.02));
+    border:1px solid var(--line-soft);
+    transition:transform .15s ease, box-shadow .25s ease, border-color .25s ease, opacity .2s ease;}
+  .acard.gold{border-color:rgba(212,167,92,.55);
+    background:linear-gradient(160deg, rgba(246,220,154,.20), rgba(212,167,92,.05) 55%, rgba(255,255,255,.02));
+    box-shadow:0 12px 30px rgba(212,167,92,.16), inset 0 1px 0 rgba(242,210,135,.22);}
+  .acard:disabled{opacity:.65; cursor:default;}
+  .acard-ic{width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    background:radial-gradient(circle at 34% 28%, rgba(246,220,154,.30), rgba(212,167,92,.10) 72%);
+    border:1px solid rgba(212,167,92,.5); margin-bottom:8px;}
+  .acard-ic svg{width:24px; height:24px; stroke:var(--gold1); fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round;}
+  .acard-title{display:block; font-size:19px; font-weight:700; line-height:1.2;}
+  .acard-sub{display:block; font-size:13px; line-height:1.45; color:var(--muted);}
+  .acard-arrow{position:absolute; right:14px; bottom:14px; width:38px; height:38px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(212,167,92,.14); border:1px solid rgba(212,167,92,.45);}
+  .acard-arrow svg{width:17px; height:17px; stroke:var(--gold1); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+  #view-home .pills{margin-top:16px;}
+
+  .recent{margin-top:20px; background:linear-gradient(170deg, rgba(255,255,255,.045), rgba(255,255,255,.015));
+    border:1px solid var(--line-soft); border-radius:22px; padding:16px 16px 8px;}
+  .recenthead{display:flex; align-items:center; gap:9px; margin-bottom:12px;}
+  .recenthead .ricon{display:flex;}
+  .recenthead .ricon svg{width:19px; height:19px; stroke:var(--gold1); fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;}
+  .recenthead .rtitle{font-size:16.5px; font-weight:600; flex:1;}
+  .seeall{color:var(--muted); font-size:14px; font-weight:500; display:flex; align-items:center; gap:3px; padding:6px 2px;}
+  .seeall .seearrow{color:var(--gold1); font-size:17px; line-height:1;}
+  .rchip{display:flex; align-items:center; gap:10px; background:rgba(255,255,255,.045);
+    border:1px solid var(--line-soft); border-radius:16px; padding:12px 12px 12px 14px; margin-bottom:10px;}
+  .rchip-main{flex:1; min-width:0;}
+  .rchip-orig{margin:0; font-size:15px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .rchip-trans{margin:2px 0 0; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    background:var(--gold-grad); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  .rchip-meta{display:block; margin-top:3px; color:var(--dim); font-size:12px;}
+  .rchip-play{width:42px; height:42px; flex:0 0 auto; border-radius:50%;
+    background:rgba(255,255,255,.05); border:1px solid rgba(212,167,92,.45);
+    display:flex; align-items:center; justify-content:center;
+    transition:border-color .25s ease, box-shadow .25s ease;}
+  .rchip-play svg{width:18px; height:18px; stroke:#e9e4d8; fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round;}
+  .rchip-play.playing{border-color:var(--gold1); box-shadow:0 0 14px rgba(212,167,92,.5);}
+  .rchip-play.playing svg{stroke:var(--gold1);}
+  .recentempty{color:var(--dim); font-size:13.5px; line-height:1.6; margin:0 0 12px;}
+
+  #view-soon{display:none;}
+  #view-soon.on{display:block;}
+  .sooncard{margin-top:6px; text-align:center;
+    background:linear-gradient(170deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+    border:1px solid var(--line); border-radius:24px; padding:34px 24px 26px;
+    backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    box-shadow:0 18px 40px rgba(0,0,0,.5), inset 0 1px 0 rgba(242,210,135,.12);}
+  .soonicon{font-size:44px; line-height:1; margin-bottom:14px;}
+  .sooncard h2{font-family:var(--serif); font-size:24px; font-weight:600; margin:0 0 10px;}
+  .sooncard p{color:var(--muted); font-size:14.5px; line-height:1.6; margin:0 auto 16px; max-width:330px;}
+  .soonbadge{display:inline-block; padding:6px 14px; border-radius:999px;
+    border:1px solid rgba(212,167,92,.55); color:var(--gold1); background:rgba(212,167,92,.08);
+    font-size:12px; font-weight:600; letter-spacing:1.2px; text-transform:uppercase; margin-bottom:20px;}
+  .sooncard .btn-ghost{max-width:280px; margin:0 auto;}
+
+  #tabbar{position:fixed; left:0; right:0; bottom:0; z-index:50; display:none;
+    background:rgba(9,11,19,.88); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+    border-top:1px solid var(--line-soft); padding:8px 10px calc(8px + env(safe-area-inset-bottom));}
+  body.has-nav #tabbar{display:flex;}
+  #tabbar .tab{flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;
+    padding:5px 0 2px; color:#8f887a; font-size:11.5px; font-weight:500; transition:color .25s ease;}
+  #tabbar .tab svg{width:23px; height:23px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;}
+  #tabbar .tab.on{color:var(--gold1);}
+  #tabbar .tab i{display:block; width:26px; height:3px; border-radius:2px; background:transparent; margin-top:2px;
+    transition:background .25s ease, box-shadow .25s ease;}
+  #tabbar .tab.on i{background:var(--gold-grad); box-shadow:0 0 8px rgba(212,167,92,.6);}
+  @media (prefers-reduced-motion: reduce){
+    .globe .spin, .globe .spin2, .globe .arc, .gchip, .rise{animation:none !important;}
+  }
   @media (min-width:640px){
     .orb{width:180px; height:180px;}
   }
@@ -441,32 +563,102 @@
   }
 </style>
 </head>
-<body>
+<body class="has-nav">
 <div id="fatal-banner" role="alert"><span id="fatal-msg">Algo falló en la página.</span><button id="fatal-close" aria-label="Cerrar">✕</button></div>
 <div class="wrap">
 
-  <header id="home-header">
-    <div class="tile"><span>A文</span></div>
+  <header id="home-header" class="rise">
+    <img class="brandlogo" src="englix-logo-icon.png" alt="Englix">
     <div class="ht">
-      <b data-i18n="appTitle">Traducción en vivo</b>
-      <small data-i18n="appSub">Conversación en tiempo real</small>
+      <b class="brandname">Engl<span class="goldx">ix</span></b>
+      <small data-i18n="brandTag">Conversaciones reales. Un mundo más grande.</small>
     </div>
+    <button class="iconbtn crown" id="btn-crown-home" aria-label="Premium">
+      <svg viewBox="0 0 24 24"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-1.6 9.2a2 2 0 0 1-2 1.8H6.6a2 2 0 0 1-2-1.8L3 8z"/><line x1="5.5" y1="21" x2="18.5" y2="21"/></svg>
+    </button>
     <button class="iconbtn" id="btn-gear-home" aria-label="Settings">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </button>
   </header>
 
-  <!-- ===== Inicio ===== -->
+  <!-- ===== Inicio (v11 · Englix) ===== -->
   <section id="view-home">
-    <div class="hero">
-      <h1><span data-i18n="heroA">Habla tranquilo.</span><br><em data-i18n="heroB">La app traduce por ti.</em></h1>
-      <p data-i18n="heroP">Elige los dos idiomas, toca el botón y habla. La app detecta quién habla cada idioma y traduce en voz alta, como una llamada.</p>
-      <div class="pills" id="home-pills"></div>
-      <button class="btn-call" id="btn-start">📞&nbsp; <span data-i18n="start">Iniciar conversación</span></button>
-      <div class="err" id="err-home"></div>
-      <div class="tip">🎧 <b data-i18n="tipB">Tip:</b> <span data-i18n="tip">usa audífonos. Así el micrófono no escucha la traducción en voz alta y la conversación suena limpia, sin repeticiones.</span></div>
-      <div class="testnote" data-i18n="testNote">Modo prueba — crédito de la cuenta</div>
-      <button class="btn-ghost" id="btn-saved-open" style="margin-top:14px;">💬&nbsp; <span data-i18n="savedConvs">Conversaciones guardadas</span></button>
+    <div class="globehero rise">
+      <div class="globe" id="globe" aria-hidden="true">
+        <svg class="gsvg" viewBox="0 0 400 250" preserveAspectRatio="xMidYMid slice">
+          <defs>
+            <radialGradient id="gfill" cx="38%" cy="28%" r="80%">
+              <stop offset="0%" stop-color="#1e3455"/>
+              <stop offset="55%" stop-color="#0d1a2e"/>
+              <stop offset="100%" stop-color="#060b16"/>
+            </radialGradient>
+            <linearGradient id="garc" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#F6DC9A"/>
+              <stop offset="100%" stop-color="#D4A75C" stop-opacity=".35"/>
+            </linearGradient>
+            <clipPath id="gclip"><circle cx="205" cy="120" r="104"/></clipPath>
+          </defs>
+          <circle cx="205" cy="120" r="104" fill="url(#gfill)" stroke="rgba(242,210,135,.55)" stroke-width="1.2"/>
+          <g clip-path="url(#gclip)">
+            <path d="M92,44 L146,26 L196,32 L216,50 L206,72 L226,84 L210,106 L184,100 L170,118 L148,108 L136,86 L110,82 L94,64 Z" fill="#1d324f" stroke="rgba(242,210,135,.20)"/>
+            <path d="M166,120 L188,116 L202,132 L197,158 L206,184 L196,208 L183,190 L179,156 L166,138 Z" fill="#1d324f" stroke="rgba(242,210,135,.20)"/>
+            <path d="M292,42 L332,34 L358,52 L349,80 L323,86 L331,112 L317,144 L299,118 L291,84 Z" fill="#1d324f" stroke="rgba(242,210,135,.20)"/>
+            <path d="M246,16 L322,8 L372,24 L342,40 L284,38 L254,30 Z" fill="#1d324f" stroke="rgba(242,210,135,.20)"/>
+            <circle class="spin" cx="205" cy="120" r="88" fill="none" stroke="rgba(242,210,135,.20)" stroke-width="1" stroke-dasharray="3 9"/>
+            <circle class="spin2" cx="205" cy="120" r="66" fill="none" stroke="rgba(242,210,135,.13)" stroke-width="1" stroke-dasharray="2 8"/>
+            <path class="arc" d="M122,68 Q172,16 252,42" fill="none" stroke="url(#garc)" stroke-width="1.3"/>
+            <path class="arc" d="M148,96 Q206,142 300,78" fill="none" stroke="url(#garc)" stroke-width="1.3"/>
+            <path class="arc" d="M186,152 Q242,104 318,120" fill="none" stroke="url(#garc)" stroke-width="1.3"/>
+            <g fill="#F2D287">
+              <circle cx="130" cy="58" r="2.1" opacity=".95"/><circle cx="168" cy="44" r="1.5" opacity=".7"/>
+              <circle cx="196" cy="66" r="1.7" opacity=".85"/><circle cx="150" cy="86" r="1.4" opacity=".6"/>
+              <circle cx="188" cy="140" r="1.8" opacity=".9"/><circle cx="196" cy="176" r="1.4" opacity=".65"/>
+              <circle cx="258" cy="46" r="1.6" opacity=".8"/><circle cx="306" cy="66" r="2" opacity=".95"/>
+              <circle cx="318" cy="118" r="1.5" opacity=".7"/><circle cx="122" cy="68" r="2.3" opacity="1"/>
+              <circle cx="300" cy="78" r="2.3" opacity="1"/><circle cx="186" cy="152" r="2.2" opacity="1"/>
+            </g>
+            <ellipse cx="205" cy="240" rx="150" ry="60" fill="rgba(2,4,9,.45)"/>
+          </g>
+        </svg>
+        <span class="gchip c1">Hello</span>
+        <span class="gchip c2">Hola</span>
+        <span class="gchip c3">Bonjour</span>
+        <span class="gchip c4">你好</span>
+        <span class="gchip c5">こんにちは</span>
+      </div>
+      <div class="herotext">
+        <h1><span data-i18n="headA">Idiomas diferentes.</span><br><span data-i18n="headB">Un tú más cercano.</span></h1>
+        <p data-i18n="headSub">Traduce. Aprende. Conecta. Sin límites.</p>
+        <span class="heroline"></span>
+      </div>
+    </div>
+
+    <div class="cards2 rise d1">
+      <button class="acard gold" id="btn-start">
+        <span class="acard-ic"><svg viewBox="0 0 24 24"><line x1="4" y1="10" x2="4" y2="14"/><line x1="8" y1="7" x2="8" y2="17"/><line x1="12" y1="4" x2="12" y2="20"/><line x1="16" y1="7" x2="16" y2="17"/><line x1="20" y1="10" x2="20" y2="14"/></svg></span>
+        <span class="acard-title" data-i18n="translateNow">Traducir ahora</span>
+        <span class="acard-sub" data-i18n="translateNowSub">Conversación en tiempo real</span>
+        <span class="acard-arrow"><svg viewBox="0 0 24 24"><line x1="4" y1="12" x2="20" y2="12"/><polyline points="13 5 20 12 13 19"/></svg></span>
+      </button>
+      <button class="acard" id="btn-practice">
+        <span class="acard-ic"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span>
+        <span class="acard-title" data-i18n="practice">Practicar inglés</span>
+        <span class="acard-sub" data-i18n="practiceSub">Mejora tu inglés con lecciones personalizadas</span>
+        <span class="acard-arrow"><svg viewBox="0 0 24 24"><line x1="4" y1="12" x2="20" y2="12"/><polyline points="13 5 20 12 13 19"/></svg></span>
+      </button>
+    </div>
+
+    <div class="pills" id="home-pills"></div>
+    <div class="err" id="err-home"></div>
+
+    <div class="recent rise d2">
+      <div class="recenthead">
+        <span class="ricon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg></span>
+        <span class="rtitle" data-i18n="recentTitle">Frases recientes</span>
+        <button class="seeall" id="btn-saved-open"><span data-i18n="seeAll">Ver todo</span><span class="seearrow">›</span></button>
+      </div>
+      <div id="recent-list"></div>
+      <p class="recentempty" id="recent-empty" data-i18n="recentEmpty">Todavía no tienes frases guardadas. Al terminar una conversación, toca la estrella de una frase o guarda tus frases, y aparecerán aquí.</p>
     </div>
   </section>
 
@@ -576,9 +768,40 @@
     </div>
   </section>
 
+  <!-- ===== En preparación (v11: Premium y Learn, honesto) ===== -->
+  <section id="view-soon">
+    <div class="sooncard">
+      <div class="soonicon" id="soon-icon">👑</div>
+      <h2 id="soon-title">Englix Premium</h2>
+      <p id="soon-text"></p>
+      <span class="soonbadge" data-i18n="soonBadge">En preparación</span>
+      <button class="btn-ghost" id="btn-soon-back" data-i18n="backHome">Volver al inicio</button>
+    </div>
+  </section>
+
   <footer data-i18n="footer">Traducción automática con IA · En vivo</footer>
-  <div class="verlabel">v10 · simple</div>
+  <div class="verlabel">v11 · Englix</div>
 </div>
+
+<!-- ===== Barra inferior (v11 · Englix) ===== -->
+<nav id="tabbar">
+  <button class="tab on" data-tab="home" id="tab-home">
+    <svg viewBox="0 0 24 24"><path d="M3 10.8L12 3l9 7.8"/><path d="M5.5 9.3V21h13V9.3"/></svg>
+    <span data-i18n="navHome">Inicio</span><i></i>
+  </button>
+  <button class="tab" data-tab="learn" id="tab-learn">
+    <svg viewBox="0 0 24 24"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/></svg>
+    <span data-i18n="navLearn">Aprender</span><i></i>
+  </button>
+  <button class="tab" data-tab="history" id="tab-history">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg>
+    <span data-i18n="navHistory">Historial</span><i></i>
+  </button>
+  <button class="tab" data-tab="profile" id="tab-profile">
+    <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span data-i18n="navProfile">Perfil</span><i></i>
+  </button>
+</nav>
 
 <!-- ===== Modal de idiomas ===== -->
 <div class="overlay" id="lang-overlay">
@@ -805,6 +1028,20 @@
       setPrivacy: 'Privacidad', setPrivacySub: 'Las conversaciones solo se guardan si tú lo pides, y solo en este teléfono.',
       clearSaved: 'Borrar conversaciones guardadas', clearFavs: 'Borrar frases favoritas',
       footer: 'Traducción automática con IA · En vivo',
+      brandTag: 'Conversaciones reales. Un mundo más grande.',
+      headA: 'Idiomas diferentes.', headB: 'Un tú más cercano.',
+      headSub: 'Traduce. Aprende. Conecta. Sin límites.',
+      translateNow: 'Traducir ahora', translateNowSub: 'Conversación en tiempo real',
+      practice: 'Practicar inglés', practiceSub: 'Mejora tu inglés con lecciones personalizadas',
+      recentTitle: 'Frases recientes', seeAll: 'Ver todo',
+      recentEmpty: 'Todavía no tienes frases guardadas. Al terminar una conversación, toca la estrella de una frase o guarda tus frases, y aparecerán aquí.',
+      navHome: 'Inicio', navLearn: 'Aprender', navHistory: 'Historial', navProfile: 'Perfil',
+      soonBadge: 'En preparación',
+      soonPremiumTitle: 'Englix Premium',
+      soonPremiumText: 'Los planes Premium están en preparación. Muy pronto podrás verlos y suscribirte desde aquí.',
+      soonLearnTitle: 'Practicar inglés',
+      soonLearnText: 'El módulo de lecciones está en preparación. Muy pronto podrás practicar inglés aquí, con lecciones hechas para ti.',
+      backHome: 'Volver al inicio',
       state_idle: 'Listo', state_requesting: 'Pidiendo permiso del micrófono…', state_connecting: 'Conectando…',
       state_listening: 'Escuchando…', state_processing: 'Procesando voz…', state_translating: 'Traduciendo…',
       state_speaking: 'Reproduciendo traducción…', state_paused: 'Conversación pausada',
@@ -880,6 +1117,20 @@
       setPrivacy: 'Privacy', setPrivacySub: 'Conversations are only saved when you ask, and only on this phone.',
       clearSaved: 'Delete saved conversations', clearFavs: 'Delete favorite phrases',
       footer: 'Automatic AI translation · Live',
+      brandTag: 'Real conversations. A bigger world.',
+      headA: 'Different languages.', headB: 'A closer you.',
+      headSub: 'Translate. Learn. Connect. Without limits.',
+      translateNow: 'Translate Now', translateNowSub: 'Real-time conversation translation',
+      practice: 'Practice English', practiceSub: 'Build your skills with personalized lessons',
+      recentTitle: 'Recent Phrases', seeAll: 'See All',
+      recentEmpty: 'No saved phrases yet. After a conversation, star a phrase or save your phrases and they will appear here.',
+      navHome: 'Home', navLearn: 'Learn', navHistory: 'History', navProfile: 'Profile',
+      soonBadge: 'In preparation',
+      soonPremiumTitle: 'Englix Premium',
+      soonPremiumText: 'Premium plans are in preparation. Very soon you will be able to see them and subscribe right here.',
+      soonLearnTitle: 'Practice English',
+      soonLearnText: 'The lessons module is in preparation. Very soon you will practice English here, with lessons made for you.',
+      backHome: 'Back to home',
       state_idle: 'Ready', state_requesting: 'Asking for microphone permission…', state_connecting: 'Connecting…',
       state_listening: 'Listening…', state_processing: 'Processing voice…', state_translating: 'Translating…',
       state_speaking: 'Playing translation…', state_paused: 'Conversation paused',
@@ -1439,7 +1690,14 @@
     viewDone.classList.toggle('on', name === 'done');
     viewCall.classList.toggle('on', name === 'call');
     viewSaved.classList.toggle('on', name === 'saved');
+    viewSoon.classList.toggle('on', name === 'soon');
     homeHeader.style.display = name === 'call' ? 'none' : 'flex';
+    document.body.classList.toggle('has-nav', name !== 'call');
+    if (name === 'home') navTab = 'home';
+    else if (name === 'saved') navTab = 'history';
+    else if (name === 'done') navTab = 'home';
+    syncNav();
+    if (name === 'home') renderRecent();
   }
 
   function handleEvent(sess, raw) {
@@ -2578,6 +2836,9 @@
     renderPills();
     setState(appState);
     tickTimer();
+    renderRecent();
+    if (!inCall) btnStart.innerHTML = startCardHTML(false);
+    if (viewSoon.classList.contains('on')) openSoon(soonKind);
   }
 
   /* ================= Flujo de llamada ================= */
@@ -2585,7 +2846,7 @@
     hideErrs();
     setState('requesting_permission');
     btnStart.disabled = true;
-    btnStart.innerHTML = '⏳&nbsp; ' + t('connecting');
+    btnStart.innerHTML = startCardHTML(true);
     try {
       ensureAudioCtx();
       await acquireMic();
@@ -2614,7 +2875,7 @@
       showErr('home', errorMessage(e));
     } finally {
       btnStart.disabled = false;
-      btnStart.innerHTML = '📞&nbsp; ' + t('start');
+      btnStart.innerHTML = startCardHTML(false);
     }
   }
 
@@ -2913,6 +3174,102 @@
   $('btn-saved-back').addEventListener('click', function () {
     if (savedDetailIdx >= 0) openSavedList();
     else showView('home');
+  });
+
+  /* ================= v11 · Englix: navegación e Inicio ================= */
+  var viewSoon = $('view-soon');
+  var navTab = 'home';
+  var soonKind = 'learn';
+
+  function syncNav() {
+    document.querySelectorAll('#tabbar .tab').forEach(function (b) {
+      b.classList.toggle('on', b.getAttribute('data-tab') === navTab);
+    });
+  }
+  function openSoon(kind) {
+    soonKind = kind;
+    $('soon-icon').textContent = kind === 'premium' ? '👑' : '📖';
+    $('soon-title').textContent = t(kind === 'premium' ? 'soonPremiumTitle' : 'soonLearnTitle');
+    $('soon-text').textContent = t(kind === 'premium' ? 'soonPremiumText' : 'soonLearnText');
+    if (kind === 'learn') navTab = 'learn';
+    showView('soon');
+    syncNav();
+  }
+  function resyncNav() {
+    if (viewCall.classList.contains('on')) return;
+    if (viewSaved.classList.contains('on')) navTab = 'history';
+    else if (viewSoon.classList.contains('on')) navTab = soonKind === 'learn' ? 'learn' : 'home';
+    else navTab = 'home';
+    syncNav();
+  }
+  function startCardHTML(busy) {
+    return '<span class="acard-ic">' + ICON_WAVE + '</span>' +
+      '<span class="acard-title">' + (busy ? t('connecting') : t('translateNow')) + '</span>' +
+      '<span class="acard-sub">' + t('translateNowSub') + '</span>' +
+      '<span class="acard-arrow"><svg viewBox="0 0 24 24"><line x1="4" y1="12" x2="20" y2="12"/><polyline points="13 5 20 12 13 19"/></svg></span>';
+  }
+
+  /* Frases recientes del Inicio: SOLO datos reales del teléfono
+     (frases guardadas, favoritas y, si faltan, las de las conversaciones
+     guardadas). Nunca ejemplos fijos. */
+  function recentItems() {
+    var seen = {}, out = [];
+    function push(o, ts) {
+      if (!o || !o.orig || !o.trans) return;
+      var k = favKey(o.orig, o.trans);
+      if (seen[k]) return;
+      seen[k] = 1;
+      out.push({ orig: o.orig, trans: o.trans, from: o.from || null, to: o.to || null, ts: ts || 0 });
+    }
+    loadList(LS_PHRASES).forEach(function (p) { push(p, p.ts); });
+    favorites.forEach(function (p) { push(p, p.ts); });
+    out.sort(function (a, b) { return b.ts - a.ts; });
+    if (out.length < 2) {
+      var convs = loadList(LS_SAVED_CONVS);
+      for (var i = convs.length - 1; i >= 0 && out.length < 2; i--) {
+        var cs = convs[i].cards || [];
+        for (var j = cs.length - 1; j >= 0 && out.length < 2; j--) push(cs[j], 0);
+      }
+    }
+    return out.slice(0, 2);
+  }
+  function renderRecent() {
+    var box = $('recent-list'), empty = $('recent-empty');
+    if (!box) return;
+    var items = recentItems();
+    box.innerHTML = '';
+    if (empty) empty.style.display = items.length ? 'none' : '';
+    items.forEach(function (it) {
+      var row = document.createElement('div');
+      row.className = 'rchip';
+      row.innerHTML = '<div class="rchip-main"><p class="rchip-orig"></p><p class="rchip-trans"></p><span class="rchip-meta"></span></div>' +
+        '<button class="rchip-play" aria-label="Play">' + ICON_SPEAKER + '</button>';
+      row.querySelector('.rchip-orig').textContent = it.orig;
+      row.querySelector('.rchip-trans').textContent = it.trans;
+      var meta = '';
+      if (it.from) meta += langName(it.from);
+      if (it.from && it.to) meta += ' → ';
+      if (it.to) meta += langName(it.to);
+      row.querySelector('.rchip-meta').textContent = meta;
+      var playBtn = row.querySelector('.rchip-play');
+      var cardObj = { origText: it.orig, transText: it.trans, fromLang: it.from, toLang: it.to, els: { replay: playBtn } };
+      playBtn.addEventListener('click', function () { replayCard(cardObj); });
+      box.appendChild(row);
+    });
+  }
+
+  $('btn-crown-home').addEventListener('click', function () { vibrate(8); openSoon('premium'); });
+  $('btn-practice').addEventListener('click', function () { vibrate(8); openSoon('learn'); });
+  $('btn-soon-back').addEventListener('click', function () { showView('home'); });
+  $('tab-home').addEventListener('click', function () { showView('home'); });
+  $('tab-learn').addEventListener('click', function () { openSoon('learn'); });
+  $('tab-history').addEventListener('click', function () { openSavedList(); });
+  $('tab-profile').addEventListener('click', function () { navTab = 'profile'; syncNav(); openPanel(); });
+  $('btn-panel-close').addEventListener('click', resyncNav);
+  panelOverlay.addEventListener('click', resyncNav);
+  document.addEventListener('visibilitychange', function () {
+    var g = $('globe');
+    if (g) g.classList.toggle('paused', document.hidden);
   });
 
   /* ================= Inicio ================= */
