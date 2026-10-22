@@ -1,6 +1,3 @@
-# traductor
+# Traductor
 
-Traductor de conversación en tiempo real (español ⇄ inglés) — modo llamada con IA.
-Pantalla Live Conversation: Luxury Premium negro/dorado.
-
-Publicación automática con Vercel desde este repositorio.
+App de traducción de voz en tiempo real (prueba).
