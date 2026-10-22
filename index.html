@@ -135,29 +135,46 @@
 
   /* ---------- Stage: la esfera es la única protagonista (sin personas:
      cualquiera de los dos puede hablar cualquiera de los dos idiomas) ---------- */
-  .stage{display:flex; align-items:center; justify-content:center; padding:8px 2px 2px;}
+  .stage{display:flex; align-items:center; justify-content:center; padding:14px 2px 6px; position:relative;}
   .orbwrap{flex:1; display:flex; justify-content:center;}
   .orb{
     position:relative; width:158px; height:158px; border-radius:50%;
     background:
-      radial-gradient(circle at 34% 28%, rgba(246,220,154,.5) 0%, rgba(212,167,92,.16) 34%, rgba(20,16,6,.25) 62%, rgba(0,0,0,.5) 100%),
-      radial-gradient(circle at 50% 50%, #3a2c10, #171106 74%);
-    border:1px solid rgba(242,210,135,.5);
-    box-shadow:0 0 34px rgba(212,167,92,.28), inset 0 0 34px rgba(212,167,92,.22), inset 0 -14px 30px rgba(0,0,0,.55);
+      radial-gradient(circle at 34% 26%, rgba(246,220,154,.62) 0%, rgba(212,167,92,.22) 30%, rgba(20,16,6,.18) 58%, rgba(0,0,0,.52) 100%),
+      radial-gradient(ellipse 118% 52% at 50% 108%, rgba(242,210,135,.20), rgba(242,210,135,0) 62%),
+      radial-gradient(ellipse 118% 52% at 50% -8%, rgba(242,210,135,.13), rgba(242,210,135,0) 62%),
+      radial-gradient(circle at 50% 50%, #3d2e11, #171106 74%);
+    border:1px solid rgba(242,210,135,.55);
+    box-shadow:0 0 38px rgba(212,167,92,.34), inset 0 0 34px rgba(212,167,92,.24), inset 0 -14px 30px rgba(0,0,0,.55);
     transition:box-shadow .4s ease;
   }
   .orb::before{
     content:''; position:absolute; inset:-13px; border-radius:50%;
-    border:1.5px dotted rgba(212,167,92,.4);
+    border:1.5px dotted rgba(212,167,92,.42);
     animation:spinSlow 26s linear infinite;
   }
   .orb::after{
     content:''; position:absolute; inset:-24px; border-radius:50%;
     border:1px solid rgba(212,167,92,.10);
   }
+  /* Anillos orbitales exteriores (arcos tipo globo de la maqueta) */
+  .orb .ring{position:absolute; border-radius:50%; pointer-events:none;}
+  .orb .ring.r1{inset:-37px; border:1px dashed rgba(212,167,92,.17);}
+  .orb .ring.r2{
+    inset:-37px;
+    border:1.5px solid transparent;
+    border-top-color:rgba(242,210,135,.5); border-bottom-color:rgba(242,210,135,.34);
+    animation:spinSlow 44s linear infinite reverse;
+  }
   @keyframes spinSlow{from{transform:rotate(0deg);} to{transform:rotate(360deg);}}
-  .orb canvas{position:absolute; inset:0; width:100%; height:100%;}
-  .orb .particles{position:absolute; inset:0; opacity:0; transition:opacity .3s ease; pointer-events:none;}
+  /* La onda REAL (AnalyserNode) cruza la esfera y se extiende a los lados:
+     el canvas es mucho más ancho que la esfera y va centrado sobre ella. */
+  .orb canvas{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:min(700px,94vw); height:auto; max-width:none;
+    z-index:3; pointer-events:none;
+  }
+  .orb .particles{position:absolute; inset:0; opacity:0; transition:opacity .3s ease; pointer-events:none; z-index:4;}
   .orb .particles i{
     position:absolute; left:50%; top:50%; width:5px; height:5px; border-radius:50%;
     background:var(--gold1); box-shadow:0 0 8px rgba(242,210,135,.9);
@@ -177,15 +194,19 @@
 
   /* ---------- Status pill + minutes ---------- */
   .statuspill{
-    margin:14px auto 0; display:inline-flex; align-items:center; gap:9px;
+    margin:16px auto 0; display:inline-flex; align-items:center; gap:9px;
     align-self:center;
-    background:rgba(10,12,20,.72); border:1px solid var(--line-soft); border-radius:999px;
-    padding:8px 16px; font-size:13.5px; font-weight:500;
+    background:linear-gradient(180deg, rgba(46,35,12,.65), rgba(10,12,20,.78));
+    border:1px solid rgba(212,167,92,.5); border-radius:999px;
+    padding:9px 18px; font-size:14px; font-weight:500;
+    box-shadow:0 0 18px rgba(212,167,92,.28), inset 0 1px 0 rgba(242,210,135,.22);
     backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
   }
-  .gdot{width:9px; height:9px; border-radius:50%; background:var(--green); box-shadow:0 0 9px rgba(61,220,132,.8); flex:0 0 auto;}
-  .statuspill.paused .gdot{background:var(--gold2); box-shadow:0 0 9px rgba(212,167,92,.8);}
-  .statuspill.error .gdot{background:var(--red1); box-shadow:0 0 9px rgba(229,72,77,.8);}
+  .statuspill .smic{display:flex; align-items:center; flex:0 0 auto;}
+  .statuspill .smic svg{width:16px; height:16px; stroke:var(--gold1); fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round;}
+  .statuspill.paused{border-color:rgba(242,210,135,.75); box-shadow:0 0 14px rgba(212,167,92,.2), inset 0 1px 0 rgba(242,210,135,.18);}
+  .statuspill.error{border-color:rgba(229,72,77,.6); box-shadow:0 0 14px rgba(229,72,77,.25);}
+  .statuspill.error .smic svg{stroke:#ff9a9d;}
   .statuspill .stime{font-variant-numeric:tabular-nums; color:var(--gold1); font-weight:600;}
   .minline{text-align:center; color:var(--dim); font-size:11.5px; margin-top:7px; letter-spacing:.2px;}
 
@@ -199,26 +220,34 @@
   .feed .empty{color:var(--dim); font-size:14px; text-align:center; margin:auto 0; line-height:1.6; padding:20px;}
   .card{
     background:linear-gradient(165deg, rgba(255,255,255,.055), rgba(255,255,255,.02));
-    border:1px solid var(--line-soft); border-radius:20px;
+    border:1px solid rgba(212,167,92,.26); border-radius:20px;
     padding:13px 14px 11px;
     backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
-    box-shadow:0 10px 26px rgba(0,0,0,.35);
+    box-shadow:0 10px 26px rgba(0,0,0,.35), 0 0 16px rgba(212,167,92,.07);
     animation:cardIn .25s ease both;
   }
   @keyframes cardIn{from{opacity:0; transform:translateY(12px);} to{opacity:1; transform:translateY(0);}}
   .card.flash{animation:cardIn .25s ease both, cardFlash 1s ease .05s;}
   @keyframes cardFlash{0%{box-shadow:0 0 0 rgba(212,167,92,0);} 30%{box-shadow:0 0 22px rgba(212,167,92,.45); border-color:rgba(242,210,135,.65);} 100%{box-shadow:0 10px 26px rgba(0,0,0,.35);}}
-  .card .chead2{display:flex; align-items:center; gap:9px;}
-  .card .cavatar{
-    width:36px; height:36px; border-radius:50%; flex:0 0 auto;
-    background:radial-gradient(circle at 32% 28%, #2a2f47, #141726 70%);
-    border:1.5px solid rgba(212,167,92,.45);
+  /* Tarjeta estilo maqueta: icono de onda circular a la izquierda y el
+     contenido en columna (encabezado, original, divisor, traducción). */
+  .card .cbody{display:flex; gap:12px; align-items:flex-start;}
+  .card .cicon{
+    width:44px; height:44px; border-radius:50%; flex:0 0 auto;
+    background:radial-gradient(circle at 32% 28%, #2b2410, #12100a 72%);
+    border:1.5px solid rgba(212,167,92,.55);
     display:flex; align-items:center; justify-content:center;
-    font-family:var(--serif); font-weight:700; font-size:15px; color:var(--gold1);
+    box-shadow:0 0 14px rgba(212,167,92,.25), inset 0 1px 0 rgba(242,210,135,.25);
   }
-  .card .cmeta{flex:1; min-width:0; color:var(--muted); font-size:12.5px;}
+  .card .cicon svg{width:22px; height:22px; stroke:var(--gold1); fill:none; stroke-width:2; stroke-linecap:round;}
+  .card .cmain{flex:1; min-width:0;}
+  .card .chead2{display:flex; align-items:center; gap:9px;}
+  .card .cmeta{flex:1; min-width:0; color:var(--muted); font-size:12.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .card .cmeta b{color:var(--txt); font-weight:600;}
   .card .ctime{color:var(--dim); font-size:12px; flex:0 0 auto;}
+  .card .corigrow{display:flex; align-items:flex-start; gap:10px;}
+  .card .corigrow .orig{flex:1; min-width:0;}
+  .card .corigrow .chip{margin-top:11px;}
   .chip{
     flex:0 0 auto; font-size:11px; font-weight:600; letter-spacing:.3px;
     padding:4px 10px; border-radius:999px;
@@ -228,7 +257,15 @@
   .chip.error{background:rgba(229,72,77,.14); color:#ffb4b6; border-color:rgba(229,72,77,.45);}
   .card .orig{font-size:16.5px; line-height:1.45; margin:9px 0 0; word-wrap:break-word;}
   .card .orig.partial{color:#d9d2c0;}
-  .card .divider{height:1px; background:var(--line-soft); margin:10px 0 8px;}
+  .card .divider{position:relative; height:1px; background:var(--line-soft); margin:12px 0 9px;}
+  .card .divider .dchev{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    background:#151927; padding:0 7px; line-height:1;
+    color:var(--dim); display:flex; align-items:center;
+  }
+  .card .divider .dchev svg{width:14px; height:14px; stroke:var(--dim); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+  .card .tblock{display:flex; align-items:flex-start; gap:10px;}
+  .card .tmain{flex:1; min-width:0;}
   .card .tlabel{display:flex; align-items:center; gap:7px; color:var(--muted); font-size:12.5px;}
   .card .tlabel .flag{font-size:16px;}
   .card .trans{
@@ -237,25 +274,38 @@
     font-weight:500;
   }
   .card .trans.pending{color:var(--dim); background:none; -webkit-background-clip:initial; font-size:14px;}
-  .card .cactions{display:flex; gap:6px; margin-top:9px; justify-content:flex-end;}
-  .card .cactions button{
-    width:36px; height:36px; border-radius:50%;
-    background:rgba(255,255,255,.05); border:1px solid var(--line-soft);
+  /* Acciones de la tarjeta: bocina redonda junto a la traducción y dos
+     botones fantasma pequeños (copiar / favorita) debajo de ella. */
+  .card .tactions{display:flex; flex-direction:column; align-items:center; gap:6px; flex:0 0 auto;}
+  .card .tactions .act-replay{
+    width:42px; height:42px; border-radius:50%;
+    background:radial-gradient(circle at 32% 28%, #2c3149, #13161f 74%);
+    border:1px solid rgba(212,167,92,.55);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 4px 12px rgba(0,0,0,.35), inset 0 1px 0 rgba(242,210,135,.22);
+    transition:border-color .25s ease, box-shadow .25s ease;
+  }
+  .card .tactions .act-replay svg{width:19px; height:19px; stroke:#e9e4d8; fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round;}
+  .card .tactions .act-replay:hover{border-color:var(--gold1);}
+  .card .tactions .act-replay.playing{border-color:var(--gold1); box-shadow:0 0 14px rgba(212,167,92,.5);}
+  .card .tactions .act-replay.playing svg{stroke:var(--gold1);}
+  .card .tsmall{display:flex; gap:6px;}
+  .card .tsmall button{
+    width:30px; height:30px; border-radius:50%;
+    background:rgba(255,255,255,.04); border:1px solid var(--line-soft);
     display:flex; align-items:center; justify-content:center;
     transition:border-color .25s ease, box-shadow .25s ease, background .25s ease;
   }
-  .card .cactions button svg{width:16px; height:16px; stroke:var(--muted); fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round;}
-  .card .cactions button:hover{border-color:var(--line);}
-  .card .cactions button.fav.on{background:rgba(212,167,92,.2); border-color:var(--gold2); box-shadow:0 0 12px rgba(212,167,92,.35);}
-  .card .cactions button.fav.on svg{stroke:var(--gold1); fill:var(--gold1);}
-  .card .cactions button.playing{border-color:var(--gold1); box-shadow:0 0 12px rgba(212,167,92,.4);}
-  .card .cactions button.playing svg{stroke:var(--gold1);}
+  .card .tsmall button svg{width:14px; height:14px; stroke:var(--muted); fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round;}
+  .card .tsmall button:hover{border-color:var(--line);}
+  .card .tsmall button.fav.on{background:rgba(212,167,92,.2); border-color:var(--gold2); box-shadow:0 0 12px rgba(212,167,92,.35);}
+  .card .tsmall button.fav.on svg{stroke:var(--gold1); fill:var(--gold1);}
 
   /* ---------- Audio bar ---------- */
-  .audiobar{display:flex; align-items:center; gap:10px; padding:10px 2px 2px;}
+  .audiobar{display:flex; align-items:center; gap:10px; padding:10px 2px 2px; border-top:1px solid rgba(212,167,92,.13); margin-top:4px;}
   .audiobar .abtime{font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums; min-width:38px;}
   .audiobar .abtime.right{text-align:right;}
-  .audiobar canvas{flex:1; height:30px; min-width:0;}
+  .audiobar canvas{flex:1; height:24px; min-width:0;}
 
   /* ---------- Controls ---------- */
   .controls{display:grid; grid-template-columns:1fr auto 1fr; align-items:start; padding:10px 0 2px;}
@@ -267,9 +317,9 @@
   .cbtn{
     width:56px; height:56px; border-radius:50%;
     background:radial-gradient(circle at 32% 28%, #262b40, #12141f 72%);
-    border:1px solid var(--line);
+    border:1px solid rgba(212,167,92,.48);
     display:flex; align-items:center; justify-content:center;
-    box-shadow:0 6px 16px rgba(0,0,0,.4), inset 0 1px 0 rgba(242,210,135,.2);
+    box-shadow:0 6px 16px rgba(0,0,0,.4), 0 0 10px rgba(212,167,92,.14), inset 0 1px 0 rgba(242,210,135,.2);
     transition:border-color .25s ease, box-shadow .25s ease, background .25s ease, transform .15s ease;
   }
   .cbtn svg{width:23px; height:23px; stroke:var(--gold1); fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round;}
@@ -459,8 +509,8 @@
         <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
       <div class="ctitle">
-        <h2>Live <em>Conversation</em></h2>
-        <p data-i18n="callSub">Traducción en tiempo real, conversación natural.</p>
+        <h2><span data-i18n="callTitle">Traducción</span> <em data-i18n="callTitleB">en vivo</em></h2>
+        <p data-i18n="callSub">Traducción de voz en tiempo real. Habla natural.</p>
       </div>
       <button class="iconbtn" id="btn-gear-call" aria-label="Settings">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -472,14 +522,15 @@
     <div class="stage">
       <div class="orbwrap">
         <div class="orb" id="orb" data-state="idle">
-          <canvas id="orb-canvas" width="316" height="316"></canvas>
+          <span class="ring r1"></span><span class="ring r2"></span>
+          <canvas id="orb-canvas" width="720" height="340"></canvas>
           <div class="particles"><i></i><i></i><i></i><i></i></div>
         </div>
       </div>
     </div>
 
     <div class="statuspill" id="statuspill">
-      <span class="gdot"></span>
+      <span class="smic"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></span>
       <span id="state-text">—</span>
       <span class="stime" id="timer">00:00</span>
     </div>
@@ -555,7 +606,7 @@
   </section>
 
   <footer data-i18n="footer">Traducción automática con IA · En vivo</footer>
-  <div class="verlabel">v8 · automática</div>
+  <div class="verlabel">v9 · automática</div>
 </div>
 
 <!-- ===== Modal de idiomas ===== -->
@@ -734,7 +785,9 @@
       start: 'Iniciar conversación', connecting: 'Conectando…',
       tipB: 'Tip:', tip: 'usa audífonos. Así el micrófono no escucha la traducción en voz alta y la conversación suena limpia, sin repeticiones.',
       testNote: 'Modo prueba — crédito de la cuenta',
-      callSub: 'Traducción en tiempo real, conversación natural.',
+      callTitle: 'Traducción', callTitleB: 'en vivo',
+      callSub: 'Traducción de voz en tiempo real. Habla natural.',
+      cardDetected: 'Voz detectada', cardTrans: 'Traducción',
       stListening: 'Escuchando', stSpeaking: 'Hablando', stWaiting: 'En espera',
       mute: 'Silencio', micOn: 'Micrófono activo', micOff: 'Micrófono desactivado',
       speaker: 'Altavoz', autoPlay: 'Automático',
@@ -804,7 +857,9 @@
       start: 'Start conversation', connecting: 'Connecting…',
       tipB: 'Tip:', tip: 'use earbuds. That way the microphone does not hear the spoken translation and the conversation stays clean, with no repeats.',
       testNote: 'Test mode — account credit',
-      callSub: 'Real-time translation, natural conversations.',
+      callTitle: 'Live', callTitleB: 'Translation',
+      callSub: 'Real-time voice translation. Speak naturally.',
+      cardDetected: 'Detected speech', cardTrans: 'Translation',
       stListening: 'Listening', stSpeaking: 'Speaking', stWaiting: 'Waiting',
       mute: 'Mute', micOn: 'Mic On', micOff: 'Microphone off',
       speaker: 'Speaker', autoPlay: 'Auto Play',
@@ -1032,7 +1087,15 @@
     var c = orbCanvas.getContext('2d'); if (!c) return;
     var W = orbCanvas.width, H = orbCanvas.height, cx = W / 2, cy = H / 2;
     c.clearRect(0, 0, W, H);
-    var bars = 17, maxH = H * 0.34;
+    // Línea punteada central que cruza todo el campo (como la maqueta);
+    // las barras reales se dibujan encima.
+    c.fillStyle = 'rgba(242,210,135,.30)';
+    for (var dx = 6; dx < W; dx += 11) {
+      c.beginPath(); c.arc(dx, cy, 1.4, 0, 6.2832); c.fill();
+    }
+    // Barras de la onda REAL: cruzan la esfera y se extienden a los lados,
+    // con alturas que decaen del centro hacia los extremos.
+    var bars = 33, maxH = H * 0.25;
     orbPhase += 0.06;
     for (var i = 0; i < bars; i++) {
       var center = Math.abs(i - (bars - 1) / 2) / ((bars - 1) / 2); // 0 centro → 1 borde
@@ -1041,13 +1104,13 @@
       var amp = appState === 'paused' || appState === 'idle' || appState === 'ended'
         ? 0.05
         : Math.max(0.06, Math.min(1, level * 3.4)) * wave;
-      var h = Math.max(4, maxH * shape * amp);
-      var x = cx + (i - (bars - 1) / 2) * (W * 0.052);
+      var h = Math.max(3, maxH * shape * amp);
+      var x = cx + (i - (bars - 1) / 2) * (W * 0.0285);
       var grad = c.createLinearGradient(0, cy - h, 0, cy + h);
       grad.addColorStop(0, 'rgba(246,220,154,.95)');
       grad.addColorStop(1, 'rgba(212,167,92,.55)');
       c.fillStyle = grad;
-      var wdt = W * 0.02;
+      var wdt = Math.max(3, W * 0.0075);
       c.beginPath();
       if (c.roundRect) c.roundRect(x - wdt / 2, cy - h, wdt, h * 2, wdt / 2); else c.rect(x - wdt / 2, cy - h, wdt, h * 2);
       c.fill();
@@ -1154,7 +1217,9 @@
     try { return new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); }
     catch (e) { return ''; }
   }
-  var ICON_PLAY = '<svg viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3"/></svg>';
+  var ICON_WAVE = '<svg viewBox="0 0 24 24"><line x1="4" y1="10" x2="4" y2="14"/><line x1="8" y1="7" x2="8" y2="17"/><line x1="12" y1="4" x2="12" y2="20"/><line x1="16" y1="7" x2="16" y2="17"/><line x1="20" y1="10" x2="20" y2="14"/></svg>';
+  var ICON_SPEAKER = '<svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>';
+  var ICON_CHEV = '<svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>';
   var ICON_COPY = '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
   var ICON_STAR = '<svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
 
@@ -1163,20 +1228,32 @@
     var el = document.createElement('div');
     el.className = 'card';
     el.innerHTML =
-      '<div class="chead2">' +
-        '<div class="cavatar">?</div>' +
-        '<div class="cmeta"><span class="clang"></span></div>' +
-        '<span class="chip">' + t('chipListening') + '</span>' +
-        '<span class="ctime"></span>' +
-      '</div>' +
-      '<p class="orig partial"></p>' +
-      '<div class="divider"></div>' +
-      '<div class="tlabel"><span class="flag"></span><span class="tlang"></span></div>' +
-      '<p class="trans pending">' + t('waitingTrans') + '</p>' +
-      '<div class="cactions">' +
-        '<button class="act-replay" aria-label="Replay">' + ICON_PLAY + '</button>' +
-        '<button class="act-copy" aria-label="Copy">' + ICON_COPY + '</button>' +
-        '<button class="act-fav fav" aria-label="Favorite">' + ICON_STAR + '</button>' +
+      '<div class="cbody">' +
+        '<div class="cicon">' + ICON_WAVE + '</div>' +
+        '<div class="cmain">' +
+          '<div class="chead2">' +
+            '<div class="cmeta"><b class="clang"></b><span class="cdet"></span></div>' +
+            '<span class="ctime"></span>' +
+          '</div>' +
+          '<div class="corigrow">' +
+            '<p class="orig partial"></p>' +
+            '<span class="chip">' + t('chipListening') + '</span>' +
+          '</div>' +
+          '<div class="divider"><span class="dchev">' + ICON_CHEV + '</span></div>' +
+          '<div class="tblock">' +
+            '<div class="tmain">' +
+              '<div class="tlabel"><span class="flag"></span><span class="tlang"></span><span class="tdet"></span></div>' +
+              '<p class="trans pending">' + t('waitingTrans') + '</p>' +
+            '</div>' +
+            '<div class="tactions">' +
+              '<button class="act-replay" aria-label="Replay">' + ICON_SPEAKER + '</button>' +
+              '<div class="tsmall">' +
+                '<button class="act-copy" aria-label="Copy">' + ICON_COPY + '</button>' +
+                '<button class="act-fav fav" aria-label="Favorite">' + ICON_STAR + '</button>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
       '</div>';
     feed.appendChild(el);
     var c = {
@@ -1184,10 +1261,11 @@
       inDone: false, outDone: false, finalized: false, errored: false,
       time: nowTime(), lastAct: Date.now(),
       els: {
-        avatar: el.querySelector('.cavatar'),
-        lang: el.querySelector('.clang'), chip: el.querySelector('.chip'),
+        lang: el.querySelector('.clang'), det: el.querySelector('.cdet'),
+        chip: el.querySelector('.chip'),
         time: el.querySelector('.ctime'), orig: el.querySelector('.orig'),
         flag: el.querySelector('.tlabel .flag'), tlang: el.querySelector('.tlang'),
+        tdet: el.querySelector('.tdet'),
         trans: el.querySelector('.trans'),
         replay: el.querySelector('.act-replay'), copy: el.querySelector('.act-copy'),
         fav: el.querySelector('.act-fav')
@@ -1213,19 +1291,19 @@
     return curCard;
   }
   function renderCard(c) {
+    // Sin etiquetas de persona: el encabezado dice el IDIOMA de origen y
+    // "Voz detectada" — cualquiera de los dos puede hablar cualquiera de
+    // los dos idiomas. El bloque de traducción dice idioma + "Traducción".
     if (c.fromLang) {
-      // Sin etiquetas de persona: el avatar de la tarjeta es la inicial
-      // del IDIOMA de origen y la etiqueta es el nombre de ese idioma —
-      // cualquiera de los dos puede hablar cualquiera de los dos idiomas.
-      var L = langOf(c.fromLang);
       c.els.lang.textContent = langName(c.fromLang);
-      c.els.avatar.textContent = L.init;
+      c.els.det.textContent = ' • ' + t('cardDetected');
     }
     c.els.orig.textContent = c.origText;
     if (c.toLang) {
       var TL = langOf(c.toLang);
       c.els.flag.textContent = TL.flag;
       c.els.tlang.textContent = langName(c.toLang);
+      c.els.tdet.textContent = ' • ' + t('cardTrans');
     }
     if (c.transText) {
       c.els.trans.textContent = c.transText;
@@ -1235,7 +1313,7 @@
       c.els.chip.textContent = t('chipError');
       c.els.chip.className = 'chip error';
     } else if (c.finalized) {
-      c.els.chip.textContent = t('chipDone');
+      c.els.chip.textContent = '✓ ' + t('chipDone');
       c.els.chip.className = 'chip done';
     } else if (c.transText) {
       c.els.chip.textContent = t('chipTranslating');
