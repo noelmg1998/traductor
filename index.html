@@ -574,7 +574,7 @@
         <div class="stat"><div class="sv" id="sum-langs">—</div><div class="sk" data-i18n="sumLangs">Idiomas utilizados</div></div>
         <div class="stat"><div class="sv" id="sum-turns">0</div><div class="sk" data-i18n="sumTurns">Intervenciones</div></div>
         <div class="stat"><div class="sv" id="sum-phrases">0</div><div class="sk" data-i18n="sumPhrases">Frases traducidas</div></div>
-        <div class="stat"><div class="sv" id="sum-minutes">0</div><div class="sk" data-i18n="sumMinutes">Minutos consumidos (llamada)</div></div>
+        <div class="stat"><div class="sv" id="sum-minutes">0</div><div class="sk" id="sum-minutes-label" data-i18n="sumMinutes">Minutos consumidos (llamada)</div></div>
       </div>
       <p class="provnote" id="sum-provnote"></p>
       <div class="srow">
@@ -587,7 +587,7 @@
   </section>
 
   <footer data-i18n="footer">Traducción automática con IA · En vivo</footer>
-  <div class="verlabel">v6 · automática</div>
+  <div class="verlabel">v7 · automática</div>
 </div>
 
 <!-- ===== Modal de idiomas ===== -->
@@ -637,15 +637,16 @@
   </div>
 
   <div class="setrow">
-    <div class="sinfo"><b data-i18n="setEngine">Motor de llamada</b><small data-i18n="setEngineSub">Intérprete: una sola sesión con IA que interpreta entre los dos idiomas (más económico). Traductor dedicado: dos sesiones especializadas, una por sentido.</small></div>
+    <div class="sinfo"><b data-i18n="setEngine">Motor de llamada</b><small data-i18n="setEngineSub">Intérprete IA: una sesión en vivo que interpreta entre los dos idiomas (económico). Traductor dedicado: dos sesiones en vivo, una por sentido. Frase completa: espera a que termines de hablar y traduce la frase entera con la mejor calidad.</small></div>
     <select id="set-engine">
       <option value="interpreter" data-i18n="engineInterpreter">Intérprete IA (económico)</option>
       <option value="translator" data-i18n="engineTranslate">Traductor dedicado</option>
+      <option value="phrase" data-i18n="enginePhrase">Frase completa (máxima calidad)</option>
     </select>
   </div>
 
   <div class="setrow">
-    <div class="sinfo"><b data-i18n="setVoiceInterp">Voz del intérprete</b><small data-i18n="setVoiceInterpSub">La voz con la que habla el Intérprete IA al traducir. Se aplica en la próxima llamada.</small></div>
+    <div class="sinfo"><b data-i18n="setVoiceInterp">Voz de la traducción</b><small data-i18n="setVoiceInterpSub">La voz con la que hablan el Intérprete IA y el motor Frase completa. En Frase completa se aplica a cada frase; en el Intérprete, en la próxima llamada.</small></div>
     <select id="set-voice-interp">
       <option value="marin">Marin</option>
       <option value="cedar">Cedar</option>
@@ -726,6 +727,7 @@
   var CALLS_URL = 'https://api.openai.com/v1/realtime/translations/calls';
   var INTERP_CALLS_URL = 'https://api.openai.com/v1/realtime/calls';
   var TOKEN_URL = '/api/rt-token';
+  var PHRASE_URL = '/api/phrase';
   var LS_SETTINGS = 'lc_settings_v1';
   var LS_FAVS = 'lc_favorites_v1';
   var LS_SAVED_CONVS = 'lc_saved_conversations_v1';
@@ -787,13 +789,17 @@
       settings: 'Ajustes',
       setUiLang: 'Idioma de la interfaz',
       setEngine: 'Motor de llamada',
-      setEngineSub: 'Intérprete: una sola sesión con IA que interpreta entre los dos idiomas (más económico). Traductor dedicado: dos sesiones especializadas, una por sentido.',
+      setEngineSub: 'Intérprete IA: una sesión en vivo que interpreta entre los dos idiomas (económico). Traductor dedicado: dos sesiones en vivo, una por sentido. Frase completa: espera a que termines de hablar y traduce la frase entera con la mejor calidad.',
       engineInterpreter: 'Intérprete IA (económico)',
       engineTranslate: 'Traductor dedicado',
-      setVoiceInterp: 'Voz del intérprete',
-      setVoiceInterpSub: 'La voz con la que habla el Intérprete IA al traducir. Se aplica en la próxima llamada.',
+      enginePhrase: 'Frase completa (máxima calidad)',
+      setVoiceInterp: 'Voz de la traducción',
+      setVoiceInterpSub: 'La voz con la que hablan el Intérprete IA y el motor Frase completa. En Frase completa se aplica a cada frase; en el Intérprete, en la próxima llamada.',
       provNoteInterp: 'Nota: la llamada usa una sola sesión de intérprete, así que los minutos del proveedor son los mismos de la llamada: {prov} min.',
       minutesLineInterp: '1 sesión activa · {call} min de llamada · {prov} min del proveedor',
+      provNotePhrase: 'Nota: este motor no consume minutos de llamada: procesa cada frase por separado (transcripción + traducción + voz). Voz procesada en esta conversación: {prov} min. Costo estimado de la cascada: aprox. $0.02–0.04 por minuto de voz.',
+      minutesLinePhrase: 'Frase completa · {call} min de voz procesada',
+      sumMinutesPhrase: 'Minutos consumidos (voz procesada)',
       toastEngineNext: 'Motor guardado: se aplica en la próxima llamada',
       setVoice: 'Voz para repetir frases', setVoiceSub: 'Se usa al tocar el botón de reproducir en una tarjeta.',
       voiceDefault: 'Voz del sistema', voicePairGroup: 'Idiomas de la conversación', voiceAllGroup: 'Todas las voces',
@@ -854,13 +860,17 @@
       settings: 'Settings',
       setUiLang: 'Interface language',
       setEngine: 'Call engine',
-      setEngineSub: 'Interpreter: a single AI session that interprets between the two languages (cheaper). Dedicated translator: two specialized sessions, one per direction.',
+      setEngineSub: 'AI Interpreter: one live session that interprets between the two languages (budget). Dedicated translator: two live sessions, one per direction. Full phrase: waits until you finish speaking and translates the whole phrase at the best quality.',
       engineInterpreter: 'AI interpreter (budget)',
       engineTranslate: 'Dedicated translator',
-      setVoiceInterp: 'Interpreter voice',
-      setVoiceInterpSub: 'The voice the AI Interpreter speaks with. Applies on the next call.',
+      enginePhrase: 'Full phrase (best quality)',
+      setVoiceInterp: 'Translation voice',
+      setVoiceInterpSub: 'The voice the AI Interpreter and the Full phrase engine speak with. For Full phrase it applies to every phrase; for the Interpreter, on the next call.',
       provNoteInterp: 'Note: the call uses a single interpreter session, so provider minutes are the same as the call minutes: {prov} min.',
       minutesLineInterp: '1 session live · {call} call min · {prov} provider min',
+      provNotePhrase: 'Note: this engine does not use call minutes: it processes each phrase separately (transcription + translation + speech). Speech processed in this conversation: {prov} min. Estimated cascade cost: approx. $0.02–0.04 per minute of speech.',
+      minutesLinePhrase: 'Full phrase · {call} min of processed speech',
+      sumMinutesPhrase: 'Minutes used (processed speech)',
       toastEngineNext: 'Engine saved: it applies on the next call',
       setVoice: 'Voice for replaying phrases', setVoiceSub: 'Used when you tap the play button on a card.',
       voiceDefault: 'System voice', voicePairGroup: 'Conversation languages', voiceAllGroup: 'All voices',
@@ -917,7 +927,7 @@
     }
   } catch (e) {}
   if (settings.engine === 'translate') settings.engine = 'translator'; // migración v6
-  if (['interpreter', 'translator'].indexOf(settings.engine) < 0) settings.engine = 'interpreter';
+  if (['interpreter', 'translator', 'phrase'].indexOf(settings.engine) < 0) settings.engine = 'interpreter';
   if (settings.pairA === settings.pairB) settings.pairB = settings.pairA === 'es' ? 'en' : 'es';
   function saveSettings() {
     try { localStorage.setItem(LS_SETTINGS, JSON.stringify(settings)); } catch (e) {}
@@ -1133,6 +1143,9 @@
   // De los eventos reales se deriva el estado fino (sin tocar estados de control).
   function autoStateFromActivity() {
     if (!inCall || paused) return;
+    // "Frase completa" maneja sus estados a mano mientras procesa o
+    // reproduce una frase (su bucle es semidúplex, no hay eventos en vivo).
+    if (settings.engine === 'phrase' && phrase && phrase.busy) return;
     if (['listening', 'processing', 'translating', 'speaking'].indexOf(appState) < 0) return;
     var now = Date.now();
     var next = 'listening';
@@ -1160,14 +1173,24 @@
   // Minutos del proveedor por minuto de llamada según el motor activo
   // (del registro ENGINES: intérprete ×1, traductor dedicado ×2).
   function provFactor() { return currentEngine().factor; }
+  // Minutos que muestra el motor activo: {shown} = lo que va en la línea
+  // de minutos y en el resumen; {prov} = minutos del proveedor. Los
+  // motores en vivo derivan de la duración de la llamada; "Frase
+  // completa" cuenta los minutos de VOZ PROCESADA (suma de las frases
+  // enviadas al servidor), no los de la llamada.
+  function engineMinutes(callMs) {
+    var eng = currentEngine();
+    if (eng.minutesOf) return eng.minutesOf(callMs);
+    return { shown: callMs, prov: callMs * eng.factor };
+  }
   function tickTimer() {
     var e = elapsedMs();
     timerEl.textContent = fmt(e);
     abElapsed.textContent = fmt(e);
-    var pf = provFactor();
-    abTotal.textContent = fmt(e * pf); // tiempo total del proveedor según el motor
+    var mm = engineMinutes(e);
+    abTotal.textContent = fmt(mm.prov); // tiempo total del proveedor según el motor
     minLine.textContent = t(currentEngine().minutesKey)
-      .replace('{call}', fmtMin(e)).replace('{prov}', fmtMin(e * pf)) + ' · ' + t('testNote');
+      .replace('{call}', fmtMin(mm.shown)).replace('{prov}', fmtMin(mm.prov)) + ' · ' + t('testNote');
   }
 
   /* ================= Tarjetas de conversación (§6) ================= */
@@ -1766,6 +1789,7 @@
       interp = null;
     }
     resetInterpTurn();
+    stopPhraseEngine(); // motor C: detiene bucle, grabación y audio en curso
     resetUtt();
     resetEchoGuard();
     detachOutAnalysers();
@@ -1789,10 +1813,9 @@
   /* Registro de motores de llamada (extensible): cada motor sabe cómo
      conectarse, cuántos minutos del proveedor consume por minuto de
      llamada (factor) y qué textos de minutos/resumen le corresponden.
-     Motores: 'interpreter' (Intérprete IA) y 'translator' (Traductor
-     dedicado). Reservado: 'phrase' ("Frase completa", v7) — se
-     registrará aquí reutilizando este mismo selector de Ajustes, las
-     tarjetas y el resumen. */
+     Motores: 'interpreter' (Intérprete IA), 'translator' (Traductor
+     dedicado) y 'phrase' ("Frase completa", v7: semidúplex por frases,
+     cuenta minutos de VOZ PROCESADA vía minutesOf en vez del factor). */
   var ENGINES = {
     interpreter: {
       factor: 1, minutesKey: 'minutesLineInterp', provNoteKey: 'provNoteInterp',
@@ -1801,6 +1824,12 @@
     translator: {
       factor: 2, minutesKey: 'minutesLine', provNoteKey: 'provNote',
       connect: function () { return connectTranslator(); }
+    },
+    phrase: {
+      factor: 1, minutesKey: 'minutesLinePhrase', provNoteKey: 'provNotePhrase',
+      sumMinutesKey: 'sumMinutesPhrase',
+      connect: function () { return startPhraseEngine(); },
+      minutesOf: function () { return { shown: phraseSpeechMs, prov: phraseSpeechMs }; }
     }
   };
   function currentEngine() { return ENGINES[settings.engine] || ENGINES.interpreter; }
@@ -1854,6 +1883,7 @@
   function stopPlayback() {
     sessions.forEach(function (s) { try { s.audioEl.pause(); } catch (e) {} });
     if (interp && interp.audioEl) { try { interp.audioEl.pause(); } catch (e) {} }
+    if (phrase && phrase.audio) { try { phrase.audio.pause(); phrase.audio.remove(); } catch (e) {} phrase.audio = null; }
     if ('speechSynthesis' in window) { try { speechSynthesis.cancel(); } catch (e) {} }
   }
 
@@ -2198,6 +2228,230 @@
     }
   }
 
+  /* ================= Motor C: Frase completa (v7) =================
+     Semidúplex POR DISEÑO, la regla del dueño: escucha, ESPERA a que la
+     persona termine la frase completa (fin = ~1 s de silencio tras la
+     voz), reconoce el idioma, traduce la frase ENTERA con los modelos
+     grandes (api/phrase.js: gpt-4o-transcribe → gpt-5.5 →
+     gpt-4o-mini-tts) y la dice en voz alta. Mientras procesa o suena la
+     traducción, el micrófono NO graba (compuerta): cero eco y cero
+     auto-disparos por construcción. Los ruidos de menos de 0,4 s de voz
+     real se descartan SIN llamada al servidor y sin tarjeta. Los
+     minutos de este motor son los de VOZ PROCESADA (phraseSpeechMs:
+     suma de las duraciones de las frases enviadas), no los de llamada. */
+  var phrase = null;        // estado del bucle del motor C
+  var phraseSpeechMs = 0;   // voz procesada acumulada en la llamada
+  var phraseGenSeq = 0;     // generación monótona: invalida respuestas en vuelo
+  var PH_TICK_MS = 50;      // período del vigilante de niveles
+  var PH_RMS = 0.055;       // umbral de voz sobre el nivel del micrófono
+  var PH_SILENCE_END_MS = 1000; // silencio que cierra una frase
+  var PH_MAX_MS = 40000;    // tope duro por frase
+  var PH_MIN_SPEECH_MS = 400;   // voz real mínima para procesar una frase
+
+  function phraseMime() {
+    if (typeof MediaRecorder === 'undefined') return '';
+    var opts = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus', 'audio/ogg'];
+    for (var i = 0; i < opts.length; i++) {
+      try { if (MediaRecorder.isTypeSupported(opts[i])) return opts[i]; } catch (e) {}
+    }
+    return '';
+  }
+
+  function startPhraseEngine() {
+    stopPhraseEngine();
+    if (!inCall) phraseSpeechMs = 0; // llamada nueva: la cuenta arranca en cero (al reanudar tras pausa se conserva)
+    phrase = {
+      gen: ++phraseGenSeq, active: true, busy: false,
+      rec: null, chunks: [], recStart: 0, lastVoiceAt: 0, voiceMs: 0,
+      mime: phraseMime(), tickId: null, audio: null, resumeTimer: null
+    };
+    phrase.tickId = setInterval(phraseTick, PH_TICK_MS);
+    return Promise.resolve();
+  }
+
+  function stopPhraseEngine() {
+    if (!phrase) return;
+    var P = phrase;
+    phrase = null;
+    P.active = false;
+    P.gen = ++phraseGenSeq; // invalida cualquier respuesta en vuelo
+    if (P.tickId) { clearInterval(P.tickId); P.tickId = null; }
+    if (P.resumeTimer) { clearTimeout(P.resumeTimer); P.resumeTimer = null; }
+    if (P.rec) {
+      try { P.rec.ondataavailable = null; P.rec.onstop = null; P.rec.stop(); } catch (e) {}
+      P.rec = null;
+    }
+    if (P.audio) { try { P.audio.pause(); P.audio.remove(); } catch (e) {} P.audio = null; }
+  }
+
+  // Vigilante del bucle: detecta el inicio de una frase y su final.
+  function phraseTick() {
+    var P = phrase;
+    if (!P || !P.active || P.busy) return;   // busy = procesando/sonando: compuerta cerrada
+    if (!inCall || paused || !micStream) return;
+    var lvl = micLevel(); // el mute del usuario devuelve 0: manda siempre
+    var now = Date.now();
+    if (!P.rec) {
+      // La grabación arranca en el PRIMER tick con voz: no se pierde el
+      // comienzo de la frase. Si resulta ser ruido corto, se descarta
+      // al cerrar (voz real < PH_MIN_SPEECH_MS), sin servidor ni tarjeta.
+      if (lvl >= PH_RMS) startPhraseRec(now);
+      return;
+    }
+    if (lvl >= PH_RMS) { P.lastVoiceAt = now; P.voiceMs += PH_TICK_MS; }
+    if ((P.lastVoiceAt && now - P.lastVoiceAt >= PH_SILENCE_END_MS) ||
+        now - P.recStart >= PH_MAX_MS) {
+      finishPhraseRec();
+    }
+  }
+
+  function startPhraseRec(now) {
+    var P = phrase;
+    if (!P || !micStream || typeof MediaRecorder === 'undefined') return;
+    var rec = null;
+    try {
+      rec = P.mime ? new MediaRecorder(micStream, { mimeType: P.mime })
+                   : new MediaRecorder(micStream);
+    } catch (e) {
+      try { rec = new MediaRecorder(micStream); } catch (e2) { rec = null; }
+    }
+    if (!rec) return;
+    P.chunks = [];
+    rec.ondataavailable = function (ev) { if (ev.data && ev.data.size) P.chunks.push(ev.data); };
+    P.rec = rec;
+    P.recStart = now;
+    P.lastVoiceAt = now;
+    P.voiceMs = PH_TICK_MS;
+    lastInputAt = now;
+    if (inCall && !paused) setState('listening');
+    try { rec.start(250); } catch (e) { P.rec = null; }
+  }
+
+  function finishPhraseRec() {
+    var P = phrase;
+    if (!P || !P.rec) return;
+    var rec = P.rec;
+    P.rec = null;
+    var speechMs = P.voiceMs;
+    var mime = P.mime || rec.mimeType || 'audio/webm';
+    P.busy = true; // compuerta cerrada hasta que vuelva la escucha
+    rec.onstop = function () {
+      var chunks = P.chunks;
+      P.chunks = [];
+      if (speechMs < PH_MIN_SPEECH_MS || !chunks.length) { phraseResume(0); return; }
+      var blob = new Blob(chunks, { type: mime });
+      if (!blob.size) { phraseResume(0); return; }
+      processPhrase(blob, mime, speechMs);
+    };
+    try { rec.stop(); } catch (e) { phraseResume(0); }
+  }
+
+  // Reabre la escucha: tras el descarte (ya) o tras sonar la traducción
+  // (+300 ms de cola, como la guarda de eco de los otros motores).
+  function phraseResume(delayMs) {
+    var P = phrase;
+    if (!P) return;
+    var gen = P.gen;
+    if (P.resumeTimer) clearTimeout(P.resumeTimer);
+    P.resumeTimer = setTimeout(function () {
+      if (!phrase || phrase.gen !== gen) return;
+      phrase.busy = false;
+      if (inCall && !paused) setState('listening');
+    }, delayMs || 0);
+  }
+
+  function blobToBase64(blob) {
+    return new Promise(function (resolve, reject) {
+      var fr = new FileReader();
+      fr.onload = function () {
+        var s = String(fr.result || '');
+        var i = s.indexOf(',');
+        resolve(i >= 0 ? s.slice(i + 1) : s);
+      };
+      fr.onerror = function () { reject(fr.error || new Error('read')); };
+      fr.readAsDataURL(blob);
+    });
+  }
+
+  async function processPhrase(blob, mime, speechMs) {
+    var P = phrase;
+    var gen = P ? P.gen : -1;
+    if (inCall && !paused) setState('processing'); // estado real: esperando al servidor (sin progreso simulado)
+    try {
+      var b64 = await blobToBase64(blob);
+      var r = await fetch(PHRASE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          audio: b64, mime: mime,
+          pairA: settings.pairA, pairB: settings.pairB,
+          voice: settings.interpVoice, speechMs: speechMs
+        })
+      });
+      var j = await r.json().catch(function () { return {}; });
+      if (!phrase || phrase !== P || phrase.gen !== gen || !inCall || paused) return; // terminó o pausó en medio: se descarta
+      if (j && j.empty) { phraseResume(0); return; } // sin palabras: sin tarjeta, sigue escuchando
+      if (!j || !j.ok || !j.dstText) {
+        showErr('call', errorMessage({ code: (j && j.error) || 'server_error' }));
+        phraseResume(0);
+        return;
+      }
+      phraseSpeechMs += speechMs;
+      lastOutputTextAt = Date.now();
+      var c = ensureCard();
+      c.fromLang = j.srcLang;
+      c.toLang = j.dstLang;
+      c.side = j.srcLang === settings.pairA ? 'A' : 'B';
+      activeSide = c.side;
+      c.origText = j.srcText || '';
+      c.transText = j.dstText;
+      c.inDone = true;
+      c.outDone = true;
+      c.lastAct = Date.now();
+      renderCard(c);
+      updatePersons();
+      tickTimer();
+      if (settings.autoplay && j.audioBase64) {
+        setState('speaking');
+        await playPhraseAudio(j.audioBase64);
+        if (!phrase || phrase !== P || phrase.gen !== gen) return;
+        lastOutputAudioAt = Date.now();
+      }
+      if (curCard === c) finalizeCard(c);
+      phraseResume(300);
+    } catch (e) {
+      if (phrase && phrase === P && phrase.gen === gen && inCall && !paused) {
+        showErr('call', t('errSession'));
+        phraseResume(0);
+      }
+    }
+  }
+
+  function playPhraseAudio(b64) {
+    return new Promise(function (resolve) {
+      var P = phrase;
+      var a = document.createElement('audio');
+      a.setAttribute('playsinline', '');
+      a.volume = 1.0; // claridad: nivel completo, como los otros motores
+      a.src = 'data:audio/mpeg;base64,' + b64;
+      if (P) P.audio = a;
+      document.body.appendChild(a);
+      var done = false;
+      function fin() {
+        if (done) return;
+        done = true;
+        try { a.remove(); } catch (e) {}
+        if (P && P.audio === a) P.audio = null;
+        resolve();
+      }
+      a.onended = fin;
+      a.onerror = fin;
+      setTimeout(fin, 30000); // seguridad: la escucha nunca queda trabada
+      var p = a.play();
+      if (p && p.catch) p.catch(fin);
+    });
+  }
+
   /* ================= Selectores de idioma (§2) ================= */
   var pillTargets = []; // [{a: el, b: el, container: el}] por cada fila de píldoras
   function pillHTML(side) {
@@ -2446,8 +2700,10 @@
     $('sum-langs').textContent = langName(settings.pairA) + ' ⇄ ' + langName(settings.pairB);
     $('sum-turns').textContent = String(cards.length);
     $('sum-phrases').textContent = String(translated);
-    $('sum-minutes').textContent = fmtMin(totalMs);
-    $('sum-provnote').textContent = t(currentEngine().provNoteKey).replace('{prov}', fmtMin(totalMs * provFactor()));
+    var emm = engineMinutes(totalMs);
+    $('sum-minutes').textContent = fmtMin(emm.shown);
+    $('sum-minutes-label').textContent = t(currentEngine().sumMinutesKey || 'sumMinutes');
+    $('sum-provnote').textContent = t(currentEngine().provNoteKey).replace('{prov}', fmtMin(emm.prov));
     showView('done');
   }
 
