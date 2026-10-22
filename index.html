@@ -133,7 +133,11 @@
 
   /* ---------- Stage: la esfera es la única protagonista (sin personas:
      cualquiera de los dos puede hablar cualquiera de los dos idiomas) ---------- */
-  .stage{display:flex; align-items:center; justify-content:center; padding:14px 2px 6px; position:relative;}
+  /* El padding reserva el espacio REAL del conjunto: la esfera (158px) mas
+     sus anillos, que sobresalen 37px por cada lado. Sin esto los anillos se
+     montan sobre las pildoras de idioma (arriba) y sobre la pastilla de
+     estado (abajo). Huecos iguales arriba y abajo: todo simetrico. */
+  .stage{display:flex; align-items:center; justify-content:center; padding:45px 2px 35px; position:relative;}
   .orbwrap{flex:1; display:flex; justify-content:center;}
   .orb{
     position:relative; width:158px; height:158px; border-radius:50%;
@@ -819,7 +823,7 @@
   </section>
 
   <footer data-i18n="footer">Traducción automática con IA · En vivo</footer>
-  <div class="verlabel">v14 · Englix</div>
+  <div class="verlabel">v15 · Englix</div>
 </div>
 
 <!-- ===== Barra inferior (v11 · Englix) ===== -->
