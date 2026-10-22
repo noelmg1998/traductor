@@ -168,7 +168,8 @@ module.exports = async (req, res) => {
     const voice = ALLOWED_VOICES.indexOf(body.voice) >= 0 ? body.voice : 'marin';
     const mime = typeof body.mime === 'string' ? body.mime : 'audio/webm';
     const ext = mime.indexOf('mp4') >= 0 ? 'm4a'
-      : (mime.indexOf('ogg') >= 0 ? 'ogg' : 'webm');
+      : (mime.indexOf('ogg') >= 0 ? 'ogg'
+      : (mime.indexOf('wav') >= 0 ? 'wav' : 'webm'));
 
     const headers = { ['Authori' + 'zation']: 'Bearer ' + key };
 
