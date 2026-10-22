@@ -587,7 +587,7 @@
   </section>
 
   <footer data-i18n="footer">Traducción automática con IA · En vivo</footer>
-  <div class="verlabel">v5 · automática</div>
+  <div class="verlabel">v6 · automática</div>
 </div>
 
 <!-- ===== Modal de idiomas ===== -->
@@ -633,6 +633,30 @@
     <select id="set-uilang">
       <option value="es">Español</option>
       <option value="en">English</option>
+    </select>
+  </div>
+
+  <div class="setrow">
+    <div class="sinfo"><b data-i18n="setEngine">Motor de llamada</b><small data-i18n="setEngineSub">Intérprete: una sola sesión con IA que interpreta entre los dos idiomas (más económico). Traductor dedicado: dos sesiones especializadas, una por sentido.</small></div>
+    <select id="set-engine">
+      <option value="interpreter" data-i18n="engineInterpreter">Intérprete IA (económico)</option>
+      <option value="translate" data-i18n="engineTranslate">Traductor dedicado</option>
+    </select>
+  </div>
+
+  <div class="setrow">
+    <div class="sinfo"><b data-i18n="setVoiceInterp">Voz del intérprete</b><small data-i18n="setVoiceInterpSub">La voz con la que habla el Intérprete IA al traducir. Se aplica en la próxima llamada.</small></div>
+    <select id="set-voice-interp">
+      <option value="marin">Marin</option>
+      <option value="cedar">Cedar</option>
+      <option value="alloy">Alloy</option>
+      <option value="ash">Ash</option>
+      <option value="ballad">Ballad</option>
+      <option value="coral">Coral</option>
+      <option value="echo">Echo</option>
+      <option value="sage">Sage</option>
+      <option value="shimmer">Shimmer</option>
+      <option value="verse">Verse</option>
     </select>
   </div>
 
@@ -700,6 +724,7 @@
 
   /* ================= Constantes ================= */
   var CALLS_URL = 'https://api.openai.com/v1/realtime/translations/calls';
+  var INTERP_CALLS_URL = 'https://api.openai.com/v1/realtime/calls';
   var TOKEN_URL = '/api/rt-token';
   var LS_SETTINGS = 'lc_settings_v1';
   var LS_FAVS = 'lc_favorites_v1';
@@ -761,6 +786,15 @@
       endContinue: 'Continuar conversación', endConfirm: 'Finalizar',
       settings: 'Ajustes',
       setUiLang: 'Idioma de la interfaz',
+      setEngine: 'Motor de llamada',
+      setEngineSub: 'Intérprete: una sola sesión con IA que interpreta entre los dos idiomas (más económico). Traductor dedicado: dos sesiones especializadas, una por sentido.',
+      engineInterpreter: 'Intérprete IA (económico)',
+      engineTranslate: 'Traductor dedicado',
+      setVoiceInterp: 'Voz del intérprete',
+      setVoiceInterpSub: 'La voz con la que habla el Intérprete IA al traducir. Se aplica en la próxima llamada.',
+      provNoteInterp: 'Nota: la llamada usa una sola sesión de intérprete, así que los minutos del proveedor son los mismos de la llamada: {prov} min.',
+      minutesLineInterp: '1 sesión activa · {call} min de llamada · {prov} min del proveedor',
+      toastEngineNext: 'Motor guardado: se aplica en la próxima llamada',
       setVoice: 'Voz para repetir frases', setVoiceSub: 'Se usa al tocar el botón de reproducir en una tarjeta.',
       voiceDefault: 'Voz del sistema', voicePairGroup: 'Idiomas de la conversación', voiceAllGroup: 'Todas las voces',
       setRate: 'Velocidad de repetición',
@@ -819,6 +853,15 @@
       endContinue: 'Keep talking', endConfirm: 'End conversation',
       settings: 'Settings',
       setUiLang: 'Interface language',
+      setEngine: 'Call engine',
+      setEngineSub: 'Interpreter: a single AI session that interprets between the two languages (cheaper). Dedicated translator: two specialized sessions, one per direction.',
+      engineInterpreter: 'AI interpreter (budget)',
+      engineTranslate: 'Dedicated translator',
+      setVoiceInterp: 'Interpreter voice',
+      setVoiceInterpSub: 'The voice the AI Interpreter speaks with. Applies on the next call.',
+      provNoteInterp: 'Note: the call uses a single interpreter session, so provider minutes are the same as the call minutes: {prov} min.',
+      minutesLineInterp: '1 session live · {call} call min · {prov} provider min',
+      toastEngineNext: 'Engine saved: it applies on the next call',
       setVoice: 'Voice for replaying phrases', setVoiceSub: 'Used when you tap the play button on a card.',
       voiceDefault: 'System voice', voicePairGroup: 'Conversation languages', voiceAllGroup: 'All voices',
       setRate: 'Replay speed',
@@ -856,6 +899,8 @@
     uiLang: 'es',
     pairA: 'en',
     pairB: 'es',
+    engine: 'interpreter',
+    interpVoice: 'marin',
     autoplay: true,
     noise: true,
     saveHist: true,
@@ -871,6 +916,7 @@
       });
     }
   } catch (e) {}
+  if (settings.engine !== 'translate') settings.engine = 'interpreter';
   if (settings.pairA === settings.pairB) settings.pairB = settings.pairA === 'es' ? 'en' : 'es';
   function saveSettings() {
     try { localStorage.setItem(LS_SETTINGS, JSON.stringify(settings)); } catch (e) {}
@@ -1110,13 +1156,17 @@
     if (timerId) { clearInterval(timerId); timerId = null; }
     tickTimer();
   }
+  // Minutos del proveedor por minuto de llamada según el motor:
+  // Intérprete IA = 1 sesión; Traductor dedicado = 2 sesiones.
+  function provFactor() { return settings.engine === 'interpreter' ? 1 : 2; }
   function tickTimer() {
     var e = elapsedMs();
     timerEl.textContent = fmt(e);
     abElapsed.textContent = fmt(e);
-    abTotal.textContent = fmt(e * 2); // tiempo total del proveedor: dos sesiones
-    minLine.textContent = t('minutesLine')
-      .replace('{call}', fmtMin(e)).replace('{prov}', fmtMin(e * 2)) + ' · ' + t('testNote');
+    var pf = provFactor();
+    abTotal.textContent = fmt(e * pf); // tiempo total del proveedor según el motor
+    minLine.textContent = t(pf === 1 ? 'minutesLineInterp' : 'minutesLine')
+      .replace('{call}', fmtMin(e)).replace('{prov}', fmtMin(e * pf)) + ' · ' + t('testNote');
   }
 
   /* ================= Tarjetas de conversación (§6) ================= */
@@ -1708,6 +1758,13 @@
       if (s.audioEl) s.audioEl.remove();
     });
     sessions = [];
+    if (interp) {
+      interp.dead = true;
+      try { interp.pc.close(); } catch (e) {}
+      if (interp.audioEl) interp.audioEl.remove();
+      interp = null;
+    }
+    resetInterpTurn();
     resetUtt();
     resetEchoGuard();
     detachOutAnalysers();
@@ -1729,6 +1786,12 @@
     attachMicAnalyser(micStream);
   }
   async function connectAll() {
+    // Motor B (Intérprete IA): una sola sesión conversacional.
+    if (settings.engine === 'interpreter') {
+      await startInterpreter();
+      reconnectAttempts = 0;
+      return;
+    }
     // Sesión A→B: traduce al idioma B (su transcripción de entrada es la
     // canónica para el texto original). Sesión B→A: traduce al idioma A.
     var both = await Promise.all([
@@ -1772,6 +1835,7 @@
   // Detiene cualquier audio en reproducción antes de reconfigurar (§2).
   function stopPlayback() {
     sessions.forEach(function (s) { try { s.audioEl.pause(); } catch (e) {} });
+    if (interp && interp.audioEl) { try { interp.audioEl.pause(); } catch (e) {} }
     if ('speechSynthesis' in window) { try { speechSynthesis.cancel(); } catch (e) {} }
   }
 
@@ -1789,6 +1853,267 @@
     } catch (e) {
       setState('error');
       showErr('call', t('errGeneric'));
+    }
+  }
+
+  /* ================= Motor B: Intérprete IA (v6) =================
+     UNA sesión Realtime conversacional (gpt-realtime-2.1-mini) con las
+     instrucciones de intérprete fijadas en el SERVIDOR al crear el
+     secreto (api/rt-token.js, modo "interpreter"). Flujo verificado en
+     la documentación oficial de OpenAI: POST /v1/realtime/client_secrets
+     acepta la sesión completa (model, instructions, output_modalities,
+     audio.input.transcription, audio.input.turn_detection server_vad y
+     audio.output.voice); el navegador abre la llamada con POST
+     /v1/realtime/calls (Bearer = secreto, cuerpo = SDP offer) y la
+     respuesta es el SDP answer. Con output_modalities ["audio"] el
+     modelo devuelve audio MÁS su transcripción
+     (response.output_audio_transcript.*).
+     Eco: NO se apaga el micrófono mientras el modelo responde (eso
+     rompería el VAD y la interrupción natural de la API
+     conversacional); la disciplina anti-eco la dan la regla (5) de las
+     instrucciones y el manejo de turnos del propio modelo. La guarda
+     semidúplex de v5 solo actúa sobre sessions[] (motor A). */
+  var interp = null;
+  var ib = null; // intervención actual del intérprete
+
+  function resetInterpTurn() {
+    if (ib && ib.finishTimer) { clearTimeout(ib.finishTimer); }
+    ib = { card: null, inText: '', inDone: false, outText: '', outDone: false, finishTimer: null };
+  }
+
+  async function mintTokenInterp() {
+    var tr = await fetch(TOKEN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        engine: 'interpreter',
+        pairA: settings.pairA,
+        pairB: settings.pairB,
+        voice: settings.interpVoice,
+        noiseReduction: !!settings.noise
+      })
+    });
+    var tj = await tr.json().catch(function () { return {}; });
+    if (!tj.ok || !tj.client_secret) {
+      var err = new Error(tj.error || 'token');
+      err.code = tj.error || 'token';
+      throw err;
+    }
+    return tj.client_secret;
+  }
+
+  async function startInterpreter() {
+    var secret = await mintTokenInterp();
+    var pc = new RTCPeerConnection();
+    var audioEl = document.createElement('audio');
+    audioEl.autoplay = true;
+    audioEl.volume = 1.0; // claridad: nivel completo, como el motor A
+    audioEl.muted = !settings.autoplay; // el botón Speaker manda
+    audioEl.setAttribute('playsinline', '');
+    document.body.appendChild(audioEl);
+
+    var s = { pc: pc, audioEl: audioEl, dc: null, dead: false };
+    interp = s;
+    pc.ontrack = function (e) {
+      if (e.streams && e.streams[0]) {
+        audioEl.srcObject = e.streams[0];
+        attachOutAnalyser('__interp', e.streams[0]);
+        var p = audioEl.play();
+        if (p && p.catch) p.catch(function () {});
+      }
+    };
+    pc.onconnectionstatechange = function () {
+      if (s.dead || intentionalClose) return;
+      if (pc.connectionState === 'failed' || pc.connectionState === 'closed') {
+        onConnectionLost();
+      }
+    };
+    var dc = pc.createDataChannel('oai-events');
+    s.dc = dc;
+    dc.onmessage = function (m) { handleEventInterp(m.data); };
+
+    micStream.getAudioTracks().forEach(function (track) { pc.addTrack(track, micStream); });
+
+    var offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    var sdpRes = await fetch(INTERP_CALLS_URL, {
+      method: 'POST',
+      headers: {
+        ['Authori' + 'zation']: 'Bearer ' + secret,
+        'Content-Type': 'application/sdp'
+      },
+      body: offer.sdp
+    });
+    if (!sdpRes.ok) {
+      s.dead = true;
+      try { pc.close(); } catch (e) {}
+      audioEl.remove();
+      if (interp === s) interp = null;
+      var err2 = new Error('sdp');
+      err2.code = 'connect';
+      throw err2;
+    }
+    await pc.setRemoteDescription({ type: 'answer', sdp: await sdpRes.text() });
+    resetInterpTurn();
+    return s;
+  }
+
+  // Tarjeta de la intervención en curso (el mismo componente del motor A).
+  function interpCard() {
+    if (!ib) resetInterpTurn();
+    if (ib.card && !ib.card.finalized) return ib.card;
+    ib.card = ensureCard();
+    return ib.card;
+  }
+
+  // Dirección con el medidor de idioma ya existente (es/en): puntúa la
+  // transcripción de ENTRADA; si no decide, puntúa la de SALIDA (la
+  // traducción va al otro idioma del par). En pares sin es/en las
+  // etiquetas pueden quedar sin fijar, pero la tarjeta muestra ambos
+  // textos igual.
+  function interpDetectLang(inTxt, outTxt) {
+    var A = settings.pairA, B = settings.pairB;
+    function pick(txt) {
+      if (!txt) return null;
+      var sc = scoreInputText(txt);
+      var lead = sc.es - sc.en;
+      if (sc.tokens >= 2 && Math.abs(lead) >= 2) return lead > 0 ? 'es' : 'en';
+      if (/[¿¡ñ]/i.test(txt) && lead > 0) return 'es';
+      return null;
+    }
+    var inLang = pick(inTxt);
+    if (inLang && (inLang === A || inLang === B)) return inLang;
+    var outLang = pick(outTxt);
+    if (outLang && (outLang === A || outLang === B)) return outLang === A ? B : A;
+    return null;
+  }
+  function interpSetDirection(c) {
+    if (!c || c.fromLang) return;
+    var from = interpDetectLang(ib.inText, ib.outText);
+    if (!from) return;
+    c.fromLang = from;
+    c.toLang = from === settings.pairA ? settings.pairB : settings.pairA;
+    c.side = from === settings.pairA ? 'A' : 'B';
+    activeSide = c.side;
+    updatePersons();
+    renderCard(c);
+  }
+
+  // Cierre de la intervención: entrada + respuesta forman UNA tarjeta.
+  // Si la traducción llegó vacía, la tarjeta se descarta (regla del motor B).
+  function finishInterpTurn() {
+    if (!ib) { resetInterpTurn(); return; }
+    var c = ib.card;
+    if (c && !c.finalized) {
+      c.inDone = true;
+      c.outDone = true;
+      if (!c.transText) {
+        c.el.remove();
+        var i = cards.indexOf(c);
+        if (i >= 0) cards.splice(i, 1);
+        if (curCard === c) curCard = null;
+      } else {
+        interpSetDirection(c);
+        finalizeCard(c);
+      }
+    }
+    resetInterpTurn();
+  }
+  function maybeFinishInterp() {
+    if (!ib || !ib.outDone) return;
+    if (ib.inDone) { finishInterpTurn(); return; }
+    if (ib.finishTimer) return;
+    // La transcripción de entrada puede llegar un poco después de la
+    // respuesta: se le da una gracia corta antes de cerrar la tarjeta.
+    var turn = ib;
+    turn.finishTimer = setTimeout(function () {
+      if (ib === turn) finishInterpTurn();
+    }, 1200);
+  }
+
+  function handleEventInterp(raw) {
+    var ev;
+    try { ev = JSON.parse(raw); } catch (e) { return; }
+    if (!ev || !ev.type) return;
+    if (!ib) resetInterpTurn();
+    var c;
+    switch (ev.type) {
+      case 'input_audio_buffer.speech_started':
+        if (inCall && !paused) { lastInputAt = Date.now(); setState('listening'); }
+        break;
+      case 'input_audio_buffer.speech_stopped':
+        if (inCall && !paused) setState('processing');
+        break;
+      case 'conversation.item.input_audio_transcription.delta':
+        if (ev.delta) {
+          c = interpCard();
+          ib.inText += ev.delta;
+          c.origText = ib.inText;
+          c.inDone = false;
+          c.lastAct = Date.now();
+          lastInputAt = Date.now();
+          interpSetDirection(c);
+          renderCard(c);
+          scrollFeed();
+        }
+        break;
+      case 'conversation.item.input_audio_transcription.completed':
+        if (ev.transcript) ib.inText = ev.transcript;
+        ib.inDone = true;
+        c = interpCard();
+        c.origText = ib.inText;
+        c.inDone = true;
+        interpSetDirection(c);
+        renderCard(c);
+        if (ib.outDone) {
+          if (ib.finishTimer) { clearTimeout(ib.finishTimer); ib.finishTimer = null; }
+          finishInterpTurn();
+        }
+        break;
+      case 'response.created':
+        if (inCall && !paused) setState('translating');
+        break;
+      case 'response.output_audio_transcript.delta':
+      case 'response.audio_transcript.delta': // nombre heredado, por si acaso
+        if (ev.delta) {
+          c = interpCard();
+          ib.outText += ev.delta;
+          c.transText = ib.outText;
+          c.outDone = false;
+          c.lastAct = Date.now();
+          lastOutputTextAt = Date.now();
+          if (inCall && !paused) setState('speaking');
+          interpSetDirection(c);
+          renderCard(c);
+          scrollFeed();
+        }
+        break;
+      case 'response.output_audio_transcript.done':
+      case 'response.audio_transcript.done':
+        if (ev.transcript) {
+          ib.outText = ev.transcript;
+          c = interpCard();
+          c.transText = ib.outText;
+          renderCard(c);
+        }
+        break;
+      case 'response.done':
+      case 'response.cancelled':
+        ib.outDone = true;
+        maybeFinishInterp();
+        if (inCall && !paused) setState('listening');
+        break;
+      case 'error':
+        if (ib.card && !ib.card.finalized) {
+          ib.card.errored = true;
+          ib.card.inDone = true;
+          ib.card.outDone = true;
+          renderCard(ib.card);
+          finalizeCard(ib.card);
+        }
+        resetInterpTurn();
+        showErr('call', t('errSession'));
+        break;
     }
   }
 
@@ -1951,6 +2276,7 @@
     btnSpeaker.classList.toggle('on', settings.autoplay);
     btnSpeaker.classList.toggle('off', !settings.autoplay);
     applyGate(); // respeta autoplay Y la ganadora de la frase en curso
+    if (interp && interp.audioEl) { try { interp.audioEl.muted = !settings.autoplay; } catch (e) {} }
     var chk = $('set-autoplay'); if (chk) chk.checked = settings.autoplay;
   }
   btnSpeaker.addEventListener('click', function () {
@@ -2040,7 +2366,8 @@
     $('sum-turns').textContent = String(cards.length);
     $('sum-phrases').textContent = String(translated);
     $('sum-minutes').textContent = fmtMin(totalMs);
-    $('sum-provnote').textContent = t('provNote').replace('{prov}', fmtMin(totalMs * 2));
+    var pfEnd = provFactor();
+    $('sum-provnote').textContent = t(pfEnd === 1 ? 'provNoteInterp' : 'provNote').replace('{prov}', fmtMin(totalMs * pfEnd));
     showView('done');
   }
 
@@ -2100,6 +2427,8 @@
 
   function populatePanel() {
     $('set-uilang').value = settings.uiLang;
+    $('set-engine').value = settings.engine;
+    $('set-voice-interp').value = settings.interpVoice;
     $('set-rate').value = String(settings.rate);
     $('set-autoplay').checked = settings.autoplay;
     $('set-noise').checked = settings.noise;
@@ -2138,6 +2467,13 @@
     renderLangList(langSearch.value);
   });
   $('set-voice').addEventListener('change', function () { settings.voiceURI = this.value; saveSettings(); });
+  $('set-engine').addEventListener('change', function () {
+    settings.engine = this.value === 'translate' ? 'translate' : 'interpreter';
+    saveSettings();
+    tickTimer(); // la línea de minutos refleja el motor elegido
+    toast(t('toastEngineNext')); // el cambio aplica en la próxima llamada
+  });
+  $('set-voice-interp').addEventListener('change', function () { settings.interpVoice = this.value; saveSettings(); });
   $('set-rate').addEventListener('change', function () { settings.rate = parseFloat(this.value) || 1; saveSettings(); });
   $('set-autoplay').addEventListener('change', function () {
     settings.autoplay = this.checked;
