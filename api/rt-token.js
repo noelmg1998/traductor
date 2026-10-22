@@ -130,10 +130,13 @@ module.exports = async (req, res) => {
           model: 'gpt-realtime-whisper'
         },
         turn_detection: {
+          // Regla "esperar al final": el intérprete NO traduce hasta que
+          // la persona TERMINA la frase — silencio de ~1.1 s para cerrar
+          // el turno y umbral más alto contra disparos por ruido.
           type: 'server_vad',
-          threshold: 0.5,
+          threshold: 0.6,
           prefix_padding_ms: 300,
-          silence_duration_ms: 700,
+          silence_duration_ms: 1100,
           create_response: true,
           interrupt_response: true
         }

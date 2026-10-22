@@ -640,7 +640,7 @@
     <div class="sinfo"><b data-i18n="setEngine">Motor de llamada</b><small data-i18n="setEngineSub">Intérprete: una sola sesión con IA que interpreta entre los dos idiomas (más económico). Traductor dedicado: dos sesiones especializadas, una por sentido.</small></div>
     <select id="set-engine">
       <option value="interpreter" data-i18n="engineInterpreter">Intérprete IA (económico)</option>
-      <option value="translate" data-i18n="engineTranslate">Traductor dedicado</option>
+      <option value="translator" data-i18n="engineTranslate">Traductor dedicado</option>
     </select>
   </div>
 
@@ -916,7 +916,8 @@
       });
     }
   } catch (e) {}
-  if (settings.engine !== 'translate') settings.engine = 'interpreter';
+  if (settings.engine === 'translate') settings.engine = 'translator'; // migración v6
+  if (['interpreter', 'translator'].indexOf(settings.engine) < 0) settings.engine = 'interpreter';
   if (settings.pairA === settings.pairB) settings.pairB = settings.pairA === 'es' ? 'en' : 'es';
   function saveSettings() {
     try { localStorage.setItem(LS_SETTINGS, JSON.stringify(settings)); } catch (e) {}
@@ -1156,16 +1157,16 @@
     if (timerId) { clearInterval(timerId); timerId = null; }
     tickTimer();
   }
-  // Minutos del proveedor por minuto de llamada según el motor:
-  // Intérprete IA = 1 sesión; Traductor dedicado = 2 sesiones.
-  function provFactor() { return settings.engine === 'interpreter' ? 1 : 2; }
+  // Minutos del proveedor por minuto de llamada según el motor activo
+  // (del registro ENGINES: intérprete ×1, traductor dedicado ×2).
+  function provFactor() { return currentEngine().factor; }
   function tickTimer() {
     var e = elapsedMs();
     timerEl.textContent = fmt(e);
     abElapsed.textContent = fmt(e);
     var pf = provFactor();
     abTotal.textContent = fmt(e * pf); // tiempo total del proveedor según el motor
-    minLine.textContent = t(pf === 1 ? 'minutesLineInterp' : 'minutesLine')
+    minLine.textContent = t(currentEngine().minutesKey)
       .replace('{call}', fmtMin(e)).replace('{prov}', fmtMin(e * pf)) + ' · ' + t('testNote');
   }
 
@@ -1785,13 +1786,26 @@
     applyMicTracks(); // respeta el mute del usuario y la guarda de eco
     attachMicAnalyser(micStream);
   }
-  async function connectAll() {
-    // Motor B (Intérprete IA): una sola sesión conversacional.
-    if (settings.engine === 'interpreter') {
-      await startInterpreter();
-      reconnectAttempts = 0;
-      return;
+  /* Registro de motores de llamada (extensible): cada motor sabe cómo
+     conectarse, cuántos minutos del proveedor consume por minuto de
+     llamada (factor) y qué textos de minutos/resumen le corresponden.
+     Motores: 'interpreter' (Intérprete IA) y 'translator' (Traductor
+     dedicado). Reservado: 'phrase' ("Frase completa", v7) — se
+     registrará aquí reutilizando este mismo selector de Ajustes, las
+     tarjetas y el resumen. */
+  var ENGINES = {
+    interpreter: {
+      factor: 1, minutesKey: 'minutesLineInterp', provNoteKey: 'provNoteInterp',
+      connect: function () { return startInterpreter(); }
+    },
+    translator: {
+      factor: 2, minutesKey: 'minutesLine', provNoteKey: 'provNote',
+      connect: function () { return connectTranslator(); }
     }
+  };
+  function currentEngine() { return ENGINES[settings.engine] || ENGINES.interpreter; }
+
+  async function connectTranslator() {
     // Sesión A→B: traduce al idioma B (su transcripción de entrada es la
     // canónica para el texto original). Sesión B→A: traduce al idioma A.
     var both = await Promise.all([
@@ -1800,6 +1814,10 @@
     ]);
     sessions = both;
     applyGate();
+  }
+
+  async function connectAll() {
+    await currentEngine().connect();
     reconnectAttempts = 0;
   }
 
@@ -1877,8 +1895,49 @@
   var ib = null; // intervención actual del intérprete
 
   function resetInterpTurn() {
-    if (ib && ib.finishTimer) { clearTimeout(ib.finishTimer); }
-    ib = { card: null, inText: '', inDone: false, outText: '', outDone: false, finishTimer: null };
+    if (ib) {
+      if (ib.finishTimer) { clearTimeout(ib.finishTimer); }
+      if (ib.suspectTimer) { clearTimeout(ib.suspectTimer); }
+    }
+    ib = { card: null, inText: '', inDone: false, outText: '', outDone: false,
+           finishTimer: null, respId: null, suspect: false, suspectTimer: null, cancelled: false };
+  }
+
+  // ¿La entrada que disparó la respuesta es vacía o trivial (ruido)?
+  // Sin letras ni números, o de menos de 2 caracteres, no es una frase.
+  function interpInputTrivial() {
+    var tx = (ib && ib.inText ? ib.inText : '').trim();
+    if (tx.length < 2) return true;
+    return !/[0-9a-zA-Z\u00C0-\u024F\u0400-\u04FF\u0600-\u06FF\u0900-\u097F\u4E00-\u9FFF\u3040-\u30FF\uAC00-\uD7AF]/.test(tx);
+  }
+  function interpDisarmSuspect() {
+    if (ib && ib.suspect && !interpInputTrivial()) {
+      ib.suspect = false;
+      if (ib.suspectTimer) { clearTimeout(ib.suspectTimer); ib.suspectTimer = null; }
+    }
+  }
+  // El motor NUNCA habla solo: si una respuesta arrancó sin una frase
+  // real que la dispare (disparo falso por ruido), se cancela en el
+  // servidor (response.cancel) y su tarjeta se descarta.
+  function cancelSuspectResponse() {
+    if (!ib || ib.cancelled) return;
+    ib.cancelled = true;
+    ib.suspect = false;
+    if (ib.suspectTimer) { clearTimeout(ib.suspectTimer); ib.suspectTimer = null; }
+    try {
+      if (interp && interp.dc && interp.dc.readyState === 'open') {
+        interp.dc.send(JSON.stringify({ type: 'response.cancel', response_id: ib.respId || undefined }));
+      }
+    } catch (e) {}
+    var c = ib.card;
+    if (c && !c.finalized) {
+      c.el.remove();
+      var i = cards.indexOf(c);
+      if (i >= 0) cards.splice(i, 1);
+      if (curCard === c) curCard = null;
+    }
+    ib.card = null;
+    ib.outText = '';
   }
 
   async function mintTokenInterp() {
@@ -2003,6 +2062,7 @@
   // Si la traducción llegó vacía, la tarjeta se descarta (regla del motor B).
   function finishInterpTurn() {
     if (!ib) { resetInterpTurn(); return; }
+    if (ib.cancelled) { resetInterpTurn(); return; } // respuesta cancelada: nada que cerrar
     var c = ib.card;
     if (c && !c.finalized) {
       c.inDone = true;
@@ -2052,6 +2112,7 @@
           c.inDone = false;
           c.lastAct = Date.now();
           lastInputAt = Date.now();
+          interpDisarmSuspect(); // llegó frase real: la respuesta es legítima
           interpSetDirection(c);
           renderCard(c);
           scrollFeed();
@@ -2060,6 +2121,7 @@
       case 'conversation.item.input_audio_transcription.completed':
         if (ev.transcript) ib.inText = ev.transcript;
         ib.inDone = true;
+        interpDisarmSuspect();
         c = interpCard();
         c.origText = ib.inText;
         c.inDone = true;
@@ -2071,10 +2133,28 @@
         }
         break;
       case 'response.created':
+        ib.respId = ev.response && ev.response.id ? ev.response.id : null;
+        if (interpInputTrivial()) {
+          // Sospecha de disparo falso: si en 700 ms no llega una frase
+          // real que la respalde, la respuesta se cancela (ver
+          // cancelSuspectResponse). La transcripción puede venir un
+          // poco detrás de la respuesta; por eso la gracia.
+          ib.suspect = true;
+          if (ib.suspectTimer) clearTimeout(ib.suspectTimer);
+          var sturn = ib;
+          ib.suspectTimer = setTimeout(function () {
+            if (ib === sturn && ib.suspect && interpInputTrivial()) cancelSuspectResponse();
+          }, 700);
+        }
         if (inCall && !paused) setState('translating');
         break;
       case 'response.output_audio_transcript.delta':
       case 'response.audio_transcript.delta': // nombre heredado, por si acaso
+        if (ib.cancelled) break; // respuesta cancelada: se ignora lo que llegue
+        if (ib.suspect) {
+          if (interpInputTrivial()) { cancelSuspectResponse(); break; }
+          ib.suspect = false;
+        }
         if (ev.delta) {
           c = interpCard();
           ib.outText += ev.delta;
@@ -2090,7 +2170,7 @@
         break;
       case 'response.output_audio_transcript.done':
       case 'response.audio_transcript.done':
-        if (ev.transcript) {
+        if (!ib.cancelled && ev.transcript) {
           ib.outText = ev.transcript;
           c = interpCard();
           c.transText = ib.outText;
@@ -2099,6 +2179,7 @@
         break;
       case 'response.done':
       case 'response.cancelled':
+        if (ib.cancelled) { resetInterpTurn(); if (inCall && !paused) setState('listening'); break; }
         ib.outDone = true;
         maybeFinishInterp();
         if (inCall && !paused) setState('listening');
@@ -2366,8 +2447,7 @@
     $('sum-turns').textContent = String(cards.length);
     $('sum-phrases').textContent = String(translated);
     $('sum-minutes').textContent = fmtMin(totalMs);
-    var pfEnd = provFactor();
-    $('sum-provnote').textContent = t(pfEnd === 1 ? 'provNoteInterp' : 'provNote').replace('{prov}', fmtMin(totalMs * pfEnd));
+    $('sum-provnote').textContent = t(currentEngine().provNoteKey).replace('{prov}', fmtMin(totalMs * provFactor()));
     showView('done');
   }
 
@@ -2468,7 +2548,7 @@
   });
   $('set-voice').addEventListener('change', function () { settings.voiceURI = this.value; saveSettings(); });
   $('set-engine').addEventListener('change', function () {
-    settings.engine = this.value === 'translate' ? 'translate' : 'interpreter';
+    settings.engine = ENGINES[this.value] ? this.value : 'interpreter';
     saveSettings();
     tickTimer(); // la línea de minutos refleja el motor elegido
     toast(t('toastEngineNext')); // el cambio aplica en la próxima llamada
