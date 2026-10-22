@@ -124,8 +124,10 @@ module.exports = async (req, res) => {
 
       const inputAudio = {
         transcription: {
-          model: 'gpt-realtime-whisper',
-          languages: [pairA, pairB]
+          // Sin "languages": OpenAI lo rechaza para gpt-realtime-whisper
+          // ("The 'languages' parameter is not supported for this
+          // model", verificado en vivo); detecta el idioma solo.
+          model: 'gpt-realtime-whisper'
         },
         turn_detection: {
           type: 'server_vad',
