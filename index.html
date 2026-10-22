@@ -350,6 +350,7 @@
   .overlay.on{display:flex;}
   .sheet{
     width:100%; max-width:470px; max-height:82dvh; overflow-y:auto;
+    -webkit-overflow-scrolling:touch; overscroll-behavior:contain;
     background:linear-gradient(180deg,#171b2a,#10121c);
     border:1px solid var(--line); border-bottom:0;
     border-radius:24px 24px 0 0; padding:20px 18px calc(18px + env(safe-area-inset-bottom));
@@ -368,6 +369,13 @@
     flex:1; min-width:0; background:none; border:0; outline:0; color:var(--txt); font-size:15px; font-family:var(--sans);
   }
   .langlist{display:flex; flex-direction:column; gap:4px;}
+  /* v14 · Englix: en el modal de idiomas SOLO se desplaza la lista; el
+     encabezado, el buscador y el botón quedan fijos dentro de la hoja. */
+  #lang-overlay .sheet{display:flex; flex-direction:column; overflow:hidden;}
+  #lang-overlay .langlist{
+    flex:1 1 auto; min-height:0; overflow-y:auto;
+    -webkit-overflow-scrolling:touch; overscroll-behavior:contain;
+  }
   .langopt{
     display:flex; align-items:center; gap:11px; width:100%; text-align:left;
     padding:11px 12px; border-radius:13px; border:1px solid transparent;
@@ -414,7 +422,8 @@
     background:linear-gradient(200deg,#171b2a,#0e1018);
     border-left:1px solid var(--line);
     transform:translateX(105%); transition:transform .32s ease;
-    overflow-y:auto; padding:20px 18px calc(18px + env(safe-area-inset-bottom));
+    overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain;
+    padding:20px 18px calc(18px + env(safe-area-inset-bottom));
   }
   .panel.on{transform:translateX(0); box-shadow:-18px 0 44px rgba(0,0,0,.5);}
   .panel .phead{display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;}
@@ -810,7 +819,7 @@
   </section>
 
   <footer data-i18n="footer">Traducción automática con IA · En vivo</footer>
-  <div class="verlabel">v13 · Englix</div>
+  <div class="verlabel">v14 · Englix</div>
 </div>
 
 <!-- ===== Barra inferior (v11 · Englix) ===== -->
@@ -2815,6 +2824,34 @@
     });
   }
 
+  /* ---------- Bloqueo de scroll del fondo (v14 · Englix) ----------
+     En iOS Safari un overlay fijo NO basta: al arrastrar fuera de la zona
+     desplazable, el gesto arrastraba la página de fondo. La técnica fiable
+     es fijar el <body> en la posición actual mientras el overlay está
+     abierto y restaurar esa misma posición al cerrar, sin salto. El
+     contador hace el bloqueo reutilizable por varios overlays a la vez. */
+  var scrollLockCount = 0, scrollLockY = 0;
+  function lockScroll() {
+    if (scrollLockCount === 0) {
+      scrollLockY = window.scrollY || window.pageYOffset || 0;
+      var bs = document.body.style;
+      bs.position = 'fixed';
+      bs.top = (-scrollLockY) + 'px';
+      bs.left = '0';
+      bs.right = '0';
+      bs.width = '100%';
+      bs.overflow = 'hidden';
+    }
+    scrollLockCount++;
+  }
+  function unlockScroll() {
+    if (scrollLockCount > 0) scrollLockCount--;
+    if (scrollLockCount > 0) return;
+    var bs = document.body.style;
+    bs.position = ''; bs.top = ''; bs.left = ''; bs.right = ''; bs.width = ''; bs.overflow = '';
+    try { window.scrollTo(0, scrollLockY); } catch (e) {}
+  }
+
   /* ---------- Modal de idiomas ---------- */
   var langOverlay = $('lang-overlay'), langList = $('lang-list'), langSearch = $('lang-search');
   var modalSide = 'A';
@@ -2823,9 +2860,10 @@
     langSearch.value = '';
     renderLangList('');
     langOverlay.classList.add('on');
+    lockScroll();
     setTimeout(function () { try { langSearch.focus(); } catch (e) {} }, 60);
   }
-  function closeLangModal() { langOverlay.classList.remove('on'); }
+  function closeLangModal() { langOverlay.classList.remove('on'); unlockScroll(); }
   function renderLangList(filter) {
     langList.innerHTML = '';
     var current = modalSide === 'A' ? settings.pairA : settings.pairB;
@@ -2868,6 +2906,12 @@
   langSearch.addEventListener('input', function () { renderLangList(langSearch.value); });
   $('lang-close').addEventListener('click', closeLangModal);
   langOverlay.addEventListener('click', function (e) { if (e.target === langOverlay) closeLangModal(); });
+  /* v14: los arrastres que nacen FUERA de la lista no mueven nada (ni la
+     hoja ni el fondo); los de dentro desplazan solo la lista, que ya trae
+     overscroll-behavior:contain. Debe ser no-pasivo pa' poder cancelar. */
+  langOverlay.addEventListener('touchmove', function (e) {
+    if (!langList.contains(e.target)) e.preventDefault();
+  }, { passive: false });
 
   /* ================= i18n ================= */
   function applyI18n() {
@@ -2997,16 +3041,20 @@
     }
   });
 
-  btnBack.addEventListener('click', function () { $('end-overlay').classList.add('on'); });
+  btnBack.addEventListener('click', function () { $('end-overlay').classList.add('on'); lockScroll(); });
 
   /* ---------- Terminar (§11) ---------- */
-  $('end-overlay').addEventListener('click', function (e) { if (e.target === this) this.classList.remove('on'); });
-  $('end-continue').addEventListener('click', function () { $('end-overlay').classList.remove('on'); });
-  btnEnd.addEventListener('click', function () { vibrate(10); $('end-overlay').classList.add('on'); });
+  $('end-overlay').addEventListener('click', function (e) { if (e.target === this) { this.classList.remove('on'); unlockScroll(); } });
+  $('end-continue').addEventListener('click', function () { $('end-overlay').classList.remove('on'); unlockScroll(); });
+  btnEnd.addEventListener('click', function () { vibrate(10); $('end-overlay').classList.add('on'); lockScroll(); });
   $('end-confirm').addEventListener('click', function () {
     $('end-overlay').classList.remove('on');
+    unlockScroll();
     endCall();
   });
+  /* v14: arrastrar sobre el fondo oscuro de la confirmación no mueve la
+     llamada que está detrás. */
+  $('end-overlay').addEventListener('touchmove', function (e) { e.preventDefault(); }, { passive: false });
 
   var lastSummary = null;
   function endCall() {
@@ -3096,12 +3144,15 @@
 
   /* ================= Ajustes (§13) ================= */
   var panel = $('settings-panel'), panelOverlay = $('panel-overlay');
-  function openPanel() { populatePanel(); panel.classList.add('on'); panelOverlay.classList.add('on'); }
-  function closePanel() { panel.classList.remove('on'); panelOverlay.classList.remove('on'); }
+  function openPanel() { populatePanel(); panel.classList.add('on'); panelOverlay.classList.add('on'); lockScroll(); }
+  function closePanel() { panel.classList.remove('on'); panelOverlay.classList.remove('on'); unlockScroll(); }
   $('btn-gear-home').addEventListener('click', openPanel);
   $('btn-gear-call').addEventListener('click', openPanel);
   $('btn-panel-close').addEventListener('click', closePanel);
   panelOverlay.addEventListener('click', closePanel);
+  /* v14: con Ajustes abierto, arrastrar sobre el fondo oscuro no mueve la
+     página; el panel se desplaza por sí mismo (overscroll contenido). */
+  panelOverlay.addEventListener('touchmove', function (e) { e.preventDefault(); }, { passive: false });
 
   function populatePanel() {
     $('set-uilang').value = settings.uiLang;
