@@ -122,19 +122,7 @@
   .pill .flag{font-size:26px; line-height:1; flex:0 0 auto; transition:transform .3s ease;}
   .pill .pinfo{min-width:0; flex:1;}
   .pill .pname{display:block; font-weight:600; font-size:15.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-  .pill .prole{display:block; color:var(--muted); font-size:12px; margin-top:1px;}
   .pill .chev{flex:0 0 auto; color:var(--muted); font-size:15px;}
-  .pill.flip .flag{transform:rotateY(180deg);}
-  .swapbtn{
-    width:46px; height:46px; border-radius:50%; flex:0 0 auto;
-    background:radial-gradient(circle at 32% 30%, #232839, #12141f);
-    border:1px solid var(--line);
-    display:flex; align-items:center; justify-content:center;
-    box-shadow:0 0 16px rgba(212,167,92,.22), inset 0 1px 0 rgba(242,210,135,.25);
-    transition:transform .3s ease, box-shadow .3s ease;
-  }
-  .swapbtn svg{width:20px; height:20px; stroke:var(--gold1); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
-  .swapbtn.spin{transform:rotate(180deg); box-shadow:0 0 26px rgba(212,167,92,.55);}
 
   /* ---------- Call header ---------- */
   #view-call{display:none; flex-direction:column; flex:1; min-height:0;}
@@ -288,7 +276,9 @@
   .audiobar canvas{flex:1; height:30px; min-width:0;}
 
   /* ---------- Controls ---------- */
-  .controls{display:flex; align-items:flex-start; justify-content:space-between; gap:2px; padding:10px 0 2px;}
+  .controls{display:grid; grid-template-columns:1fr auto 1fr; align-items:start; padding:10px 0 2px;}
+  .cside{display:flex; gap:2px; align-items:flex-start;}
+  .cside.right{justify-content:flex-end;}
   .ctl{display:flex; flex-direction:column; align-items:center; width:64px; text-align:center;}
   .ctl label{font-size:13px; font-weight:600; margin-top:7px;}
   .ctl small{color:var(--dim); font-size:10.5px; margin-top:1px; line-height:1.25;}
@@ -539,6 +529,7 @@
     </div>
 
     <div class="controls">
+      <div class="cside">
       <div class="ctl">
         <button class="cbtn on" id="btn-mute" aria-label="Mute">
           <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
@@ -553,6 +544,7 @@
         <label data-i18n="speaker">Altavoz</label>
         <small data-i18n="autoPlay">Automático</small>
       </div>
+      </div>
       <div class="ctl main">
         <button class="cbtn big" id="btn-pause" aria-label="Pause">
           <svg viewBox="0 0 24 24" id="pause-icon"><line x1="9" y1="5" x2="9" y2="19"/><line x1="15" y1="5" x2="15" y2="19"/></svg>
@@ -560,19 +552,14 @@
         <label id="pause-label" data-i18n="pause">Pausa</label>
         <small data-i18n="pauseSub">Toca para pausar</small>
       </div>
-      <div class="ctl">
-        <button class="cbtn" id="btn-switch" aria-label="Switch">
-          <svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
-        </button>
-        <label data-i18n="switch">Cambiar</label>
-        <small data-i18n="languages">Idiomas</small>
-      </div>
+      <div class="cside right">
       <div class="ctl">
         <button class="cbtn red" id="btn-end" aria-label="End">
           <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
         </button>
         <label data-i18n="end">Terminar</label>
         <small data-i18n="conversation">Conversación</small>
+      </div>
       </div>
     </div>
   </section>
@@ -600,7 +587,7 @@
   </section>
 
   <footer data-i18n="footer">Traducción automática con IA · En vivo</footer>
-  <div class="verlabel">v3 · automática</div>
+  <div class="verlabel">v4 · automática</div>
 </div>
 
 <!-- ===== Modal de idiomas ===== -->
@@ -753,13 +740,11 @@
       tipB: 'Tip:', tip: 'usa audífonos. Así el micrófono no escucha la traducción en voz alta y la conversación suena limpia, sin repeticiones.',
       testNote: 'Modo prueba — crédito de la cuenta',
       callSub: 'Traducción en tiempo real, conversación natural.',
-      roleSpeaking: 'Hablando', roleTranslation: 'Traducción',
       you: 'Tú', they: 'Otra persona',
       stListening: 'Escuchando', stSpeaking: 'Hablando', stWaiting: 'En espera',
       mute: 'Silencio', micOn: 'Micrófono activo', micOff: 'Micrófono desactivado',
       speaker: 'Altavoz', autoPlay: 'Automático',
       pause: 'Pausa', resume: 'Seguir', pauseSub: 'Toca para pausar', resumeSub: 'Toca para continuar',
-      switch: 'Cambiar', languages: 'Idiomas',
       end: 'Terminar', conversation: 'Conversación',
       feedEmpty: 'Escuchando…\nEmpieza a hablar cuando quieras.',
       feedEmptyPaused: 'Conversación pausada.\nToca Seguir para continuar.',
@@ -791,9 +776,9 @@
       state_speaking: 'Reproduciendo traducción…', state_paused: 'Conversación pausada',
       state_reconnecting: 'Reconectando…', state_error: 'Hubo un problema', state_ended: 'Conversación terminada',
       chipListening: 'Escuchando', chipTranslating: 'Traduciendo', chipDone: 'Traducido', chipError: 'Error',
-      translationWord: 'Traducción', waitingTrans: 'Esperando traducción…',
+      waitingTrans: 'Esperando traducción…',
       minutesLine: '2 sesiones activas · {call} min de llamada · {prov} min del proveedor',
-      toastSwapped: 'Idiomas intercambiados ⇄', toastSavedConv: 'Conversación guardada en este teléfono',
+      toastSavedConv: 'Conversación guardada en este teléfono',
       toastSavedPhrases: 'Frases guardadas', toastCleared: 'Datos borrados', toastFav: 'Frase guardada en favoritas ⭐',
       toastCopied: 'Texto copiado', toastNoSave: 'El guardado está desactivado en Ajustes',
       toastNothing: 'Todavía no hay frases en esta conversación',
@@ -813,13 +798,11 @@
       tipB: 'Tip:', tip: 'use earbuds. That way the microphone does not hear the spoken translation and the conversation stays clean, with no repeats.',
       testNote: 'Test mode — account credit',
       callSub: 'Real-time translation, natural conversations.',
-      roleSpeaking: 'Speaking', roleTranslation: 'Translation',
       you: 'You', they: 'Other person',
       stListening: 'Listening', stSpeaking: 'Speaking', stWaiting: 'Waiting',
       mute: 'Mute', micOn: 'Mic On', micOff: 'Microphone off',
       speaker: 'Speaker', autoPlay: 'Auto Play',
       pause: 'Pause', resume: 'Resume', pauseSub: 'Hold to pause', resumeSub: 'Tap to resume',
-      switch: 'Switch', languages: 'Languages',
       end: 'End', conversation: 'Conversation',
       feedEmpty: 'Listening…\nStart talking whenever you are ready.',
       feedEmptyPaused: 'Conversation paused.\nTap Resume to continue.',
@@ -851,9 +834,9 @@
       state_speaking: 'Playing translation…', state_paused: 'Conversation paused',
       state_reconnecting: 'Reconnecting…', state_error: 'Something went wrong', state_ended: 'Conversation ended',
       chipListening: 'Listening', chipTranslating: 'Translating', chipDone: 'Translated', chipError: 'Error',
-      translationWord: 'Translation', waitingTrans: 'Waiting for translation…',
+      waitingTrans: 'Waiting for translation…',
       minutesLine: '2 sessions live · {call} call min · {prov} provider min',
-      toastSwapped: 'Languages swapped ⇄', toastSavedConv: 'Conversation saved on this phone',
+      toastSavedConv: 'Conversation saved on this phone',
       toastSavedPhrases: 'Phrases saved', toastCleared: 'Data deleted', toastFav: 'Phrase saved to favorites ⭐',
       toastCopied: 'Text copied', toastNoSave: 'Saving is turned off in Settings',
       toastNothing: 'No phrases in this conversation yet',
@@ -919,7 +902,7 @@
   var btnMute = $('btn-mute'), muteSub = $('mute-sub');
   var btnSpeaker = $('btn-speaker');
   var btnPause = $('btn-pause'), pauseIcon = $('pause-icon'), pauseLabel = $('pause-label');
-  var btnSwitch = $('btn-switch'), btnEnd = $('btn-end'), btnBack = $('btn-back');
+  var btnEnd = $('btn-end'), btnBack = $('btn-back');
   var waveCanvas = $('wave-canvas'), abElapsed = $('ab-elapsed'), abTotal = $('ab-total');
   var toastEl = $('toast');
   var toastTimer = null;
@@ -1160,7 +1143,7 @@
       '</div>' +
       '<p class="orig partial"></p>' +
       '<div class="divider"></div>' +
-      '<div class="tlabel"><span class="flag"></span><span class="tlang"></span> · ' + t('translationWord') + '</div>' +
+      '<div class="tlabel"><span class="flag"></span><span class="tlang"></span></div>' +
       '<p class="trans pending">' + t('waitingTrans') + '</p>' +
       '<div class="cactions">' +
         '<button class="act-replay" aria-label="Replay">' + ICON_PLAY + '</button>' +
@@ -1653,27 +1636,24 @@
   }
 
   /* ================= Selectores de idioma (§2) ================= */
-  var pillTargets = []; // [{a: el, b: el, swap: el}] por cada fila de píldoras
+  var pillTargets = []; // [{a: el, b: el, container: el}] por cada fila de píldoras
   function pillHTML(side) {
     return '<span class="flag"></span>' +
-      '<span class="pinfo"><span class="pname"></span><span class="prole"></span></span>' +
+      '<span class="pinfo"><span class="pname"></span></span>' +
       '<span class="chev">▾</span>';
   }
   function buildPills(containerId) {
     var c = $(containerId);
     c.innerHTML =
       '<button class="pill" data-side="A">' + pillHTML('A') + '</button>' +
-      '<button class="swapbtn" aria-label="Swap"><svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></button>' +
       '<button class="pill" data-side="B">' + pillHTML('B') + '</button>';
     var rec = {
       a: c.querySelector('[data-side="A"]'),
       b: c.querySelector('[data-side="B"]'),
-      swap: c.querySelector('.swapbtn'),
       container: c
     };
     rec.a.addEventListener('click', function () { openLangModal('A'); });
     rec.b.addEventListener('click', function () { openLangModal('B'); });
-    rec.swap.addEventListener('click', function () { swapPair(rec); });
     pillTargets.push(rec);
     renderPills();
     return rec;
@@ -1683,27 +1663,9 @@
       var A = langOf(settings.pairA), B = langOf(settings.pairB);
       rec.a.querySelector('.flag').textContent = A.flag;
       rec.a.querySelector('.pname').textContent = langName(settings.pairA);
-      rec.a.querySelector('.prole').textContent = t('roleSpeaking');
       rec.b.querySelector('.flag').textContent = B.flag;
       rec.b.querySelector('.pname').textContent = langName(settings.pairB);
-      rec.b.querySelector('.prole').textContent = t('roleTranslation');
     });
-  }
-  async function swapPair(rec) {
-    vibrate(10);
-    var tmp = settings.pairA;
-    settings.pairA = settings.pairB;
-    settings.pairB = tmp;
-    saveSettings();
-    pillTargets.forEach(function (r) {
-      r.a.classList.add('flip'); r.b.classList.add('flip'); r.swap.classList.add('spin');
-      setTimeout(function () { r.a.classList.remove('flip'); r.b.classList.remove('flip'); r.swap.classList.remove('spin'); }, 320);
-    });
-    renderPills();
-    renderPersonsMeta();
-    populateVoices();
-    toast(t('toastSwapped'));
-    await reconfigureSessions();
   }
 
   /* ---------- Modal de idiomas ---------- */
@@ -1882,10 +1844,6 @@
     }
   });
 
-  btnSwitch.addEventListener('click', function () {
-    var rec = pillTargets[pillTargets.length - 1];
-    swapPair(rec);
-  });
   btnBack.addEventListener('click', function () { $('end-overlay').classList.add('on'); });
 
   /* ---------- Terminar (§11) ---------- */
