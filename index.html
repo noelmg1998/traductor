@@ -1057,7 +1057,7 @@
   </section>
 
   <footer data-i18n="footer">Traducción automática con IA · En vivo</footer>
-  <div class="verlabel">v38 · Englix</div>
+  <div class="verlabel">v39 · Englix</div>
 </div>
 
 <!-- ===== Barra inferior (v11 · Englix) ===== -->
@@ -1228,9 +1228,9 @@
     <div class="setcard-head">
       <span class="sicon"><svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 19v3"/></svg></span>
       <b data-i18n="setSecAudio">Traducción y audio</b>
-      <small data-i18n="setSecAudioSub">Configura el motor de traducción y las voces.</small>
+      <small data-i18n="setSecAudioSub">Configura las voces de la traducción.</small>
     </div>
-    <div class="setrow">
+    <div class="setrow" style="display:none" aria-hidden="true">
       <span class="sicon"><svg viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.5 2.1L8 10a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 2z"/></svg></span>
       <div class="sinfo"><b data-i18n="setEngine">Motor de llamada</b><small data-i18n="setEngineSub">Selecciona cómo se realizan las llamadas con traducción en vivo.</small></div>
       <select id="set-engine">
@@ -1241,7 +1241,7 @@
     </div>
     <div class="setrow">
       <span class="sicon"><svg viewBox="0 0 24 24"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.6 5.4a9 9 0 0 1 0 13.2"/></svg></span>
-      <div class="sinfo"><b data-i18n="setVoiceInterp">Voz de la traducción</b><small data-i18n="setVoiceInterpSub">La voz con la que hablan el Intérprete IA y el motor Frase completa.</small></div>
+      <div class="sinfo"><b data-i18n="setVoiceInterp">Voz de la traducción</b><small data-i18n="setVoiceInterpSub">La voz con la que habla el Intérprete IA.</small></div>
       <select id="set-voice-interp">
         <option value="marin">Marin</option>
         <option value="cedar">Cedar</option>
@@ -1596,7 +1596,7 @@
       engineTranslate: 'Traductor dedicado',
       enginePhrase: 'Frase completa (máxima calidad)',
       setVoiceInterp: 'Voz de la traducción',
-      setVoiceInterpSub: 'La voz con la que hablan el Intérprete IA y el motor Frase completa.',
+      setVoiceInterpSub: 'La voz con la que habla el Intérprete IA.',
       provNoteInterp: 'Nota: la llamada usa una sola sesión de intérprete, así que los minutos del proveedor son los mismos de la llamada: {prov} min.',
       minutesLineInterp: '1 sesión activa · {call} min de llamada · {prov} min del proveedor',
       provNotePhrase: 'Nota: este motor no consume minutos de llamada: procesa cada frase por separado (transcripción + traducción + voz). Voz procesada en esta conversación: {prov} min. Costo estimado de la cascada: aprox. $0.02–0.04 por minuto de voz.',
@@ -1613,7 +1613,7 @@
       setPrivacy: 'Privacidad', setPrivacySub: 'Las conversaciones solo se guardan si tú lo pides, y solo en este teléfono.',
       clearSaved: 'Borrar conversaciones guardadas', clearFavs: 'Borrar frases favoritas',
       setSecGeneral: 'General', setSecGeneralSub: 'Idioma y configuración general de la app.',
-      setSecAudio: 'Traducción y audio', setSecAudioSub: 'Configura el motor de traducción y las voces.',
+      setSecAudio: 'Traducción y audio', setSecAudioSub: 'Configura las voces de la traducción.',
       setSecPrefs: 'Preferencias', setSecPrefsSub: 'Personaliza tu experiencia.',
       setSecMic: 'Micrófono', setSecMicSub: 'Función próximamente disponible.',
       setSecPrivacySub: 'Gestiona tus datos y privacidad.',
@@ -1764,7 +1764,7 @@
       engineTranslate: 'Dedicated translator',
       enginePhrase: 'Full phrase (best quality)',
       setVoiceInterp: 'Translation voice',
-      setVoiceInterpSub: 'The voice the AI Interpreter and the Full phrase engine speak with.',
+      setVoiceInterpSub: 'The voice the AI Interpreter speaks with.',
       provNoteInterp: 'Note: the call uses a single interpreter session, so provider minutes are the same as the call minutes: {prov} min.',
       minutesLineInterp: '1 session live · {call} call min · {prov} provider min',
       provNotePhrase: 'Note: this engine does not use call minutes: it processes each phrase separately (transcription + translation + speech). Speech processed in this conversation: {prov} min. Estimated cascade cost: approx. $0.02–0.04 per minute of speech.',
@@ -1781,7 +1781,7 @@
       setPrivacy: 'Privacy', setPrivacySub: 'Conversations are only saved when you ask, and only on this phone.',
       clearSaved: 'Delete saved conversations', clearFavs: 'Delete favorite phrases',
       setSecGeneral: 'General', setSecGeneralSub: 'App language and general settings.',
-      setSecAudio: 'Translation & audio', setSecAudioSub: 'Set up the translation engine and the voices.',
+      setSecAudio: 'Translation & audio', setSecAudioSub: 'Set up the translation voices.',
       setSecPrefs: 'Preferences', setSecPrefsSub: 'Personalize your experience.',
       setSecMic: 'Microphone', setSecMicSub: 'Feature coming soon.',
       setSecPrivacySub: 'Manage your data and privacy.',
@@ -1919,7 +1919,7 @@
     }
   } catch (e) {}
   if (settings.engine === 'translate') settings.engine = 'translator'; // migración v6
-  if (['interpreter', 'translator', 'phrase'].indexOf(settings.engine) < 0) settings.engine = 'interpreter';
+  settings.engine = 'interpreter'; // Decisión de Noel (2026-10-23): el usuario no escoge motor; fijo Intérprete IA.
   if (settings.pairA === settings.pairB) settings.pairB = settings.pairA === 'es' ? 'en' : 'es';
   function saveSettings() {
     try { localStorage.setItem(LS_SETTINGS, JSON.stringify(settings)); } catch (e) {}
