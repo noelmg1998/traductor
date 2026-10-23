@@ -1,12 +1,13 @@
 // Llamadas telefónicas traducidas (v16): TwiML de cada pata de la llamada.
 // Twilio pide esta URL cuando la pata se conecta y ejecuta lo que devuelva.
 //
-// pata "user" (el cliente de Englix): saludo corto en español y conecta el
-//   audio (SOLO la voz entrante, track="inbound_track", para que la voz
-//   traducida que inyecta el relay nunca se re-escuche a sí misma).
-// pata "dest" (la otra persona): primero el aviso EN INGLÉS de que la
-//   llamada será traducida por IA (consentimiento — Florida es two-party),
-//   y después conecta su audio igual.
+// SIN saludos ni avisos hablados (orden de Noel, 2026-10-23): la llamada
+// entra DIRECTA a la traducción — los <Say> quitaban tiempo y tapaban el
+// momento en que la otra persona ya estaba lista. (El aviso de traducción
+// por IA existía por consentimiento; Noel decidió quitarlo.)
+// Cada pata conecta su audio al relay (SOLO la voz entrante,
+// track="inbound_track", para que la voz traducida que inyecta el relay
+// nunca se re-escuche a sí misma).
 //
 // El audio va al relay: wss://CALL_RELAY_HOST/stream?leg=..&callId=..
 // Sin relay configurado, se dice honestamente que el servicio aún no está
@@ -50,13 +51,6 @@ module.exports = async (req, res) => {
     return;
   }
 
-  const say = leg === 'dest'
-    ? '<Say language="en-US" voice="Polly.Joanna">Hello. This call is being ' +
-      'translated by Englix using artificial intelligence, so the caller can ' +
-      'talk with you in English. Please stay on the line.</Say>'
-    : '<Say language="es-US" voice="Polly.Lupe">Conectando tu llamada. Habla ' +
-      'en español con calma; la otra persona te escuchará en inglés.</Say>';
-
   // Los datos de la pata van como <Parameter> (llegan al relay en el
   // evento start), NUNCA como parámetros de la URL: la bisección del
   // 2026-10-23 probó que con ?leg=..&callId=.. en la URL Twilio jamás
@@ -71,7 +65,7 @@ module.exports = async (req, res) => {
     '<Parameter name="goal" value="' + escAttr(q.goal || '') + '"/>';
 
   res.status(200).send(
-    '<Response>' + say +
+    '<Response>' +
     '<Connect><Stream url="' + escAttr(streamUrl) + '" track="inbound_track">' +
     params + '</Stream></Connect>' +
     '</Response>'
