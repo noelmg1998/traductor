@@ -859,7 +859,7 @@
   </section>
 
   <footer data-i18n="footer">Traducción automática con IA · En vivo</footer>
-  <div class="verlabel">v20 · Englix</div>
+  <div class="verlabel">v21 · Englix</div>
 </div>
 
 <!-- ===== Barra inferior (v11 · Englix) ===== -->
@@ -1180,6 +1180,7 @@
       callVerifyWait: 'Revisando…',
       callVerifyNotYet: 'Todavía no aparece. Contesta la llamada de verificación, marca el código y toca de nuevo.',
       callVerifyErr: 'No se pudo verificar. Revisa tu número e inténtalo de nuevo.',
+      callErrOwnNumber: 'Ese es el número de Englix, no el tuyo. En «Tu número de celular» escribe el número de TU celular.',
       callSummaryTitle: 'Resumen de tu última llamada',
       callSummaryPending: 'Tu llamada terminó o sigue en curso: el resumen aparecerá aquí al colgar.',
       callNoTalk: 'No se registró conversación en esta llamada.',
@@ -1300,6 +1301,7 @@
       callVerifyWait: 'Checking…',
       callVerifyNotYet: 'It is not showing yet. Answer the verification call, enter the code, then tap again.',
       callVerifyErr: 'Verification could not start. Check your number and try again.',
+      callErrOwnNumber: 'That is the Englix number, not yours. In "Your cell number" type YOUR cell phone number.',
       callSummaryTitle: 'Summary of your last call',
       callSummaryPending: 'Your call ended or is still going: the summary will appear here when you hang up.',
       callNoTalk: 'No conversation was recorded on this call.',
@@ -3702,6 +3704,7 @@
   btnVerify.addEventListener('click', function () {
     var e164 = mineE164();
     if (!e164) { callShowErr(t('callErrNumbers')); return; }
+    if (e164 === '+16623629216') { callShowErr(t('callErrOwnNumber')); return; }
     vibrate(8); btnVerify.disabled = true;
     fetch('/api/call-verify-start', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -3744,6 +3747,7 @@
     vibrate(8);
     var dest = callDestIn.value.trim(), mine = callMineIn.value.trim();
     if (callDigits(dest).length < 10 || callDigits(mine).length < 10) { callShowErr(t('callErrNumbers')); return; }
+    if (callDigits(mine).slice(-10) === '6623629216') { callShowErr(t('callErrOwnNumber')); return; }
     callBusy = true; btnCallNow.disabled = true;
     callShowErr(''); callShowStatus(t('callCalling'));
     fetch('/api/call-start', {

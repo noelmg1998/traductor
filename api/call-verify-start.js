@@ -46,6 +46,10 @@ module.exports = async (req, res) => {
 
     const mine = normalizeUS(body.myNumber);
     if (!mine) return fail('bad_number');
+    // El número de Englix no se puede "verificar" como número del usuario.
+    if (process.env.TWILIO_PHONE_NUMBER && mine === process.env.TWILIO_PHONE_NUMBER) {
+      return fail('englix_number');
+    }
 
     const base = 'https://api.twilio.com/2010-04-01/Accounts/' + sid;
 
