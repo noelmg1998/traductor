@@ -10,9 +10,13 @@
 --     (6 segundos por centavo) — nunca por tiempo conectado.
 --   · Llamada telefónica: $0.15 por minuto de llamada
 --     (4 segundos por centavo).
---   · Planes: basico $9.99 = 3600 s conv + 1800 s llamada;
---     plus $19.99 = 7200 s + 3600 s; premium $29.99 = 10800 s
---     + 6000 s. Los minutos del plan NO se acumulan: al renovar
+--   · Planes (REGLA DEL 20%, decidida por Noel el 2026-10-23):
+--     la ganancia limpia es el 20% del precio del plan calculado
+--     en el PEOR caso (el usuario gasta TODO). Montos:
+--     basico $9.99 = 6600 s conv + 3300 s llamada (110 + 55 min);
+--     plus $19.99 = 13200 s + 6600 s (220 + 110 min);
+--     premium $29.99 = 19200 s + 10800 s (320 + 180 min).
+--     Los minutos del plan NO se acumulan: al renovar
 --     el ciclo, las cubetas vuelven a su monto completo.
 --   · Orden de consumo: primero la cubeta del plan, después el
 --     saldo. El saldo no se vence.
@@ -309,14 +313,14 @@ begin
 
   -- Montos completos por plan (segundos de conversación / llamada).
   v_conv := case p_plan
-              when 'basico' then 3600
-              when 'plus' then 7200
-              when 'premium' then 10800
+              when 'basico' then 6600
+              when 'plus' then 13200
+              when 'premium' then 19200
               else 0 end;
   v_call := case p_plan
-              when 'basico' then 1800
-              when 'plus' then 3600
-              when 'premium' then 6000
+              when 'basico' then 3300
+              when 'plus' then 6600
+              when 'premium' then 10800
               else 0 end;
 
   perform public.ensure_entitlements(p_user);
