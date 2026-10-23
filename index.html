@@ -580,6 +580,38 @@
   .cs-head{display:flex; align-items:center; justify-content:space-between; gap:12px;}
   .cs-head h3{font-family:var(--serif); font-size:22px; font-weight:600; margin:0;}
   .cs-scroll{flex:1 1 auto; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain;}
+  /* Estilo Englix de la ventana: negro premium + dorado, con movimiento */
+  .callsheet{
+    background:
+      radial-gradient(130% 55% at 50% -5%, rgba(212,167,92,.17), rgba(212,167,92,0) 60%),
+      linear-gradient(180deg,#181c2c,#0b0d15);
+    animation:csIn .38s cubic-bezier(.22,1.15,.36,1) both;
+  }
+  @keyframes csIn{from{transform:translateY(46px); opacity:.3;} to{transform:translateY(0); opacity:1;}}
+  .cs-twrap{display:flex; align-items:center; gap:11px; min-width:0;}
+  .cs-ic{width:40px; height:40px; border-radius:13px; flex:0 0 auto; display:flex; align-items:center; justify-content:center; background:rgba(212,167,92,.10); border:1px solid var(--line); box-shadow:inset 0 0 14px rgba(212,167,92,.18);}
+  .cs-ic svg{width:20px; height:20px; stroke:var(--gold1); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+  #calls-close{width:40px; height:40px; border-radius:50%; background:rgba(212,167,92,.12); border:1px solid var(--gold2); box-shadow:0 0 16px rgba(212,167,92,.35); transition:transform .3s ease, box-shadow .25s ease;}
+  #calls-close svg{width:19px; height:19px; stroke:var(--gold1); stroke-width:2.2;}
+  #calls-close:active{transform:rotate(90deg) scale(.92); box-shadow:0 0 22px rgba(212,167,92,.55);}
+  .cs-scroll{scrollbar-width:thin; scrollbar-color:rgba(212,167,92,.45) transparent;}
+  .cs-scroll::-webkit-scrollbar{width:5px;}
+  .cs-scroll::-webkit-scrollbar-thumb{background:rgba(212,167,92,.45); border-radius:99px;}
+  #calls-overlay .clitem{
+    background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.03));
+    border:1px solid var(--line-soft); border-left:3px solid var(--gold2);
+    border-radius:15px; padding:12px 14px; margin-bottom:10px;
+    animation:clIn .4s ease both;
+    transition:transform .15s ease, border-color .2s ease, box-shadow .2s ease;
+  }
+  #calls-overlay .clitem:active{transform:scale(.985); border-color:var(--line); box-shadow:0 0 16px rgba(212,167,92,.22);}
+  @keyframes clIn{from{transform:translateY(10px); opacity:0;} to{transform:translateY(0); opacity:1;}}
+  #calls-overlay .clmeta{color:var(--gold1); font-size:12.5px; font-weight:600;}
+  #calls-overlay .clsum{color:var(--txt);}
+  #calls-pending{background:rgba(212,167,92,.10); border:1px solid var(--line); color:var(--gold1); border-radius:12px; padding:10px 12px; margin-bottom:12px;}
+  #calls-overlay .quicklabel{color:var(--gold2);}
+  #calls-detail-summary{background:rgba(255,255,255,.04); border:1px solid var(--line-soft); border-left:3px solid var(--gold2); border-radius:14px; padding:12px 14px;}
+  #calls-overlay .cpair{background:rgba(255,255,255,.03); border:1px solid var(--line-soft); border-radius:13px; padding:10px 12px; margin-top:8px;}
   .calllabel{display:block; font-size:12px; font-weight:600; letter-spacing:.6px; text-transform:uppercase; color:var(--dim); margin:14px 0 6px;}
   .callinput{width:100%; box-sizing:border-box; background:rgba(255,255,255,.05); border:1px solid var(--line-soft); border-radius:12px; padding:12px; color:var(--txt); font-size:16px; font-family:var(--sans); outline:0;}
   .callinput:focus{border-color:rgba(212,167,92,.55);}
@@ -976,7 +1008,10 @@
 <div class="overlay" id="calls-overlay">
   <div class="sheet callsheet">
     <div class="cs-head">
-      <h3 data-i18n="callsLogTitle">Registro de llamadas</h3>
+      <div class="cs-twrap">
+        <span class="cs-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg></span>
+        <h3 data-i18n="callsLogTitle">Registro de llamadas</h3>
+      </div>
       <button class="iconbtn" id="calls-close" aria-label="Close">
         <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
@@ -3696,8 +3731,9 @@
     var emptyEl = $('calls-empty');
     if (emptyEl) emptyEl.style.display = (!calls.length && !pending) ? 'block' : 'none';
     list.innerHTML = '';
-    calls.forEach(function (c) {
+    calls.forEach(function (c, idx) {
       var d = document.createElement('button'); d.className = 'clitem';
+      d.style.animationDelay = Math.min(idx * 45, 360) + 'ms';
       var meta = document.createElement('div'); meta.className = 'clmeta';
       meta.textContent = c.dest + ' · ' + callWhen(c.at);
       var sum = document.createElement('div'); sum.className = 'clsum';
