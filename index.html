@@ -573,6 +573,13 @@
   .cpair:last-child{border-bottom:0;}
   .cporig{font-size:14px; line-height:1.5;}
   .cptrans{font-size:14px; line-height:1.5; color:var(--gold1); margin-top:2px;}
+  /* Ventana completa del registro: SOLO se desplaza su lista interna,
+     nunca la página de atrás (lockScroll + overscroll contenido). */
+  #calls-overlay{align-items:stretch; justify-content:stretch;}
+  .callsheet{width:100%; max-width:none; height:100dvh; max-height:none; border-radius:0; border:0; display:flex; flex-direction:column; overflow:hidden; padding:calc(16px + env(safe-area-inset-top)) 18px calc(14px + env(safe-area-inset-bottom));}
+  .cs-head{display:flex; align-items:center; justify-content:space-between; gap:12px;}
+  .cs-head h3{font-family:var(--serif); font-size:22px; font-weight:600; margin:0;}
+  .cs-scroll{flex:1 1 auto; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain;}
   .calllabel{display:block; font-size:12px; font-weight:600; letter-spacing:.6px; text-transform:uppercase; color:var(--dim); margin:14px 0 6px;}
   .callinput{width:100%; box-sizing:border-box; background:rgba(255,255,255,.05); border:1px solid var(--line-soft); border-radius:12px; padding:12px; color:var(--txt); font-size:16px; font-family:var(--sans); outline:0;}
   .callinput:focus{border-color:rgba(212,167,92,.55);}
@@ -722,7 +729,7 @@
       <button class="quickbtn callbtn" id="btn-call-open"><span data-i18n="callOpen">Hacer una llamada</span></button>
       <button class="callsrow" id="btn-calls-open">
         <span class="cr-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg></span>
-        <span class="cr-tx"><span class="cr-t" data-i18n="callsLogTitle">Registro de llamadas</span><span class="cr-s" id="calls-row-sub"></span></span>
+        <span class="cr-tx"><span class="cr-t" data-i18n="callsLogTitle">Registro de llamadas</span></span>
         <span class="cr-arrow">›</span>
       </button>
     </div>
@@ -965,29 +972,33 @@
   </div>
 </div>
 
-<!-- ===== Registro de llamadas ===== -->
+<!-- ===== Registro de llamadas (ventana completa) ===== -->
 <div class="overlay" id="calls-overlay">
-  <div class="sheet">
-    <h3 data-i18n="callsLogTitle">Registro de llamadas</h3>
-    <p class="sub" data-i18n="callsLogSub">Toca una llamada para ver su resumen y la conversación completa.</p>
-    <div id="calls-list-view">
-      <p class="callstatus" id="calls-pending" style="display:none;"></p>
-      <div id="calls-list"></div>
-      <p class="sub" id="calls-empty" style="display:none; margin-top:6px;" data-i18n="callsLogEmpty">Todavía no tienes llamadas registradas.</p>
+  <div class="sheet callsheet">
+    <div class="cs-head">
+      <h3 data-i18n="callsLogTitle">Registro de llamadas</h3>
+      <button class="iconbtn" id="calls-close" aria-label="Close">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
     </div>
-    <div id="calls-detail-view" style="display:none;">
-      <button class="btn-ghost" id="calls-back" style="width:auto; padding:9px 18px; margin-bottom:12px;" data-i18n="callsBack">← Volver</button>
-      <p class="calllastmeta" id="calls-detail-meta" style="margin-top:0;"></p>
-      <p class="calllastmeta" id="calls-detail-goal" style="display:none;"></p>
-      <span class="quicklabel" data-i18n="callDetailSummary" style="display:block; margin-top:12px;">Resumen</span>
-      <p class="calllasttext" id="calls-detail-summary"></p>
-      <div id="calls-detail-convwrap" style="margin-top:16px;">
-        <span class="quicklabel" data-i18n="callDetailConv" style="display:block;">Conversación</span>
-        <div id="calls-detail-conv"></div>
+    <p class="sub" data-i18n="callsLogSub" style="margin-bottom:8px;">Toca una llamada para ver su resumen y la conversación completa.</p>
+    <div class="cs-scroll" id="calls-scroll">
+      <div id="calls-list-view">
+        <p class="callstatus" id="calls-pending" style="display:none;"></p>
+        <div id="calls-list"></div>
+        <p class="sub" id="calls-empty" style="display:none; margin-top:6px;" data-i18n="callsLogEmpty">Todavía no tienes llamadas registradas.</p>
       </div>
-    </div>
-    <div class="btnrow">
-      <button class="btn-ghost" id="calls-close" data-i18n="closeIt">Cerrar</button>
+      <div id="calls-detail-view" style="display:none;">
+        <button class="btn-ghost" id="calls-back" style="width:auto; padding:9px 18px; margin-bottom:12px;" data-i18n="callsBack">← Volver</button>
+        <p class="calllastmeta" id="calls-detail-meta" style="margin-top:0;"></p>
+        <p class="calllastmeta" id="calls-detail-goal" style="display:none;"></p>
+        <span class="quicklabel" data-i18n="callDetailSummary" style="display:block; margin-top:12px;">Resumen</span>
+        <p class="calllasttext" id="calls-detail-summary"></p>
+        <div id="calls-detail-convwrap" style="margin-top:16px;">
+          <span class="quicklabel" data-i18n="callDetailConv" style="display:block;">Conversación</span>
+          <div id="calls-detail-conv"></div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -3666,15 +3677,8 @@
   }
 
   function renderCallLast() {
-    // El Inicio ya no muestra el resumen (orden de Noel, 2026-10-23):
-    // solo la fila «Registro de llamadas» con un subtítulo corto.
-    var pending = callStoreGet(CALL_PENDING_KEY), calls = callStoreGet(CALLS_KEY) || [];
-    var sub = $('calls-row-sub');
-    if (sub) {
-      if (pending) sub.textContent = t('callsPending');
-      else if (calls.length) sub.textContent = calls[0].dest + ' · ' + callWhen(calls[0].at);
-      else sub.textContent = t('callsRowNone');
-    }
+    // El Inicio ya no muestra NADA del registro (orden de Noel,
+    // 2026-10-23): solo el botón que abre la ventana completa.
     renderCallsRegister();
   }
 
@@ -3707,6 +3711,7 @@
   function showCallDetail(c) {
     $('calls-list-view').style.display = 'none';
     $('calls-detail-view').style.display = 'block';
+    var sc = $('calls-scroll'); if (sc) sc.scrollTop = 0;
     $('calls-detail-meta').textContent = c.dest + ' · ' + callWhen(c.at);
     var goalEl = $('calls-detail-goal');
     if (c.goal) { goalEl.textContent = t('callsGoalPrefix') + c.goal; goalEl.style.display = 'block'; }
@@ -3734,6 +3739,7 @@
     renderCallsRegister();
     $('calls-list-view').style.display = 'block';
     $('calls-detail-view').style.display = 'none';
+    var sc = $('calls-scroll'); if (sc) sc.scrollTop = 0;
     callsOverlay.classList.add('on'); lockScroll();
   }
   function closeCallsSheet() { callsOverlay.classList.remove('on'); unlockScroll(); }
@@ -3866,6 +3872,7 @@
     vibrate(8);
     $('calls-detail-view').style.display = 'none';
     $('calls-list-view').style.display = 'block';
+    var sc = $('calls-scroll'); if (sc) sc.scrollTop = 0;
   });
   callsOverlay.addEventListener('click', function (e) { if (e.target === callsOverlay) closeCallsSheet(); });
   $('call-close').addEventListener('click', closeCallSheet);
