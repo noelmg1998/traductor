@@ -51,12 +51,7 @@ module.exports = async (req, res) => {
     : '<Say language="es-US" voice="Polly.Lupe">Conectando tu llamada. Habla ' +
       'en español con calma; la otra persona te escuchará en inglés.</Say>';
 
-  // BISECCIÓN TEMPORAL (2026-10-22): las llamadas reales se caen al empezar
-  // el stream contra Fly y contra Render SIN que el servidor vea conexión
-  // ni Twilio registre error. Se manda el stream al eco público (que el
-  // 2026-10-22 a las 22:01 SÍ aguantó la llamada minutos) pa' reconfirmar
-  // que Twilio sigue pudiendo streamear desde esta cuenta esta noche.
-  const streamUrl = 'wss://ws.postman-echo.com/raw' +
+  const streamUrl = 'wss://' + relay + '/stream' +
     '?leg=' + leg +
     '&callId=' + encodeURIComponent(q.callId || '') +
     '&pairA=' + encodeURIComponent(q.pairA || 'es') +
