@@ -1022,7 +1022,7 @@
   </section>
 
   <footer data-i18n="footer">Traducción automática con IA · En vivo</footer>
-  <div class="verlabel">v34 · Englix</div>
+  <div class="verlabel">v35 · Englix</div>
 </div>
 
 <!-- ===== Barra inferior (v11 · Englix) ===== -->
@@ -4461,7 +4461,11 @@
     if (!authEnabled()) return;
     try {
       sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'pkce' }
+        /* Flujo 'implicit': el enlace del correo trae la sesión en la propia
+           URL, así funciona en cualquier navegador o webview donde el
+           usuario toque el botón (con PKCE el enlace solo servía en el
+           mismo navegador donde se registró y caía en Iniciar sesión). */
+        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'implicit' }
       });
     } catch (e) { sb = null; return; }
 
