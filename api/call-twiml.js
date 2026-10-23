@@ -57,15 +57,23 @@ module.exports = async (req, res) => {
     : '<Say language="es-US" voice="Polly.Lupe">Conectando tu llamada. Habla ' +
       'en español con calma; la otra persona te escuchará en inglés.</Say>';
 
-  // DIAGNÓSTICO TEMPORAL (2026-10-23): stream al eco crudo /raw con la
-  // forma EXACTA del eco público que sí aguantó (sin parámetros en la
-  // URL y sin track) pa' separar si Twilio puede conectar a este host
-  // y borde. REVERTIR en cuanto se haga la llamada de prueba.
-  const streamUrl = 'wss://' + relay + '/raw';
+  // Los datos de la pata van como <Parameter> (llegan al relay en el
+  // evento start), NUNCA como parámetros de la URL: la bisección del
+  // 2026-10-23 probó que con ?leg=..&callId=.. en la URL Twilio jamás
+  // conectó el stream a ningún relay (Render, Fly, dominio propio),
+  // mientras que sin parámetros (eco /raw) conectó al instante.
+  const streamUrl = 'wss://' + relay + '/stream';
+  const params =
+    '<Parameter name="leg" value="' + escAttr(leg) + '"/>' +
+    '<Parameter name="callId" value="' + escAttr(q.callId || '') + '"/>' +
+    '<Parameter name="pairA" value="' + escAttr(q.pairA || 'es') + '"/>' +
+    '<Parameter name="pairB" value="' + escAttr(q.pairB || 'en') + '"/>' +
+    '<Parameter name="goal" value="' + escAttr(q.goal || '') + '"/>';
 
   res.status(200).send(
     '<Response>' + say +
-    '<Connect><Stream url="' + escAttr(streamUrl) + '" /></Connect>' +
+    '<Connect><Stream url="' + escAttr(streamUrl) + '" track="inbound_track">' +
+    params + '</Stream></Connect>' +
     '</Response>'
   );
 };
