@@ -94,7 +94,14 @@ module.exports = async (req, res) => {
     form.set('Method', 'POST');
     form.set('StatusCallback', base + '/api/call-status?' + statusQ.toString());
     form.set('StatusCallbackMethod', 'POST');
-    form.append('StatusCallbackEvent', 'in-progress');
+    // OJO: los eventos válidos de Twilio son initiated/ringing/answered/
+    // completed. "in-progress" es un ESTADO, no un evento: Twilio lo
+    // rechazaba con el warning 21626 y NUNCA avisaba — por eso la pata
+    // destino no se creaba y la llamada se caía tras el saludo
+    // (confirmado en el registro de llamadas del 2026-10-22). El aviso
+    // 'answered' llega con CallStatus = in-progress en el cuerpo.
+    form.append('StatusCallbackEvent', 'answered');
+    form.append('StatusCallbackEvent', 'completed');
 
     const r = await fetch(
       'https://api.twilio.com/2010-04-01/Accounts/' + sid + '/Calls.json',

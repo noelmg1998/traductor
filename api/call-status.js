@@ -19,7 +19,8 @@ module.exports = async (req, res) => {
       b = Object.fromEntries(new URLSearchParams(b.toString('utf8')));
     }
 
-    if (q.leg === 'user' && b.CallStatus === 'in-progress' && q.dest) {
+    if (q.leg === 'user' && q.dest &&
+        (b.CallStatus === 'in-progress' || b.CallStatus === 'answered')) {
       const sid = process.env.TWILIO_ACCOUNT_SID;
       const token = process.env.TWILIO_AUTH_TOKEN;
       // v18: el origen de la pata destino lo decide call-start (el número
