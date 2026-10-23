@@ -1133,7 +1133,7 @@
   </section>
 
   <footer data-i18n="footer">Traducción automática con IA · En vivo</footer>
-  <div class="verlabel">v40 · Englix</div>
+  <div class="verlabel">v41 · Englix</div>
 </div>
 
 <!-- ===== Barra inferior (v11 · Englix) ===== -->
@@ -1787,6 +1787,9 @@
       plansSecBalance: 'Saldo (sin vencimiento)', plansTopupPlain: 'de saldo', plansTopupGet: 'Recibes {USD}',
       plansNote: 'En persona pagas por minuto de voz hablada (si nadie habla, no pagas). En llamadas, por minuto de llamada.',
       plansBuySoon: 'El cobro con tarjeta se activa en el siguiente paso. Tu plan y tu saldo actuales no cambian.',
+      plansPayOk: 'Pago recibido — tu plan/saldo se actualiza en unos segundos',
+      plansPayCanceled: 'Pago cancelado. No se hizo ningún cargo.',
+      plansPayError: 'No se pudo abrir el pago. Inténtalo de nuevo.',
       navHome: 'Inicio', navLearn: 'Aprender', navHistory: 'Historial', navProfile: 'Perfil',
       soonBadge: 'En preparación',
       soonPremiumTitle: 'Englix Premium',
@@ -1966,6 +1969,9 @@
       plansSecBalance: 'Balance (never expires)', plansTopupPlain: 'of balance', plansTopupGet: 'You get {USD}',
       plansNote: 'In person you pay per minute of speech (if nobody speaks, you pay nothing). On calls, per minute of call.',
       plansBuySoon: 'Card payments arrive in the next step. Your current plan and balance stay as they are.',
+      plansPayOk: 'Payment received — your plan/balance updates in a few seconds',
+      plansPayCanceled: 'Payment canceled. You were not charged.',
+      plansPayError: 'Could not open the payment. Please try again.',
       navHome: 'Home', navLearn: 'Learn', navHistory: 'History', navProfile: 'Profile',
       soonBadge: 'In preparation',
       soonPremiumTitle: 'Englix Premium',
@@ -4624,8 +4630,9 @@
      Si el cobro no está configurado en el servidor (503) o no hay
      respuesta, la app DEJA PASAR y no finge ningún descuento: mejor
      una sesión sin cobrar que una app bloqueada. Las compras con
-     tarjeta llegan en la Fase 3 (Stripe); aquí los botones de plan y
-     recarga solo muestran el aviso honesto. */
+     tarjeta van por Stripe Checkout (Fase 3, v41): el servidor
+     crea la sesión de pago; si Stripe aún no está configurado
+     (503), los botones muestran el aviso honesto de siempre. */
   function planNameOf(plan) {
     if (plan === 'basico') return t('authPlanBasico');
     if (plan === 'plus') return t('authPlanPlus');
@@ -4734,11 +4741,57 @@
     n.textContent = t('plansBuySoon');
     n.classList.add('on');
   }
-  ['btn-plan-basico', 'btn-plan-plus', 'btn-plan-premium',
-   'btn-topup-10', 'btn-topup-20', 'btn-topup-50'].forEach(function (id) {
-    $(id).addEventListener('click', plansSoonNotice);
+  /* ---- Compra con tarjeta (Fase 3, v41): Stripe Checkout ----
+     El servidor (/api/checkout) crea la sesión de pago con el
+     token de la sesión y devuelve la URL: se navega a Stripe y
+     el webhook confirma el dinero. Sin Stripe en el servidor
+     (503 stripe_not_configured) se muestra el aviso honesto de
+     siempre (plansBuySoon): nunca se finge una compra. */
+  function startCheckout(kind, id, btn) {
+    vibrate(8);
+    if (btn) btn.disabled = true;
+    var done = function () { if (btn) btn.disabled = false; };
+    billingToken().then(function (tok) {
+      if (!tok) { done(); toast(t('plansPayError')); return; }
+      fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok },
+        body: JSON.stringify({ kind: kind, id: id })
+      }).then(function (r) {
+        return r.json().catch(function () { return null; })
+          .then(function (j) { return { status: r.status, j: j }; });
+      }).then(function (out) {
+        if (out && out.j && out.j.url) { window.location.href = out.j.url; return; }
+        done();
+        if (out && out.status === 503) { plansSoonNotice(); return; }
+        toast(t('plansPayError'));
+      }).catch(function () { done(); toast(t('plansPayError')); });
+    }).catch(function () { done(); toast(t('plansPayError')); });
+  }
+  [['btn-plan-basico', 'plan', 'basico'], ['btn-plan-plus', 'plan', 'plus'],
+   ['btn-plan-premium', 'plan', 'premium'], ['btn-topup-10', 'topup', 't10'],
+   ['btn-topup-20', 'topup', 't20'], ['btn-topup-50', 'topup', 't50']
+  ].forEach(function (cfg) {
+    var btn = $(cfg[0]);
+    btn.addEventListener('click', function () { startCheckout(cfg[1], cfg[2], btn); });
   });
   $('btn-plans-back').addEventListener('click', function () { vibrate(8); showView('home'); });
+
+  /* ---- Regreso de Stripe Checkout (?pago=ok|cancelado) ----
+     El webhook tarda unos segundos en aplicar el plan/saldo: se
+     avisa y se refresca el estado a los 3 s (y otra vez a los
+     10 s por si el evento llegó tarde). */
+  (function () {
+    var pago = null;
+    try { pago = new URLSearchParams(window.location.search).get('pago'); } catch (e) {}
+    if (pago === 'ok') {
+      toast(t('plansPayOk'));
+      setTimeout(function () { billingRefresh(); }, 3000);
+      setTimeout(function () { billingRefresh(); }, 10000);
+    } else if (pago === 'cancelado') {
+      toast(t('plansPayCanceled'));
+    }
+  })();
 
   /* ---- Medidor de voz (conversación en persona) ----
      Se cobra por VOZ hablada, nunca por tiempo conectado: los
