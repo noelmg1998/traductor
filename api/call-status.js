@@ -22,7 +22,10 @@ module.exports = async (req, res) => {
     if (q.leg === 'user' && b.CallStatus === 'in-progress' && q.dest) {
       const sid = process.env.TWILIO_ACCOUNT_SID;
       const token = process.env.TWILIO_AUTH_TOKEN;
-      const from = process.env.TWILIO_PHONE_NUMBER;
+      // v18: el origen de la pata destino lo decide call-start (el número
+      // verificado del usuario si lo tiene; si no, el de Englix).
+      const from = (typeof q.from === 'string' && /^\+1\d{10}$/.test(q.from))
+        ? q.from : process.env.TWILIO_PHONE_NUMBER;
       if (sid && token && from) {
         const base = 'https://' + (req.headers.host || 'traductor-prueba-muse-ce8f.vercel.app');
         const twimlQ = new URLSearchParams({

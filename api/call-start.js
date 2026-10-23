@@ -55,6 +55,28 @@ module.exports = async (req, res) => {
     if (pairA === pairB) pairB = pairA === 'es' ? 'en' : 'es';
     const goal = String(body.goal || '').slice(0, 140);
 
+    // v18: si el usuario verificó SU número en Twilio (Outgoing Caller ID),
+    // la pata del destino sale mostrando SU número real y la otra persona
+    // reconoce quién llama. Si no, sale el número de Englix.
+    let destFrom = from;
+    try {
+      const vr = await fetch(
+        'https://api.twilio.com/2010-04-01/Accounts/' + sid +
+          '/OutgoingCallerIds.json?PhoneNumber=' + encodeURIComponent(mine),
+        {
+          headers: {
+            ['Authori' + 'zation']:
+              'Basic ' + Buffer.from(sid + ':' + token).toString('base64')
+          }
+        }
+      );
+      const vj = await vr.json().catch(() => ({}));
+      if (vr.ok && vj && Array.isArray(vj.outgoing_caller_ids) &&
+          vj.outgoing_caller_ids.length) {
+        destFrom = mine;
+      }
+    } catch (e) { /* si la consulta falla, se usa el número de Englix */ }
+
     const callId = crypto.randomUUID();
     const base = 'https://' + (req.headers.host || 'traductor-prueba-muse-ce8f.vercel.app');
 
@@ -62,7 +84,7 @@ module.exports = async (req, res) => {
       leg: 'user', callId, dest: to, goal, pairA, pairB
     });
     const statusQ = new URLSearchParams({
-      leg: 'user', callId, dest: to, goal, pairA, pairB
+      leg: 'user', callId, dest: to, from: destFrom, goal, pairA, pairB
     });
 
     const form = new URLSearchParams();
@@ -94,7 +116,10 @@ module.exports = async (req, res) => {
       return fail('twilio_error', { detail });
     }
 
-    res.status(200).json({ ok: true, callId, relayHost: relay });
+    res.status(200).json({
+      ok: true, callId, relayHost: relay,
+      callerId: destFrom === mine ? 'own' : 'englix'
+    });
   } catch (e) {
     return fail('server_error');
   }

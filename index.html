@@ -561,6 +561,10 @@
   .callinput{width:100%; box-sizing:border-box; background:rgba(255,255,255,.05); border:1px solid var(--line-soft); border-radius:12px; padding:12px; color:var(--txt); font-size:16px; font-family:var(--sans); outline:0;}
   .callinput:focus{border-color:rgba(212,167,92,.55);}
   .callstatus{color:var(--gold1); font-size:14px; line-height:1.5; margin:12px 0 0;}
+  .verifywrap{margin-top:4px;}
+  .callverify-note{color:var(--muted); font-size:13.5px; line-height:1.5; margin:0 0 8px;}
+  .verifycode{font-size:36px; font-weight:800; letter-spacing:10px; text-align:center; color:var(--gold1); margin:6px 0 10px;}
+  .callverified{color:#8fd694; font-size:14px; line-height:1.5; margin:12px 0 0;}
   .callhist{margin-top:18px; border-top:1px solid var(--line-soft); padding-top:12px;}
   .callhist h4{margin:0 0 8px; font-size:13px; letter-spacing:.6px; text-transform:uppercase; color:var(--dim);}
   .callhist .chitem{padding:9px 0; border-bottom:1px solid var(--line-soft);}
@@ -854,7 +858,7 @@
   </section>
 
   <footer data-i18n="footer">Traducción automática con IA · En vivo</footer>
-  <div class="verlabel">v17 · Englix</div>
+  <div class="verlabel">v18 · Englix</div>
 </div>
 
 <!-- ===== Barra inferior (v11 · Englix) ===== -->
@@ -914,6 +918,19 @@
     <input class="callinput" id="call-dest" type="tel" inputmode="tel" autocomplete="off" placeholder="(305) 555-0123">
     <label class="calllabel" for="call-mine" data-i18n="callMineLabel">Tu número de celular</label>
     <input class="callinput" id="call-mine" type="tel" inputmode="tel" autocomplete="off" placeholder="(941) 555-0123">
+    <div class="verifywrap" id="verify-wrap" style="display:none;">
+      <div id="verify-row">
+        <p class="callverify-note" data-i18n="callVerifyNote">Si verificas tu número (una sola vez), la otra persona verá TU número al llamarle, no el de Englix.</p>
+        <button class="btn-ghost" id="btn-verify" data-i18n="callVerifyBtn">Verificar mi número</button>
+      </div>
+      <div id="verify-panel" style="display:none;">
+        <p class="callverify-note" data-i18n="callVerifyCalling" style="margin-top:10px;">Te estamos llamando ahora para verificar. Contesta y marca este código en el teclado de esa llamada:</p>
+        <div class="verifycode" id="verify-code">------</div>
+        <button class="btn-ghost" id="btn-verify-check" data-i18n="callVerifyCheck">Ya marqué el código</button>
+        <p class="callstatus" id="verify-status" style="display:none;"></p>
+      </div>
+      <p class="callverified" id="verify-ok" style="display:none;" data-i18n="callVerifyOk">✓ Tu número está verificado: tus llamadas saldrán con tu número.</p>
+    </div>
     <label class="calllabel" for="call-goal" data-i18n="callGoalLabel">¿Para qué es la llamada? (opcional)</label>
     <input class="callinput" id="call-goal" type="text" maxlength="120" autocomplete="off" data-i18n-ph="callGoalPh" placeholder="Ej.: pedir una cita, una factura…">
     <p class="quickerr" id="call-err" style="display:none;"></p>
@@ -1150,6 +1167,14 @@
       callErr: 'No se pudo hacer la llamada. Inténtalo de nuevo.',
       callErrNumbers: 'Revisa los dos números: deben tener código de área (10 dígitos).',
       callSoon: 'El servicio de llamadas está casi listo: falta encender el servidor de llamadas. Muy pronto podrás llamar desde aquí.',
+      callVerifyNote: 'Si verificas tu número (una sola vez), la otra persona verá TU número al llamarle, no el de Englix.',
+      callVerifyBtn: 'Verificar mi número',
+      callVerifyCalling: 'Te estamos llamando ahora para verificar. Contesta y marca este código en el teclado de esa llamada:',
+      callVerifyCheck: 'Ya marqué el código',
+      callVerifyOk: '✓ Tu número está verificado: tus llamadas saldrán con tu número.',
+      callVerifyWait: 'Revisando…',
+      callVerifyNotYet: 'Todavía no aparece. Contesta la llamada de verificación, marca el código y toca de nuevo.',
+      callVerifyErr: 'No se pudo verificar. Revisa tu número e inténtalo de nuevo.',
       callSummaryTitle: 'Resumen de tu última llamada',
       callSummaryPending: 'Tu llamada terminó o sigue en curso: el resumen aparecerá aquí al colgar.',
       callNoTalk: 'No se registró conversación en esta llamada.',
@@ -1260,6 +1285,14 @@
       callErr: 'The call could not be placed. Please try again.',
       callErrNumbers: 'Check both numbers: they need an area code (10 digits).',
       callSoon: 'The call service is almost ready: the call server still needs to be switched on. You will be able to call from here very soon.',
+      callVerifyNote: 'If you verify your number (just once), the other person will see YOUR number when you call, not the Englix one.',
+      callVerifyBtn: 'Verify my number',
+      callVerifyCalling: 'We are calling you now to verify. Answer and type this code on that call keypad:',
+      callVerifyCheck: 'I entered the code',
+      callVerifyOk: '✓ Your number is verified: your calls will show your number.',
+      callVerifyWait: 'Checking…',
+      callVerifyNotYet: 'It is not showing yet. Answer the verification call, enter the code, then tap again.',
+      callVerifyErr: 'Verification could not start. Check your number and try again.',
       callSummaryTitle: 'Summary of your last call',
       callSummaryPending: 'Your call ended or is still going: the summary will appear here when you hang up.',
       callNoTalk: 'No conversation was recorded on this call.',
@@ -3601,9 +3634,88 @@
     if (nums.dest && !callDestIn.value) callDestIn.value = nums.dest;
     callShowErr(''); callShowStatus('');
     renderCallHistory();
+    refreshVerifyUI(); checkVerifiedRemote();
     callOverlay.classList.add('on'); lockScroll();
   }
   function closeCallSheet() { callOverlay.classList.remove('on'); unlockScroll(); }
+
+  /* ===== Verificación del número propio (v18) =====
+     Si el usuario verifica su número en Twilio una sola vez, la otra
+     persona ve SU número al llamarle en vez del de Englix. */
+  var VERIFIED_KEY = 'lc_verified_numbers_v1';
+  var verifyWrap = $('verify-wrap'), verifyRow = $('verify-row'), verifyPanel = $('verify-panel'),
+      verifyOkEl = $('verify-ok'), verifyCodeEl = $('verify-code'), verifyStatusEl = $('verify-status'),
+      btnVerify = $('btn-verify'), btnVerifyCheck = $('btn-verify-check'), verifyFlowFor = null;
+
+  function mineE164() {
+    var d = callDigits(callMineIn.value);
+    if (d.length === 10) return '+1' + d;
+    if (d.length === 11 && d.charAt(0) === '1') return '+' + d;
+    return null;
+  }
+  function verifiedMap() { return callStoreGet(VERIFIED_KEY) || {}; }
+  function markVerified(e164) { var m = verifiedMap(); m[e164] = true; callStoreSet(VERIFIED_KEY, m); }
+  function verifyShowStatus(msg) { verifyStatusEl.textContent = msg; verifyStatusEl.style.display = msg ? 'block' : 'none'; }
+  function refreshVerifyUI() {
+    var e164 = mineE164();
+    if (!e164) { verifyWrap.style.display = 'none'; return; }
+    verifyWrap.style.display = 'block';
+    var ok = !!verifiedMap()[e164];
+    verifyOkEl.style.display = ok ? 'block' : 'none';
+    if (ok) { verifyRow.style.display = 'none'; verifyPanel.style.display = 'none'; verifyFlowFor = null; return; }
+    var inFlow = verifyFlowFor === e164;
+    verifyPanel.style.display = inFlow ? 'block' : 'none';
+    verifyRow.style.display = inFlow ? 'none' : 'block';
+  }
+  function checkVerifiedRemote() {
+    var e164 = mineE164();
+    if (!e164 || verifiedMap()[e164]) { refreshVerifyUI(); return; }
+    fetch('/api/call-verify-status?number=' + encodeURIComponent(e164))
+      .then(function (r) { return r.json(); })
+      .then(function (j) { if (j && j.ok && j.verified) markVerified(e164); refreshVerifyUI(); })
+      .catch(function () { refreshVerifyUI(); });
+  }
+
+  callMineIn.addEventListener('input', function () {
+    if (verifyFlowFor && mineE164() !== verifyFlowFor) verifyFlowFor = null;
+    refreshVerifyUI();
+  });
+
+  btnVerify.addEventListener('click', function () {
+    var e164 = mineE164();
+    if (!e164) { callShowErr(t('callErrNumbers')); return; }
+    vibrate(8); btnVerify.disabled = true;
+    fetch('/api/call-verify-start', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ myNumber: callMineIn.value.trim() })
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        btnVerify.disabled = false;
+        if (!j || !j.ok) { callShowErr(t('callVerifyErr')); return; }
+        callShowErr('');
+        if (j.alreadyVerified) { markVerified(e164); refreshVerifyUI(); return; }
+        verifyFlowFor = e164;
+        verifyCodeEl.textContent = j.code;
+        verifyShowStatus('');
+        refreshVerifyUI();
+      })
+      .catch(function () { btnVerify.disabled = false; callShowErr(t('callVerifyErr')); });
+  });
+
+  btnVerifyCheck.addEventListener('click', function () {
+    var e164 = mineE164();
+    if (!e164) return;
+    vibrate(8); verifyShowStatus(t('callVerifyWait'));
+    fetch('/api/call-verify-status?number=' + encodeURIComponent(e164))
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (j && j.ok && j.verified) {
+          markVerified(e164); verifyFlowFor = null; verifyShowStatus(''); refreshVerifyUI();
+        } else verifyShowStatus(t('callVerifyNotYet'));
+      })
+      .catch(function () { verifyShowStatus(t('callVerifyNotYet')); });
+  });
 
   $('btn-call-open').addEventListener('click', function () { vibrate(8); openCallSheet(); });
   $('call-close').addEventListener('click', closeCallSheet);
