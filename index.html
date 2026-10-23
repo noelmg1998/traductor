@@ -565,6 +565,7 @@
   .callverify-note{color:var(--muted); font-size:13.5px; line-height:1.5; margin:0 0 8px;}
   .verifycode{font-size:36px; font-weight:800; letter-spacing:10px; text-align:center; color:var(--gold1); margin:6px 0 10px;}
   .callverified{color:#8fd694; font-size:14px; line-height:1.5; margin:12px 0 0;}
+  .callfromnote{color:var(--gold1); font-size:13.5px; line-height:1.55; margin:6px 0 0; background:rgba(212,167,92,.08); border:1px solid rgba(212,167,92,.25); border-radius:12px; padding:10px 12px;}
   .callhist{margin-top:18px; border-top:1px solid var(--line-soft); padding-top:12px;}
   .callhist h4{margin:0 0 8px; font-size:13px; letter-spacing:.6px; text-transform:uppercase; color:var(--dim);}
   .callhist .chitem{padding:9px 0; border-bottom:1px solid var(--line-soft);}
@@ -858,7 +859,7 @@
   </section>
 
   <footer data-i18n="footer">Traducción automática con IA · En vivo</footer>
-  <div class="verlabel">v19 · Englix</div>
+  <div class="verlabel">v20 · Englix</div>
 </div>
 
 <!-- ===== Barra inferior (v11 · Englix) ===== -->
@@ -919,6 +920,7 @@
     <label class="calllabel" for="call-mine" data-i18n="callMineLabel">Tu número de celular</label>
     <input class="callinput" id="call-mine" type="tel" inputmode="tel" autocomplete="tel" placeholder="(941) 555-0123">
     <p class="callverify-note" data-i18n="callMineHint" style="margin-top:6px;">Lo escribes una sola vez: queda guardado en tu teléfono y sale solo la próxima vez.</p>
+    <p class="callfromnote" data-i18n="callFromNote">Te llamamos desde el número de Englix: +1 (662) 362-9216. Cuando suene tu celular con ese número, contéstalo — así empieza tu llamada.</p>
     <div class="verifywrap" id="verify-wrap" style="display:none;">
       <div id="verify-row">
         <p class="callverify-note" data-i18n="callVerifyNote">Si verificas tu número (una sola vez), la otra persona verá TU número al llamarle, no el de Englix.</p>
@@ -1164,7 +1166,8 @@
       callGoalLabel: '¿Para qué es la llamada? (opcional)',
       callGoalPh: 'Ej.: pedir una cita, una factura…',
       callNow: 'Llamar ahora', callCalling: 'Llamando…',
-      callRinging: 'Te estamos llamando: contesta tu celular y espera a que conecte la otra persona.',
+      callRinging: 'Te estamos llamando desde el +1 (662) 362-9216: contesta tu celular y espera a que conecte la otra persona.',
+      callFromNote: 'Te llamamos desde el número de Englix: +1 (662) 362-9216. Cuando suene tu celular con ese número, contéstalo — así empieza tu llamada.',
       callErr: 'No se pudo hacer la llamada. Inténtalo de nuevo.',
       callErrNumbers: 'Revisa los dos números: deben tener código de área (10 dígitos).',
       callSoon: 'El servicio de llamadas está casi listo: falta encender el servidor de llamadas. Muy pronto podrás llamar desde aquí.',
@@ -1283,7 +1286,8 @@
       callGoalLabel: 'What is the call about? (optional)',
       callGoalPh: 'E.g.: book an appointment, a bill…',
       callNow: 'Call now', callCalling: 'Calling…',
-      callRinging: 'We are calling you: answer your cell phone and wait for the other person to connect.',
+      callRinging: 'We are calling you from +1 (662) 362-9216: answer your cell phone and wait for the other person to connect.',
+      callFromNote: 'We call you from the Englix number: +1 (662) 362-9216. When your phone rings with that number, answer it — that is how your call starts.',
       callErr: 'The call could not be placed. Please try again.',
       callErrNumbers: 'Check both numbers: they need an area code (10 digits).',
       callSoon: 'The call service is almost ready: the call server still needs to be switched on. You will be able to call from here very soon.',
