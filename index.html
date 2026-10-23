@@ -613,6 +613,87 @@
   #calls-overlay .quicklabel{color:var(--gold2);}
   #calls-detail-summary{background:rgba(255,255,255,.04); border:1px solid var(--line-soft); border-left:3px solid var(--gold2); border-radius:14px; padding:12px 14px;}
   #calls-overlay .cpair{background:rgba(255,255,255,.03); border:1px solid var(--line-soft); border-radius:13px; padding:10px 12px; margin-top:8px;}
+
+  /* ================= Autenticación Englix (v22) =================
+     Luxury Premium: azul casi negro, dorado, glass, slides suaves. */
+  #auth-root{position:fixed; inset:0; z-index:95; display:none; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain;
+    background:
+      radial-gradient(120% 50% at 85% -5%, rgba(212,167,92,.20), rgba(212,167,92,0) 55%),
+      radial-gradient(90% 40% at 8% 105%, rgba(212,167,92,.13), rgba(212,167,92,0) 60%),
+      linear-gradient(180deg,#0a1224 0%,#05070f 55%,#030408 100%);}
+  #auth-root.on{display:block;}
+  #auth-root::after{content:""; position:fixed; left:-10%; right:-10%; bottom:-6px; height:120px; pointer-events:none; opacity:.5;
+    background:radial-gradient(60% 100% at 50% 115%, rgba(212,167,92,.28), rgba(212,167,92,0) 70%); animation:authGlow 9s ease-in-out infinite alternate;}
+  @keyframes authGlow{from{opacity:.32; transform:translateX(-1.5%);} to{opacity:.55; transform:translateX(1.5%);}}
+  .authwrap{position:relative; z-index:1; max-width:430px; margin:0 auto; padding:calc(20px + env(safe-area-inset-top)) 22px calc(26px + env(safe-area-inset-bottom));}
+  @media (min-width:640px){ .authwrap{margin-top:4vh; border:1px solid rgba(212,167,92,.16); border-radius:28px; background:rgba(10,14,26,.55); box-shadow:0 30px 80px rgba(0,0,0,.55); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);} }
+  .authbrand{font-family:var(--serif); font-size:44px; font-weight:700; letter-spacing:.2px; color:#fff; line-height:1; margin-top:8px;}
+  .authbrand .ax{background:var(--gold-grad); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  .authtag{margin:9px 0 0; font-size:10.5px; letter-spacing:2.6px; color:rgba(242,210,135,.75); text-transform:uppercase; line-height:1.7;}
+  .authview{overflow:hidden; margin-top:24px;}
+  .authtrack{display:flex; transition:transform .32s cubic-bezier(.25,.9,.3,1);}
+  .authpane{flex:0 0 100%; min-width:0; padding:1px;}
+  .authpane h2{font-family:var(--serif); font-size:29px; font-weight:600; margin:0 0 6px; color:#fff;}
+  .authsub{color:var(--muted); font-size:14px; line-height:1.5; margin:0 0 18px;}
+  .aback{display:inline-flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:50%; border:1px solid var(--line-soft); background:rgba(255,255,255,.04); margin-bottom:14px;}
+  .aback svg{width:18px; height:18px; stroke:var(--gold1); fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round;}
+  .afield{display:flex; align-items:center; gap:10px; background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.13); border-radius:14px; padding:0 13px; height:54px; transition:border-color .2s ease, box-shadow .2s ease; margin-top:12px;}
+  .afield:first-of-type{margin-top:0;}
+  .afield:focus-within{border-color:rgba(212,167,92,.65); box-shadow:0 0 0 3px rgba(212,167,92,.13), 0 0 18px rgba(212,167,92,.12);}
+  .afield.invalid{border-color:rgba(255,96,96,.55);}
+  .afield.valid{border-color:rgba(120,220,150,.45);}
+  .afield > svg{width:19px; height:19px; stroke:rgba(255,255,255,.55); fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; flex:0 0 auto;}
+  .afield input{flex:1; min-width:0; background:none; border:0; outline:0; color:#fff; font-size:16px; font-family:var(--sans); height:100%;}
+  .afield input::placeholder{color:rgba(255,255,255,.38);}
+  .aeye{flex:0 0 auto; width:36px; height:36px; display:flex; align-items:center; justify-content:center; border-radius:10px;}
+  .aeye svg{width:20px; height:20px; stroke:rgba(255,255,255,.55); fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; transition:opacity .18s ease;}
+  .aeye .eyeoff{display:none;}
+  .aeye.showing .eyeon{display:none;}
+  .aeye.showing .eyeoff{display:block;}
+  .aeye.showing svg{stroke:var(--gold1);}
+  .aerr{display:none; color:#ff9d9d; font-size:12.5px; line-height:1.45; margin:6px 2px 0;}
+  .aerr.on{display:block;}
+  .aok{display:none; color:var(--gold1); font-size:13.5px; line-height:1.55; margin:0 0 14px; background:rgba(212,167,92,.08); border:1px solid rgba(212,167,92,.25); border-radius:12px; padding:11px 13px;}
+  .aok.on{display:block;}
+  .authbtn{position:relative; width:100%; margin-top:20px; padding:16px 52px 16px 20px; border-radius:999px; background:var(--gold-grad); color:#241a05; font-weight:700; font-size:16.5px; box-shadow:0 10px 26px rgba(212,167,92,.32), inset 0 1px 0 rgba(255,255,255,.5); transition:transform .15s ease, box-shadow .25s ease, opacity .2s ease;}
+  .authbtn:hover{box-shadow:0 12px 32px rgba(212,167,92,.45), inset 0 1px 0 rgba(255,255,255,.5);}
+  .authbtn:active{transform:scale(.98);}
+  .authbtn[disabled]{opacity:.65;}
+  .authbtn .abarrow{position:absolute; right:7px; top:50%; transform:translateY(-50%); width:38px; height:38px; border-radius:50%; background:#131007; display:flex; align-items:center; justify-content:center;}
+  .authbtn .abarrow svg{width:17px; height:17px; stroke:var(--gold1); fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round;}
+  .authbtn .abspin{display:none; position:absolute; left:18px; top:50%; width:18px; height:18px; margin-top:-9px; border-radius:50%; border:2.5px solid rgba(36,26,5,.3); border-top-color:#241a05; animation:aspin .7s linear infinite;}
+  .authbtn.loading .abspin{display:block;}
+  @keyframes aspin{to{transform:rotate(360deg);}}
+  .authghost{width:100%; margin-top:12px; padding:15px 20px; border-radius:999px; background:transparent; border:1px solid rgba(212,167,92,.55); color:var(--gold1); font-weight:600; font-size:16px; transition:transform .15s ease, box-shadow .25s ease;}
+  .authghost:active{transform:scale(.98);}
+  .authghost:hover{box-shadow:0 0 16px rgba(212,167,92,.22);}
+  .adivider{display:flex; align-items:center; gap:12px; margin:22px 0 0; color:var(--dim); font-size:12.5px;}
+  .adivider::before,.adivider::after{content:""; flex:1; height:1px; background:rgba(255,255,255,.12);}
+  .authlink{color:var(--gold1); font-weight:600; font-size:13.5px;}
+  .aforgotrow{text-align:right; margin-top:10px;}
+  .acenter{text-align:center; margin-top:18px; color:var(--muted); font-size:14px;}
+  .amedal{width:104px; height:104px; margin:6px auto 18px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 35% 30%, rgba(242,210,135,.22), rgba(212,167,92,.06) 65%); border:1px solid rgba(212,167,92,.4); box-shadow:0 0 34px rgba(212,167,92,.22), inset 0 0 22px rgba(212,167,92,.12);}
+  .amedal svg{width:46px; height:46px; stroke:var(--gold1); fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round;}
+  .acheck{display:flex; gap:10px; align-items:flex-start; margin-top:16px; cursor:pointer;}
+  .acheck input{position:absolute; opacity:0; width:1px; height:1px;}
+  .acheck .abox{flex:0 0 auto; width:22px; height:22px; border-radius:7px; border:1px solid rgba(255,255,255,.3); background:rgba(255,255,255,.04); display:flex; align-items:center; justify-content:center; transition:background .2s ease, border-color .2s ease; margin-top:1px;}
+  .acheck .abox svg{width:13px; height:13px; stroke:#241a05; stroke-width:3; fill:none; stroke-linecap:round; stroke-linejoin:round; opacity:0; transition:opacity .15s ease;}
+  .acheck input:checked + .abox{background:var(--gold-grad); border-color:var(--gold2);}
+  .acheck input:checked + .abox svg{opacity:1;}
+  .acheck .atxt{font-size:13.5px; color:var(--muted); line-height:1.5;}
+  .acheck .atxt a{color:var(--gold1); font-weight:600;}
+  .ahint{font-size:12px; color:var(--dim); margin:7px 2px 0; line-height:1.5;}
+  .acctava{width:46px; height:46px; border-radius:50%; flex:0 0 auto; display:flex; align-items:center; justify-content:center; background:var(--gold-grad); color:#241a05; font-weight:700; font-size:19px; font-family:var(--serif);}
+  #legal-overlay{z-index:97;}
+  #legal-body{font-size:14px; line-height:1.65; color:var(--txt);}
+  #legal-body h4{font-family:var(--serif); color:var(--gold1); margin:16px 0 4px; font-size:16px;}
+  #legal-body h4:first-child{margin-top:0;}
+  #legal-body p{margin:0 0 8px; color:var(--muted);}
+  @media (prefers-reduced-motion: reduce){
+    .authtrack{transition:none;}
+    #auth-root::after{animation:none;}
+    .authbtn,.authghost,.afield{transition:none;}
+  }
   .calllabel{display:block; font-size:12px; font-weight:600; letter-spacing:.6px; text-transform:uppercase; color:var(--dim); margin:14px 0 6px;}
   .callinput{width:100%; box-sizing:border-box; background:rgba(255,255,255,.05); border:1px solid var(--line-soft); border-radius:12px; padding:12px; color:var(--txt); font-size:16px; font-family:var(--sans); outline:0;}
   .callinput:focus{border-color:rgba(212,167,92,.55);}
@@ -915,7 +996,7 @@
   </section>
 
   <footer data-i18n="footer">Traducción automática con IA · En vivo</footer>
-  <div class="verlabel">v21 · Englix</div>
+  <div class="verlabel">v22 · Englix</div>
 </div>
 
 <!-- ===== Barra inferior (v11 · Englix) ===== -->
@@ -1054,6 +1135,18 @@
     </button>
   </div>
 
+  <div id="acct-block" style="display:none; padding:6px 0 14px; border-bottom:1px solid var(--line-soft); margin-bottom:8px;">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <span class="acctava" id="acct-ava">E</span>
+      <div style="flex:1; min-width:0;">
+        <b id="acct-name" style="display:block; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></b>
+        <span id="acct-email" style="color:var(--dim); font-size:13px;"></span>
+      </div>
+    </div>
+    <p id="acct-plan" style="margin:11px 0 0; font-size:13.5px; color:var(--gold1); line-height:1.5;"></p>
+    <button class="btn-ghost" id="btn-signout" style="margin-top:12px;" data-i18n="authSignOut">Cerrar sesión</button>
+  </div>
+
   <div class="setrow">
     <div class="sinfo"><b data-i18n="setUiLang">Idioma de la interfaz</b></div>
     <select id="set-uilang">
@@ -1128,8 +1221,156 @@
   </div>
 </aside>
 
+<!-- ===== Autenticación Englix (v22) ===== -->
+<div id="auth-root">
+  <div class="authwrap">
+    <div class="authbrand">Engli<span class="ax">x</span></div>
+    <p class="authtag" data-i18n="authTagline">Real conversations. A bigger world.</p>
+    <div class="authview">
+      <div class="authtrack" id="auth-track">
+
+        <!-- Iniciar sesión -->
+        <section class="authpane" id="pane-signin">
+          <h2 data-i18n="authWelcome">Welcome back</h2>
+          <p class="authsub" data-i18n="authWelcomeSub">Sign in to continue your journey.</p>
+          <p class="aok" id="si-ok"></p>
+          <div class="afield" id="f-si-email">
+            <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><polyline points="3 7 12 13 21 7"/></svg>
+            <input id="si-email" type="email" inputmode="email" autocomplete="email" data-i18n-ph="authEmailPh" placeholder="Email address">
+          </div>
+          <p class="aerr" id="e-si-email"></p>
+          <div class="afield" id="f-si-pass">
+            <svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+            <input id="si-pass" type="password" autocomplete="current-password" data-i18n-ph="authPassPh" placeholder="Password">
+            <button class="aeye" data-eye="si-pass" aria-label="Show password"><svg class="eyeon" viewBox="0 0 24 24"><path d="M1 12s4-7.5 11-7.5S23 12 23 12s-4 7.5-11 7.5S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eyeoff" viewBox="0 0 24 24"><path d="M17.94 17.94A10.6 10.6 0 0 1 12 19.5c-7 0-11-7.5-11-7.5a20.3 20.3 0 0 1 5.06-5.94M9.9 4.24A9.5 9.5 0 0 1 12 4.5c7 0 11 7.5 11 7.5a20.4 20.4 0 0 1-2.16 3.19M14.12 14.12A3 3 0 1 1 9.88 9.88"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button>
+          </div>
+          <p class="aerr" id="e-si-pass"></p>
+          <div class="aforgotrow"><button class="authlink" id="link-forgot" data-i18n="authForgot">Forgot password?</button></div>
+          <p class="aerr" id="e-si-form"></p>
+          <button class="authbtn" id="btn-si"><span class="abspin"></span><span data-i18n="authSignIn">Sign In</span><span class="abarrow"><svg viewBox="0 0 24 24"><line x1="4" y1="12" x2="20" y2="12"/><polyline points="13 5 20 12 13 19"/></svg></span></button>
+          <div id="si-confirm" style="display:none; margin-top:14px;">
+            <p class="aok on" data-i18n="authNeedConfirm" style="margin-bottom:10px;">Your email still needs confirmation. Check your inbox or resend the verification.</p>
+            <button class="authghost" id="btn-resend-confirm" style="margin-top:0;" data-i18n="authResend">Resend verification email</button>
+          </div>
+          <div class="adivider"><span data-i18n="authNoAccount">Don't have an account?</span></div>
+          <button class="authghost" id="btn-to-signup" data-i18n="authCreateAccount">Create Account</button>
+        </section>
+
+        <!-- Crear cuenta -->
+        <section class="authpane" id="pane-signup">
+          <button class="aback" data-authback aria-label="Back"><svg viewBox="0 0 24 24"><polyline points="14.5 5.5 8 12 14.5 18.5"/></svg></button>
+          <h2 data-i18n="authCreateTitle">Create your account</h2>
+          <p class="authsub" data-i18n="authCreateSub">Start translating, learning and connecting today.</p>
+          <div class="afield" id="f-su-name">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.2-3.6 4.2-5.4 8-5.4s6.8 1.8 8 5.4"/></svg>
+            <input id="su-name" type="text" autocomplete="name" data-i18n-ph="authNamePh" placeholder="Full name">
+          </div>
+          <p class="aerr" id="e-su-name"></p>
+          <div class="afield" id="f-su-email">
+            <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><polyline points="3 7 12 13 21 7"/></svg>
+            <input id="su-email" type="email" inputmode="email" autocomplete="email" data-i18n-ph="authEmailPh" placeholder="Email address">
+          </div>
+          <p class="aerr" id="e-su-email"></p>
+          <div class="afield" id="f-su-pass">
+            <svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+            <input id="su-pass" type="password" autocomplete="new-password" data-i18n-ph="authPassPh" placeholder="Password">
+            <button class="aeye" data-eye="su-pass" aria-label="Show password"><svg class="eyeon" viewBox="0 0 24 24"><path d="M1 12s4-7.5 11-7.5S23 12 23 12s-4 7.5-11 7.5S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eyeoff" viewBox="0 0 24 24"><path d="M17.94 17.94A10.6 10.6 0 0 1 12 19.5c-7 0-11-7.5-11-7.5a20.3 20.3 0 0 1 5.06-5.94M9.9 4.24A9.5 9.5 0 0 1 12 4.5c7 0 11 7.5 11 7.5a20.4 20.4 0 0 1-2.16 3.19M14.12 14.12A3 3 0 1 1 9.88 9.88"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button>
+          </div>
+          <p class="ahint" data-i18n="authPassRules">Use at least 6 characters.</p>
+          <p class="aerr" id="e-su-pass"></p>
+          <div class="afield" id="f-su-pass2">
+            <svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+            <input id="su-pass2" type="password" autocomplete="new-password" data-i18n-ph="authPass2Ph" placeholder="Confirm password">
+            <button class="aeye" data-eye="su-pass2" aria-label="Show password"><svg class="eyeon" viewBox="0 0 24 24"><path d="M1 12s4-7.5 11-7.5S23 12 23 12s-4 7.5-11 7.5S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eyeoff" viewBox="0 0 24 24"><path d="M17.94 17.94A10.6 10.6 0 0 1 12 19.5c-7 0-11-7.5-11-7.5a20.3 20.3 0 0 1 5.06-5.94M9.9 4.24A9.5 9.5 0 0 1 12 4.5c7 0 11 7.5 11 7.5a20.4 20.4 0 0 1-2.16 3.19M14.12 14.12A3 3 0 1 1 9.88 9.88"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button>
+          </div>
+          <p class="aerr" id="e-su-pass2"></p>
+          <label class="acheck">
+            <input type="checkbox" id="su-terms">
+            <span class="abox"><svg viewBox="0 0 24 24"><polyline points="4.5 12.5 9.5 17.5 19.5 6.5"/></svg></span>
+            <span class="atxt"><span data-i18n="authAgreePre">I agree to the</span> <a href="#" id="link-terms" data-i18n="authTerms">Terms of Service</a> <span data-i18n="authAgreeAnd">and</span> <a href="#" id="link-privacy" data-i18n="authPrivacy">Privacy Policy</a></span>
+          </label>
+          <p class="aerr" id="e-su-form"></p>
+          <button class="authbtn" id="btn-su"><span class="abspin"></span><span data-i18n="authCreateAccount">Create Account</span><span class="abarrow"><svg viewBox="0 0 24 24"><line x1="4" y1="12" x2="20" y2="12"/><polyline points="13 5 20 12 13 19"/></svg></span></button>
+          <p class="acenter"><span data-i18n="authHaveAccount">Already have an account?</span> <button class="authlink" id="link-to-signin" data-i18n="authSignIn">Sign In</button></p>
+        </section>
+
+        <!-- Recuperar contraseña -->
+        <section class="authpane" id="pane-forgot">
+          <button class="aback" data-authback aria-label="Back"><svg viewBox="0 0 24 24"><polyline points="14.5 5.5 8 12 14.5 18.5"/></svg></button>
+          <div class="amedal"><svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="9.5" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 7.8-1.3"/><path d="M15.5 15.2a2.6 2.6 0 1 0 .6 2.1"/><polyline points="M18.6 13.4 18.7 16.4 15.7 16.2"/></svg></div>
+          <h2 style="text-align:center;" data-i18n="authForgotTitle">Forgot password?</h2>
+          <p class="authsub" style="text-align:center;" data-i18n="authForgotSub">Enter your email address and we'll send you a link to reset your password.</p>
+          <p class="aok" id="fg-ok"></p>
+          <div class="afield" id="f-fg-email">
+            <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><polyline points="3 7 12 13 21 7"/></svg>
+            <input id="fg-email" type="email" inputmode="email" autocomplete="email" data-i18n-ph="authEmailPh" placeholder="Email address">
+          </div>
+          <p class="aerr" id="e-fg-email"></p>
+          <p class="aerr" id="e-fg-form"></p>
+          <button class="authbtn" id="btn-fg"><span class="abspin"></span><span data-i18n="authSendReset">Send Reset Link</span><span class="abarrow"><svg viewBox="0 0 24 24"><line x1="4" y1="12" x2="20" y2="12"/><polyline points="13 5 20 12 13 19"/></svg></span></button>
+          <div class="adivider"></div>
+          <p class="acenter" style="margin-top:14px;"><button class="authlink" id="link-back-signin" data-i18n="authBackSignIn">Back to Sign In</button></p>
+        </section>
+
+        <!-- Revisa tu correo (confirmación de cuenta) -->
+        <section class="authpane" id="pane-checkemail">
+          <div class="amedal"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><polyline points="3 7 12 13 21 7"/></svg></div>
+          <h2 style="text-align:center;" data-i18n="authCheckTitle">Check your email</h2>
+          <p class="authsub" style="text-align:center;" data-i18n="authCreatedMsg">Account created. Check your email to verify your account.</p>
+          <button class="authghost" id="btn-resend-confirm2" data-i18n="authResend">Resend verification email</button>
+          <p class="acenter"><button class="authlink" id="link-ce-signin" data-i18n="authBackSignIn">Back to Sign In</button></p>
+        </section>
+
+        <!-- Nueva contraseña (desde el enlace del correo) -->
+        <section class="authpane" id="pane-reset">
+          <div class="amedal"><svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="9.5" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15.2" r="1.6"/></svg></div>
+          <h2 style="text-align:center;" data-i18n="authResetTitle">New password</h2>
+          <p class="authsub" style="text-align:center;" data-i18n="authResetSub">Type your new password and confirm it.</p>
+          <p class="aok" id="rs-ok"></p>
+          <div id="rs-fields">
+            <div class="afield" id="f-rs-pass">
+              <svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+              <input id="rs-pass" type="password" autocomplete="new-password" data-i18n-ph="authNewPassPh" placeholder="New password">
+              <button class="aeye" data-eye="rs-pass" aria-label="Show password"><svg class="eyeon" viewBox="0 0 24 24"><path d="M1 12s4-7.5 11-7.5S23 12 23 12s-4 7.5-11 7.5S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eyeoff" viewBox="0 0 24 24"><path d="M17.94 17.94A10.6 10.6 0 0 1 12 19.5c-7 0-11-7.5-11-7.5a20.3 20.3 0 0 1 5.06-5.94M9.9 4.24A9.5 9.5 0 0 1 12 4.5c7 0 11 7.5 11 7.5a20.4 20.4 0 0 1-2.16 3.19M14.12 14.12A3 3 0 1 1 9.88 9.88"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button>
+            </div>
+            <p class="ahint" data-i18n="authPassRules">Use at least 6 characters.</p>
+            <p class="aerr" id="e-rs-pass"></p>
+            <div class="afield" id="f-rs-pass2">
+              <svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+              <input id="rs-pass2" type="password" autocomplete="new-password" data-i18n-ph="authPass2Ph" placeholder="Confirm password">
+              <button class="aeye" data-eye="rs-pass2" aria-label="Show password"><svg class="eyeon" viewBox="0 0 24 24"><path d="M1 12s4-7.5 11-7.5S23 12 23 12s-4 7.5-11 7.5S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eyeoff" viewBox="0 0 24 24"><path d="M17.94 17.94A10.6 10.6 0 0 1 12 19.5c-7 0-11-7.5-11-7.5a20.3 20.3 0 0 1 5.06-5.94M9.9 4.24A9.5 9.5 0 0 1 12 4.5c7 0 11 7.5 11 7.5a20.4 20.4 0 0 1-2.16 3.19M14.12 14.12A3 3 0 1 1 9.88 9.88"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button>
+            </div>
+            <p class="aerr" id="e-rs-pass2"></p>
+            <p class="aerr" id="e-rs-form"></p>
+            <button class="authbtn" id="btn-rs"><span class="abspin"></span><span data-i18n="authSavePass">Save new password</span><span class="abarrow"><svg viewBox="0 0 24 24"><line x1="4" y1="12" x2="20" y2="12"/><polyline points="13 5 20 12 13 19"/></svg></span></button>
+          </div>
+          <div id="rs-expired" style="display:none;">
+            <p class="aok on" data-i18n="authLinkExpired" style="text-align:center;">This link is no longer valid. Request a new one.</p>
+            <button class="authghost" id="btn-rs-newlink" data-i18n="authRequestNew">Request a new link</button>
+          </div>
+          <p class="acenter"><button class="authlink" id="link-rs-signin" data-i18n="authBackSignIn">Back to Sign In</button></p>
+        </section>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Términos / Privacidad ===== -->
+<div class="overlay" id="legal-overlay">
+  <div class="sheet">
+    <h3 id="legal-title">Terms of Service</h3>
+    <p class="sub" id="legal-ver"></p>
+    <div id="legal-body"></div>
+    <div class="btnrow">
+      <button class="btn-ghost" id="legal-close" data-i18n="closeIt">Cerrar</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 (function () {
   'use strict';
@@ -1292,6 +1533,31 @@
       callsPending: 'Generando el resumen de tu última llamada…',
       callsGoalPrefix: 'Motivo: ',
       closeIt: 'Cerrar',
+      authTagline: 'Conversaciones reales. Un mundo más grande.',
+      authWelcome: 'Bienvenido de nuevo', authWelcomeSub: 'Inicia sesión para continuar tu viaje.',
+      authEmailPh: 'Correo electrónico', authPassPh: 'Contraseña', authPass2Ph: 'Confirmar contraseña',
+      authNamePh: 'Nombre completo', authNewPassPh: 'Nueva contraseña',
+      authForgot: '¿Olvidaste tu contraseña?', authSignIn: 'Iniciar sesión', authCreateAccount: 'Crear cuenta',
+      authNoAccount: '¿No tienes una cuenta?', authNeedConfirm: 'Tu correo aún necesita confirmación. Revisa tu bandeja o reenvía la verificación.',
+      authResend: 'Reenviar correo de verificación',
+      authCreateTitle: 'Crea tu cuenta', authCreateSub: 'Empieza hoy a traducir, aprender y conectar.',
+      authPassRules: 'Usa al menos 6 caracteres.',
+      authAgreePre: 'Acepto los', authAgreeAnd: 'y la', authTerms: 'Términos de Servicio', authPrivacy: 'Política de Privacidad',
+      authHaveAccount: '¿Ya tienes una cuenta?',
+      authForgotTitle: '¿Olvidaste tu contraseña?', authForgotSub: 'Escribe tu correo y te enviaremos un enlace para recuperar tu contraseña.',
+      authSendReset: 'Enviar enlace', authBackSignIn: 'Volver a Iniciar sesión',
+      authCheckTitle: 'Revisa tu correo', authCreatedMsg: 'Cuenta creada. Revisa tu correo electrónico para verificar tu cuenta.',
+      authResetTitle: 'Nueva contraseña', authResetSub: 'Escribe tu nueva contraseña y confírmala.',
+      authSavePass: 'Guardar contraseña nueva', authLinkExpired: 'Este enlace ya no es válido. Pide uno nuevo.',
+      authRequestNew: 'Solicitar otro enlace', authSignOut: 'Cerrar sesión',
+      authErrEmail: 'Escribe un correo electrónico válido.', authErrPassEmpty: 'Escribe tu contraseña.',
+      authErrBadCreds: 'El correo o la contraseña no son correctos.', authErrConn: 'No pudimos conectar. Inténtalo nuevamente.',
+      authErrName: 'Escribe tu nombre completo.', authErrPassShort: 'La contraseña debe tener al menos 6 caracteres.',
+      authErrPassMatch: 'Las contraseñas no coinciden.', authErrTerms: 'Debes aceptar los Términos y la Privacidad para continuar.',
+      authForgotSent: 'Si existe una cuenta asociada a este correo, recibirás instrucciones para recuperar tu contraseña.',
+      authWaitSec: 'Espera {S} segundos para intentarlo de nuevo.', authResentOk: 'Te enviamos otro correo de verificación.',
+      authResetDone: 'Tu contraseña se actualizó. Ya puedes iniciar sesión.', authGeneric: 'Algo salió mal. Inténtalo de nuevo.',
+      authPlanFree: 'Free', authPlanPremium: 'Premium', authPlanLine: 'Plan {PLAN} · {MIN} minutos disponibles',
       navHome: 'Inicio', navLearn: 'Aprender', navHistory: 'Historial', navProfile: 'Perfil',
       soonBadge: 'En preparación',
       soonPremiumTitle: 'Englix Premium',
@@ -1425,6 +1691,31 @@
       callsPending: 'Writing your last call summary…',
       callsGoalPrefix: 'Purpose: ',
       closeIt: 'Close',
+      authTagline: 'Real conversations. A bigger world.',
+      authWelcome: 'Welcome back', authWelcomeSub: 'Sign in to continue your journey.',
+      authEmailPh: 'Email address', authPassPh: 'Password', authPass2Ph: 'Confirm password',
+      authNamePh: 'Full name', authNewPassPh: 'New password',
+      authForgot: 'Forgot password?', authSignIn: 'Sign In', authCreateAccount: 'Create Account',
+      authNoAccount: "Don't have an account?", authNeedConfirm: 'Your email still needs confirmation. Check your inbox or resend the verification.',
+      authResend: 'Resend verification email',
+      authCreateTitle: 'Create your account', authCreateSub: 'Start translating, learning and connecting today.',
+      authPassRules: 'Use at least 6 characters.',
+      authAgreePre: 'I agree to the', authAgreeAnd: 'and', authTerms: 'Terms of Service', authPrivacy: 'Privacy Policy',
+      authHaveAccount: 'Already have an account?',
+      authForgotTitle: 'Forgot password?', authForgotSub: "Enter your email address and we'll send you a link to reset your password.",
+      authSendReset: 'Send Reset Link', authBackSignIn: 'Back to Sign In',
+      authCheckTitle: 'Check your email', authCreatedMsg: 'Account created. Check your email to verify your account.',
+      authResetTitle: 'New password', authResetSub: 'Type your new password and confirm it.',
+      authSavePass: 'Save new password', authLinkExpired: 'This link is no longer valid. Request a new one.',
+      authRequestNew: 'Request a new link', authSignOut: 'Sign out',
+      authErrEmail: 'Enter a valid email address.', authErrPassEmpty: 'Enter your password.',
+      authErrBadCreds: 'The email or password is not correct.', authErrConn: 'We could not connect. Please try again.',
+      authErrName: 'Enter your full name.', authErrPassShort: 'Password must be at least 6 characters long.',
+      authErrPassMatch: 'Passwords do not match.', authErrTerms: 'You must accept the Terms and Privacy Policy to continue.',
+      authForgotSent: 'If an account exists for this email, you will receive instructions to recover your password.',
+      authWaitSec: 'Wait {S} seconds and try again.', authResentOk: 'We sent you another verification email.',
+      authResetDone: 'Your password has been updated. You can sign in now.', authGeneric: 'Something went wrong. Please try again.',
+      authPlanFree: 'Free', authPlanPremium: 'Premium', authPlanLine: 'Plan {PLAN} · {MIN} minutes available',
       navHome: 'Home', navLearn: 'Learn', navHistory: 'History', navProfile: 'Profile',
       soonBadge: 'In preparation',
       soonPremiumTitle: 'Englix Premium',
@@ -4028,11 +4319,333 @@
     if (g) g.classList.toggle('paused', document.hidden);
   });
 
+  /* ================= Autenticación Englix (v22) =================
+     Supabase Auth (correo + contraseña, SIN login social).
+     La config se llena al crear el proyecto «englix»; sin config,
+     la puerta queda apagada y la app funciona como siempre. */
+  var SUPABASE_URL = 'https://ogwvbiiuetshruyypdgh.supabase.co';
+  var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9nd3ZiaWl1ZXRzaHJ1eXlwZGdoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI3NzQwNzEsImV4cCI6MjEwODM1MDA3MX0.TPilmidc_nRL0_VwDaHj2N8kVTH-SNRnv_Zs1BIYikM';
+  var TERMS_VERSION = 'v1-2026-10-23';
+  var sb = null, sbUser = null, authBusy = false, recoveryMode = false;
+  var coolUntil = {};
+  var authRootEl = $('auth-root'), authTrackEl = $('auth-track');
+
+  function authEnabled() { return !!(SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase); }
+  function emailOk(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(v || '').trim()); }
+  function authFieldErr(fId, eId, msg) {
+    var f = $(fId), e = $(eId);
+    if (f) f.classList.toggle('invalid', !!msg);
+    if (e) { e.textContent = msg || ''; e.classList.toggle('on', !!msg); }
+  }
+  function authFormErr(eId, msg) { var e = $(eId); if (e) { e.textContent = msg || ''; e.classList.toggle('on', !!msg); } }
+  function authBtnLoad(btn, on) {
+    if (!btn) return;
+    btn.classList.toggle('loading', !!on);
+    btn.disabled = !!on;
+  }
+  function coolLeft(key) { return Math.max(0, Math.ceil(((coolUntil[key] || 0) - Date.now()) / 1000)); }
+  function coolStart(key, sec) { coolUntil[key] = Date.now() + sec * 1000; }
+  function authGo(idx) {
+    authTrackEl.style.transform = 'translateX(' + (-idx * 100) + '%)';
+    authRootEl.scrollTop = 0;
+  }
+  function showAuth(idx) {
+    if (!authRootEl.classList.contains('on')) { authRootEl.classList.add('on'); lockScroll(); }
+    authGo(idx || 0);
+  }
+  function hideAuth() {
+    if (authRootEl.classList.contains('on')) { authRootEl.classList.remove('on'); unlockScroll(); }
+  }
+  function authOrigin() { return window.location.origin; }
+
+  function renderAcct() {
+    var block = $('acct-block');
+    if (!sbUser) { block.style.display = 'none'; return; }
+    block.style.display = 'block';
+    var meta = sbUser.user_metadata || {};
+    var name = (window.__englixProfile && window.__englixProfile.full_name) || meta.full_name || (sbUser.email || '').split('@')[0];
+    $('acct-name').textContent = name;
+    $('acct-email').textContent = sbUser.email || '';
+    $('acct-ava').textContent = (name || 'E').trim().charAt(0).toUpperCase() || 'E';
+    var ent = window.__englixEntitlements;
+    if (ent) {
+      var planName = ent.plan === 'premium' ? t('authPlanPremium') : t('authPlanFree');
+      $('acct-plan').textContent = t('authPlanLine').replace('{PLAN}', planName).replace('{MIN}', String(ent.minutes_balance != null ? ent.minutes_balance : 0));
+    } else $('acct-plan').textContent = '';
+  }
+
+  function loadAccount() {
+    if (!sb || !sbUser) return;
+    sb.from('profiles').select('full_name,email').eq('id', sbUser.id).single()
+      .then(function (r) { if (r && r.data) { window.__englixProfile = r.data; renderAcct(); } })
+      .catch(function () {});
+    sb.from('entitlements').select('plan,minutes_balance').eq('user_id', sbUser.id).single()
+      .then(function (r) { if (r && r.data) { window.__englixEntitlements = r.data; renderAcct(); } })
+      .catch(function () {});
+  }
+
+  function onSignedIn(user) {
+    sbUser = user;
+    if (recoveryMode) { showAuth(4); return; }
+    hideAuth();
+    renderAcct();
+    loadAccount();
+  }
+
+  function initAuth() {
+    if (!authEnabled()) return;
+    try {
+      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'pkce' }
+      });
+    } catch (e) { sb = null; return; }
+
+    // Enlace vencido/inválido en la URL: mostrar la salida con opción de pedir otro.
+    var urlTxt = (window.location.hash || '') + (window.location.search || '');
+    if (/otp_expired|access_denied|error=/.test(urlTxt)) {
+      recoveryMode = false;
+      $('rs-fields').style.display = 'none';
+      $('rs-expired').style.display = 'block';
+      showAuth(4);
+    }
+
+    // Sin sesión guardada en este equipo: puerta inmediata, sin parpadeo.
+    var hasStored = false;
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (k && k.indexOf('sb-') === 0 && /auth-token$/.test(k)) { hasStored = true; break; }
+      }
+    } catch (e) {}
+    if (!hasStored && !recoveryMode && $('rs-expired').style.display !== 'block') showAuth(0);
+
+    sb.auth.getSession().then(function (res) {
+      var session = res && res.data ? res.data.session : null;
+      if (session && session.user) onSignedIn(session.user);
+      else if (!recoveryMode) showAuth(0);
+    }).catch(function () { if (!recoveryMode) showAuth(0); });
+
+    sb.auth.onAuthStateChange(function (event, session) {
+      if (event === 'PASSWORD_RECOVERY') {
+        recoveryMode = true;
+        $('rs-fields').style.display = 'block';
+        $('rs-expired').style.display = 'none';
+        showAuth(4);
+      } else if (event === 'SIGNED_IN' && session && session.user) {
+        onSignedIn(session.user);
+      } else if (event === 'SIGNED_OUT') {
+        sbUser = null; window.__englixProfile = null; window.__englixEntitlements = null;
+        renderAcct();
+        showAuth(0);
+      }
+    });
+  }
+
+  function mapAuthErr(err, kind) {
+    var m = (err && err.message) || '';
+    if (/failed to fetch|network|load failed/i.test(m) || (err && err.name === 'TypeError')) return t('authErrConn');
+    if (kind === 'signin' && /invalid login credentials/i.test(m)) return t('authErrBadCreds');
+    if (/password should be at least/i.test(m)) return t('authErrPassShort');
+    return t('authGeneric');
+  }
+
+  /* ---- Iniciar sesión ---- */
+  function doSignIn() {
+    if (authBusy || !sb) return;
+    var email = $('si-email').value.trim(), pass = $('si-pass').value;
+    authFieldErr('f-si-email', 'e-si-email', emailOk(email) ? '' : t('authErrEmail'));
+    authFieldErr('f-si-pass', 'e-si-pass', pass ? '' : t('authErrPassEmpty'));
+    authFormErr('e-si-form', '');
+    if (!emailOk(email) || !pass) return;
+    $('si-email').value = email;
+    authBusy = true; authBtnLoad($('btn-si'), true);
+    sb.auth.signInWithPassword({ email: email, password: pass }).then(function (res) {
+      authBusy = false; authBtnLoad($('btn-si'), false);
+      if (res.error) {
+        if (/email not confirmed/i.test(res.error.message || '')) { $('si-confirm').style.display = 'block'; return; }
+        authFormErr('e-si-form', mapAuthErr(res.error, 'signin'));
+        return;
+      }
+      $('si-confirm').style.display = 'none';
+      if (res.data && res.data.user) onSignedIn(res.data.user);
+    }).catch(function (err) {
+      authBusy = false; authBtnLoad($('btn-si'), false);
+      authFormErr('e-si-form', mapAuthErr(err, 'signin'));
+    });
+  }
+
+  function doResendConfirm(fromPane) {
+    var email = (fromPane === 'checkemail' ? window.__englixLastEmail : $('si-email').value.trim()) || window.__englixLastEmail || '';
+    if (!emailOk(email)) { toast(t('authErrEmail')); return; }
+    var left = coolLeft('resend');
+    if (left > 0) { toast(t('authWaitSec').replace('{S}', left)); return; }
+    if (!sb) return;
+    coolStart('resend', 60);
+    sb.auth.resend({ type: 'signup', email: email, options: { emailRedirectTo: authOrigin() + '/' } })
+      .then(function () { toast(t('authResentOk')); })
+      .catch(function () { toast(t('authErrConn')); });
+  }
+
+  /* ---- Crear cuenta ---- */
+  function doSignUp() {
+    if (authBusy || !sb) return;
+    var name = $('su-name').value.trim().replace(/\s+/g, ' '),
+        email = $('su-email').value.trim(),
+        pass = $('su-pass').value, pass2 = $('su-pass2').value,
+        terms = $('su-terms').checked;
+    authFieldErr('f-su-name', 'e-su-name', name ? '' : t('authErrName'));
+    authFieldErr('f-su-email', 'e-su-email', emailOk(email) ? '' : t('authErrEmail'));
+    authFieldErr('f-su-pass', 'e-su-pass', pass.length >= 6 ? '' : t('authErrPassShort'));
+    authFieldErr('f-su-pass2', 'e-su-pass2', pass2 === pass ? '' : t('authErrPassMatch'));
+    authFormErr('e-su-form', terms ? '' : t('authErrTerms'));
+    if (!name || !emailOk(email) || pass.length < 6 || pass2 !== pass || !terms) return;
+    $('su-name').value = name; $('su-email').value = email;
+    window.__englixLastEmail = email;
+    authBusy = true; authBtnLoad($('btn-su'), true);
+    sb.auth.signUp({
+      email: email, password: pass,
+      options: {
+        data: { full_name: name, terms_version: TERMS_VERSION, terms_accepted_at: new Date().toISOString() },
+        emailRedirectTo: authOrigin() + '/'
+      }
+    }).then(function (res) {
+      authBusy = false; authBtnLoad($('btn-su'), false);
+      if (res.error) { authFormErr('e-su-form', mapAuthErr(res.error, 'signup')); return; }
+      if (res.data && res.data.session && res.data.user) { onSignedIn(res.data.user); return; }
+      authGo(3); // confirmar correo (también si el correo ya existía: no revelamos cuál)
+    }).catch(function (err) {
+      authBusy = false; authBtnLoad($('btn-su'), false);
+      authFormErr('e-su-form', mapAuthErr(err, 'signup'));
+    });
+  }
+
+  /* ---- Recuperar contraseña ---- */
+  function doForgot() {
+    if (authBusy || !sb) return;
+    var email = $('fg-email').value.trim();
+    authFieldErr('f-fg-email', 'e-fg-email', emailOk(email) ? '' : t('authErrEmail'));
+    authFormErr('e-fg-form', '');
+    if (!emailOk(email)) return;
+    var left = coolLeft('reset');
+    if (left > 0) { authFormErr('e-fg-form', t('authWaitSec').replace('{S}', left)); return; }
+    authBusy = true; authBtnLoad($('btn-fg'), true);
+    sb.auth.resetPasswordForEmail(email, { redirectTo: authOrigin() + '/' }).then(function (res) {
+      authBusy = false; authBtnLoad($('btn-fg'), false);
+      coolStart('reset', 60);
+      var ok = $('fg-ok');
+      ok.textContent = t('authForgotSent'); // genérico siempre: no revela si el correo existe
+      ok.classList.add('on');
+      if (res && res.error && /failed to fetch|network/i.test(res.error.message || '')) {
+        ok.classList.remove('on');
+        authFormErr('e-fg-form', t('authErrConn'));
+      }
+    }).catch(function () {
+      authBusy = false; authBtnLoad($('btn-fg'), false);
+      authFormErr('e-fg-form', t('authErrConn'));
+    });
+  }
+
+  /* ---- Nueva contraseña (enlace del correo) ---- */
+  function doResetSave() {
+    if (authBusy || !sb) return;
+    var pass = $('rs-pass').value, pass2 = $('rs-pass2').value;
+    authFieldErr('f-rs-pass', 'e-rs-pass', pass.length >= 6 ? '' : t('authErrPassShort'));
+    authFieldErr('f-rs-pass2', 'e-rs-pass2', pass2 === pass ? '' : t('authErrPassMatch'));
+    authFormErr('e-rs-form', '');
+    if (pass.length < 6 || pass2 !== pass) return;
+    authBusy = true; authBtnLoad($('btn-rs'), true);
+    sb.auth.updateUser({ password: pass }).then(function (res) {
+      authBusy = false; authBtnLoad($('btn-rs'), false);
+      if (res.error) {
+        if (/session|expired|invalid/i.test(res.error.message || '')) {
+          $('rs-fields').style.display = 'none';
+          $('rs-expired').style.display = 'block';
+        } else authFormErr('e-rs-form', mapAuthErr(res.error, 'reset'));
+        return;
+      }
+      recoveryMode = false;
+      var ok = $('si-ok'); ok.textContent = t('authResetDone'); ok.classList.add('on');
+      sb.auth.signOut().then(function () { showAuth(0); });
+    }).catch(function (err) {
+      authBusy = false; authBtnLoad($('btn-rs'), false);
+      authFormErr('e-rs-form', mapAuthErr(err, 'reset'));
+    });
+  }
+
+  /* ---- Documentos legales ---- */
+  var LEGAL = {
+    es: {
+      terms: '<h4>1. El servicio</h4><p>Englix ofrece traducción de voz en tiempo real entre idiomas, llamadas telefónicas con traducción y práctica de inglés con inteligencia artificial.</p><h4>2. Tu cuenta</h4><p>Eres responsable de tu cuenta y de tu contraseña. Debes tener 18 años o el permiso de tu padre, madre o tutor. Usa un correo válido: ahí llegan la confirmación y la recuperación.</p><h4>3. Planes y minutos</h4><p>El plan y los minutos de cada cuenta los asigna y controla el servidor de Englix; no se pueden modificar desde la aplicación. Los minutos se consumen al usar las funciones de voz y los minutos ya consumidos no son reembolsables.</p><h4>4. Uso aceptable</h4><p>No uses Englix para actividades ilegales, fraude, acoso o para vulnerar los derechos de otras personas. Podemos suspender cuentas que incumplan estas reglas.</p><h4>5. Traducción automática</h4><p>La traducción la hace una IA y puede contener errores. Englix no sustituye a un intérprete profesional en situaciones médicas, legales, de emergencia o donde una traducción exacta sea crítica.</p><h4>6. Disponibilidad y cambios</h4><p>El servicio se ofrece "tal cual" y puede cambiar o interrumpirse por mantenimiento o causas ajenas. Podemos actualizar estos términos y avisaremos de cambios importantes dentro de la app.</p><h4>7. Contacto</h4><p>noelmarzo2@gmail.com</p>',
+      privacy: '<h4>1. Datos que recogemos</h4><p>Tu nombre y correo (para tu cuenta), tu plan y tus minutos, y los ajustes que guardas en la app. En las llamadas traducidas se genera un resumen que se guarda en tu dispositivo.</p><h4>2. Cómo se procesa tu voz</h4><p>Tu voz se envía de forma segura a nuestros proveedores de inteligencia artificial (OpenAI) y de telefonía (Twilio) únicamente para traducir en tiempo real. No vendemos tus datos ni tu voz.</p><h4>3. Proveedores</h4><p>Usamos Supabase (cuentas y datos), OpenAI (traducción e IA), Twilio (llamadas telefónicas) y Vercel (alojamiento). Cada uno procesa solo lo necesario para prestar el servicio.</p><h4>4. Tus derechos</h4><p>Puedes pedirnos el acceso, la corrección o la eliminación de tus datos y de tu cuenta escribiéndonos. Al eliminar la cuenta se borran tu perfil y tus datos asociados.</p><h4>5. Seguridad</h4><p>Las conexiones viajan cifradas (HTTPS) y las contraseñas las guarda el proveedor de autenticación con cifrado; nunca las vemos ni las almacenamos en texto claro.</p><h4>6. Contacto</h4><p>noelmarzo2@gmail.com</p>'
+    },
+    en: {
+      terms: '<h4>1. The service</h4><p>Englix provides real-time voice translation between languages, translated phone calls, and English practice powered by artificial intelligence.</p><h4>2. Your account</h4><p>You are responsible for your account and password. You must be 18 or have a parent or guardian\'s permission. Use a valid email: confirmations and recovery messages are sent there.</p><h4>3. Plans and minutes</h4><p>Each account\'s plan and minutes are assigned and controlled by Englix\'s server; they cannot be changed from the app. Minutes are consumed when using voice features, and minutes already used are not refundable.</p><h4>4. Acceptable use</h4><p>Do not use Englix for illegal activity, fraud, harassment, or to violate the rights of others. We may suspend accounts that break these rules.</p><h4>5. Automatic translation</h4><p>Translation is done by AI and may contain errors. Englix is not a substitute for a professional interpreter in medical, legal, emergency, or other situations where exact translation is critical.</p><h4>6. Availability and changes</h4><p>The service is provided "as is" and may change or be interrupted for maintenance or reasons beyond our control. We may update these terms and will announce important changes in the app.</p><h4>7. Contact</h4><p>noelmarzo2@gmail.com</p>',
+      privacy: '<h4>1. Data we collect</h4><p>Your name and email (for your account), your plan and minutes, and the settings you save in the app. Translated calls generate a summary that is stored on your device.</p><h4>2. How your voice is processed</h4><p>Your voice is sent securely to our artificial intelligence (OpenAI) and telephony (Twilio) providers only to translate in real time. We do not sell your data or your voice.</p><h4>3. Providers</h4><p>We use Supabase (accounts and data), OpenAI (translation and AI), Twilio (phone calls), and Vercel (hosting). Each processes only what is needed to provide the service.</p><h4>4. Your rights</h4><p>You can request access, correction, or deletion of your data and account by writing to us. Deleting the account removes your profile and associated data.</p><h4>5. Security</h4><p>Connections are encrypted (HTTPS), and passwords are stored encrypted by the authentication provider; we never see them or store them in plain text.</p><h4>6. Contact</h4><p>noelmarzo2@gmail.com</p>'
+    }
+  };
+  function openLegal(doc) {
+    var lang = settings.uiLang === 'en' ? 'en' : 'es';
+    $('legal-title').textContent = doc === 'terms' ? t('authTerms') : t('authPrivacy');
+    $('legal-ver').textContent = 'Englix · ' + TERMS_VERSION.replace('-', ' · ');
+    $('legal-body').innerHTML = LEGAL[lang][doc];
+    $('legal-overlay').classList.add('on'); lockScroll();
+  }
+  function closeLegal() { $('legal-overlay').classList.remove('on'); unlockScroll(); }
+
+  /* ---- Cableado de la autenticación ---- */
+  document.querySelectorAll('[data-eye]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var input = $(btn.getAttribute('data-eye'));
+      if (!input) return;
+      vibrate(6);
+      var show = input.type === 'password';
+      input.type = show ? 'text' : 'password';
+      btn.classList.toggle('showing', show);
+    });
+  });
+  document.querySelectorAll('[data-authback]').forEach(function (btn) {
+    btn.addEventListener('click', function () { vibrate(8); authGo(0); });
+  });
+  $('btn-si').addEventListener('click', function () { vibrate(8); doSignIn(); });
+  $('btn-to-signup').addEventListener('click', function () { vibrate(8); authGo(1); });
+  $('link-to-signin').addEventListener('click', function () { vibrate(8); authGo(0); });
+  $('link-forgot').addEventListener('click', function () {
+    vibrate(8);
+    var em = $('si-email').value.trim();
+    if (emailOk(em)) $('fg-email').value = em;
+    authGo(2);
+  });
+  $('link-back-signin').addEventListener('click', function () { vibrate(8); authGo(0); });
+  $('link-ce-signin').addEventListener('click', function () { vibrate(8); authGo(0); });
+  $('link-rs-signin').addEventListener('click', function () { vibrate(8); recoveryMode = false; authGo(0); });
+  $('btn-su').addEventListener('click', function () { vibrate(8); doSignUp(); });
+  $('btn-fg').addEventListener('click', function () { vibrate(8); doForgot(); });
+  $('btn-rs').addEventListener('click', function () { vibrate(8); doResetSave(); });
+  $('btn-rs-newlink').addEventListener('click', function () { vibrate(8); authGo(2); });
+  $('btn-resend-confirm').addEventListener('click', function () { vibrate(8); doResendConfirm('signin'); });
+  $('btn-resend-confirm2').addEventListener('click', function () { vibrate(8); doResendConfirm('checkemail'); });
+  $('link-terms').addEventListener('click', function (e) { e.preventDefault(); openLegal('terms'); });
+  $('link-privacy').addEventListener('click', function (e) { e.preventDefault(); openLegal('privacy'); });
+  $('legal-close').addEventListener('click', closeLegal);
+  $('legal-overlay').addEventListener('click', function (e) { if (e.target === $('legal-overlay')) closeLegal(); });
+  $('btn-signout').addEventListener('click', function () {
+    vibrate(8);
+    if (sb) sb.auth.signOut();
+    if (typeof resyncNav === 'function') resyncNav();
+  });
+  [['si-email', 'btn-si'], ['si-pass', 'btn-si'], ['su-name', 'btn-su'], ['su-email', 'btn-su'],
+   ['su-pass', 'btn-su'], ['su-pass2', 'btn-su'], ['fg-email', 'btn-fg'], ['rs-pass', 'btn-rs'], ['rs-pass2', 'btn-rs']
+  ].forEach(function (pair) {
+    var el = $(pair[0]);
+    if (el) el.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); $(pair[1]).click(); } });
+  });
+
   /* ================= Inicio ================= */
   buildPills('home-pills');
   buildPills('call-pills');
   if (feedEmpty) feedEmpty.textContent = t('feedEmpty');
   applyI18n();
+  initAuth();
   syncSpeakerUI();
   syncMuteUI();
   syncPauseUI();
