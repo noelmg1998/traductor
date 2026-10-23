@@ -786,6 +786,37 @@
     font-size:12px; font-weight:600; letter-spacing:1.2px; text-transform:uppercase; margin-bottom:20px;}
   .sooncard .btn-ghost{max-width:280px; margin:0 auto;}
 
+  /* ===== Planes y saldo (v40) — compacto, negro + dorado ===== */
+  #view-plans{display:none;}
+  #view-plans.on{display:block;}
+  .plhead{display:flex; align-items:center; gap:10px; margin:2px 0 12px;}
+  .plhead h2{font-family:var(--serif); font-size:22px; font-weight:600; margin:0;}
+  .plcard{background:linear-gradient(170deg, rgba(255,255,255,.055), rgba(255,255,255,.018));
+    border:1px solid var(--line); border-radius:18px; padding:14px 15px; margin-bottom:11px;
+    box-shadow:inset 0 1px 0 rgba(242,210,135,.10);}
+  .plcard.cur{border-color:rgba(212,167,92,.55); background:rgba(212,167,92,.05);}
+  .plcard .pltop{display:flex; align-items:baseline; justify-content:space-between; gap:10px;}
+  .plcard .plname{font-size:16.5px; font-weight:700;}
+  .plcard .plprice{font-size:16.5px; font-weight:700; color:var(--gold1); white-space:nowrap;}
+  .plcard .plprice small{font-size:11.5px; color:var(--muted); font-weight:500;}
+  .plcard .plincl{color:var(--muted); font-size:13px; line-height:1.5; margin-top:4px;}
+  .plcard .plbtn{margin-top:11px; width:100%; padding:11px; border-radius:12px; border:1px solid rgba(212,167,92,.6);
+    background:linear-gradient(180deg,#e9c979,#c99b45); color:#241a05; font-size:14px; font-weight:700; cursor:pointer;}
+  .plcard .plbtn:disabled{background:rgba(255,255,255,.05); border-color:var(--line); color:var(--dim); cursor:default;}
+  .plsum .plname{font-size:15px;}
+  .plsum .plrow{display:flex; justify-content:space-between; gap:10px; font-size:13.5px; padding:5px 0 0; color:var(--muted);}
+  .plsum .plrow b{color:#fff; font-weight:600; white-space:nowrap;}
+  .plsec{font-size:12px; letter-spacing:1.1px; text-transform:uppercase; color:var(--dim); margin:16px 2px 8px;}
+  .pltopups{display:flex; gap:9px;}
+  .pltopup{flex:1; padding:11px 6px; border-radius:14px; border:1px solid rgba(212,167,92,.45);
+    background:rgba(212,167,92,.06); color:#fff; cursor:pointer; text-align:center;}
+  .pltopup b{display:block; font-size:16px; color:var(--gold1);}
+  .pltopup small{display:block; font-size:11px; color:var(--muted); margin-top:2px; line-height:1.35;}
+  .plnote{color:var(--dim); font-size:12.5px; line-height:1.55; margin:12px 2px 0;}
+  .plnotice{display:none; margin:11px 0 0; padding:10px 12px; border-radius:12px; font-size:13.5px; line-height:1.5;
+    color:var(--gold1); background:rgba(212,167,92,.08); border:1px solid rgba(212,167,92,.3);}
+  .plnotice.on{display:block;}
+
   #tabbar{position:fixed; left:0; right:0; bottom:0; z-index:50; display:none;
     background:rgba(9,11,19,.88); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
     border-top:1px solid var(--line-soft); padding:8px 10px calc(8px + env(safe-area-inset-bottom));}
@@ -1056,8 +1087,53 @@
     </div>
   </section>
 
+  <!-- ===== Planes y saldo (v40) ===== -->
+  <section id="view-plans">
+    <div class="plhead">
+      <button class="iconbtn" id="btn-plans-back" aria-label="Back">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <h2 data-i18n="plansTitle">Planes y saldo</h2>
+    </div>
+
+    <div class="plcard plsum">
+      <div class="pltop"><span class="plname" data-i18n="plansCurrent">Tu plan actual</span><span class="plprice" id="plans-cur-plan">Free</span></div>
+      <div class="plrow"><span data-i18n="plansConvLeft">Conversación disponible</span><b id="plans-cur-conv">0 min</b></div>
+      <div class="plrow"><span data-i18n="plansCallLeft">Llamadas disponibles</span><b id="plans-cur-call">0 min</b></div>
+      <div class="plrow"><span data-i18n="plansBalance">Saldo</span><b id="plans-cur-bal">$0.00</b></div>
+    </div>
+
+    <p class="plsec" data-i18n="plansSecPlans">Planes mensuales</p>
+
+    <div class="plcard" id="plcard-basico">
+      <div class="pltop"><span class="plname">Básico</span><span class="plprice">$9.99 <small data-i18n="plansPerMonth">/mes</small></span></div>
+      <p class="plincl" data-i18n="plansBasicoIncl">60 min de conversación · 30 min de llamadas</p>
+      <button class="plbtn" id="btn-plan-basico" data-i18n="plansChoose">Elegir plan</button>
+    </div>
+    <div class="plcard" id="plcard-plus">
+      <div class="pltop"><span class="plname">Plus</span><span class="plprice">$19.99 <small data-i18n="plansPerMonth">/mes</small></span></div>
+      <p class="plincl" data-i18n="plansPlusIncl">120 min de conversación · 60 min de llamadas</p>
+      <button class="plbtn" id="btn-plan-plus" data-i18n="plansChoose">Elegir plan</button>
+    </div>
+    <div class="plcard" id="plcard-premium">
+      <div class="pltop"><span class="plname">Premium</span><span class="plprice">$29.99 <small data-i18n="plansPerMonth">/mes</small></span></div>
+      <p class="plincl" data-i18n="plansPremiumIncl">180 min de conversación · 100 min de llamadas</p>
+      <button class="plbtn" id="btn-plan-premium" data-i18n="plansChoose">Elegir plan</button>
+    </div>
+
+    <p class="plsec" data-i18n="plansSecBalance">Saldo (sin vencimiento)</p>
+    <div class="pltopups">
+      <button class="pltopup" id="btn-topup-10"><b>$10</b><small data-i18n="plansTopupPlain">de saldo</small></button>
+      <button class="pltopup" id="btn-topup-20"><b>$20</b><small id="topup-20-get">Recibes $22</small></button>
+      <button class="pltopup" id="btn-topup-50"><b>$50</b><small id="topup-50-get">Recibes $57.50</small></button>
+    </div>
+
+    <p class="plnote" data-i18n="plansNote">En persona pagas por minuto de voz hablada (si nadie habla, no pagas). En llamadas, por minuto de llamada.</p>
+    <p class="plnotice" id="plans-notice"></p>
+  </section>
+
   <footer data-i18n="footer">Traducción automática con IA · En vivo</footer>
-  <div class="verlabel">v39 · Englix</div>
+  <div class="verlabel">v40 · Englix</div>
 </div>
 
 <!-- ===== Barra inferior (v11 · Englix) ===== -->
@@ -1203,6 +1279,7 @@
         <b id="acct-name" style="display:block; font-size:15.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></b>
         <span id="acct-email" style="color:var(--dim); font-size:13px;"></span>
         <p id="acct-plan"></p>
+        <p id="acct-billing" style="display:none; margin:7px 0 0; color:var(--dim); font-size:12.5px; line-height:1.5;"></p>
       </div>
       <button class="btn-ghost" id="btn-signout" data-i18n="authSignOut">Cerrar sesión</button>
     </div>
@@ -1699,6 +1776,17 @@
       authWaitSec: 'Espera {S} segundos para intentarlo de nuevo.', authResentOk: 'Te enviamos otro correo de verificación.',
       authResetDone: 'Tu contraseña se actualizó. Ya puedes iniciar sesión.', authGeneric: 'Algo salió mal. Inténtalo de nuevo.',
       authPlanFree: 'Free', authPlanPremium: 'Premium', authPlanLine: 'Plan {PLAN} · {MIN} minutos disponibles',
+      authPlanBasico: 'Básico', authPlanPlus: 'Plus',
+      billConvLine: '{MIN} de conversación', billCallLine: '{MIN} de llamadas', billBalanceLine: 'Saldo {USD}',
+      plansTitle: 'Planes y saldo', plansCurrent: 'Tu plan actual',
+      plansConvLeft: 'Conversación disponible', plansCallLeft: 'Llamadas disponibles', plansBalance: 'Saldo',
+      plansSecPlans: 'Planes mensuales', plansPerMonth: '/mes', plansChoose: 'Elegir plan', plansCurrentBtn: 'Tu plan actual',
+      plansBasicoIncl: '60 min de conversación · 30 min de llamadas',
+      plansPlusIncl: '120 min de conversación · 60 min de llamadas',
+      plansPremiumIncl: '180 min de conversación · 100 min de llamadas',
+      plansSecBalance: 'Saldo (sin vencimiento)', plansTopupPlain: 'de saldo', plansTopupGet: 'Recibes {USD}',
+      plansNote: 'En persona pagas por minuto de voz hablada (si nadie habla, no pagas). En llamadas, por minuto de llamada.',
+      plansBuySoon: 'El cobro con tarjeta se activa en el siguiente paso. Tu plan y tu saldo actuales no cambian.',
       navHome: 'Inicio', navLearn: 'Aprender', navHistory: 'Historial', navProfile: 'Perfil',
       soonBadge: 'En preparación',
       soonPremiumTitle: 'Englix Premium',
@@ -1867,6 +1955,17 @@
       authWaitSec: 'Wait {S} seconds and try again.', authResentOk: 'We sent you another verification email.',
       authResetDone: 'Your password has been updated. You can sign in now.', authGeneric: 'Something went wrong. Please try again.',
       authPlanFree: 'Free', authPlanPremium: 'Premium', authPlanLine: 'Plan {PLAN} · {MIN} minutes available',
+      authPlanBasico: 'Basic', authPlanPlus: 'Plus',
+      billConvLine: '{MIN} of conversation', billCallLine: '{MIN} of calls', billBalanceLine: 'Balance {USD}',
+      plansTitle: 'Plans & balance', plansCurrent: 'Your current plan',
+      plansConvLeft: 'Conversation available', plansCallLeft: 'Calls available', plansBalance: 'Balance',
+      plansSecPlans: 'Monthly plans', plansPerMonth: '/month', plansChoose: 'Choose plan', plansCurrentBtn: 'Your current plan',
+      plansBasicoIncl: '60 min of conversation · 30 min of calls',
+      plansPlusIncl: '120 min of conversation · 60 min of calls',
+      plansPremiumIncl: '180 min of conversation · 100 min of calls',
+      plansSecBalance: 'Balance (never expires)', plansTopupPlain: 'of balance', plansTopupGet: 'You get {USD}',
+      plansNote: 'In person you pay per minute of speech (if nobody speaks, you pay nothing). On calls, per minute of call.',
+      plansBuySoon: 'Card payments arrive in the next step. Your current plan and balance stay as they are.',
       navHome: 'Home', navLearn: 'Learn', navHistory: 'History', navProfile: 'Profile',
       soonBadge: 'In preparation',
       soonPremiumTitle: 'Englix Premium',
@@ -2152,6 +2251,7 @@
   function tickTimer() {
     var e = elapsedMs();
     timerEl.textContent = fmt(e);
+    meterFlush(false); // v40: envío periódico de voz (trozos de ≥20 s)
   }
 
   /* ================= Tarjetas de conversación (§6) ================= */
@@ -2434,6 +2534,7 @@
     viewCall.classList.toggle('on', name === 'call');
     viewSaved.classList.toggle('on', name === 'saved');
     viewSoon.classList.toggle('on', name === 'soon');
+    viewPlans.classList.toggle('on', name === 'plans');
     homeHeader.style.display = name === 'call' ? 'none' : 'flex';
     document.body.classList.toggle('has-nav', name !== 'call');
     if (name === 'home') navTab = 'home';
@@ -3159,6 +3260,10 @@
     }, 1200);
   }
 
+  // Medidor de voz del Intérprete (v40): turno del usuario por el
+  // VAD del servidor (audio_start_ms/audio_end_ms del buffer) y
+  // traducción hablada por la ventana del audio de salida.
+  var ibVadT0 = 0, ibVadA0 = null, ibOutT0 = 0;
   function handleEventInterp(raw) {
     var ev;
     try { ev = JSON.parse(raw); } catch (e) { return; }
@@ -3167,10 +3272,23 @@
     var c;
     switch (ev.type) {
       case 'input_audio_buffer.speech_started':
+        ibVadT0 = Date.now();
+        ibVadA0 = typeof ev.audio_start_ms === 'number' ? ev.audio_start_ms : null;
         if (inCall && !paused) { lastInputAt = Date.now(); setState('listening'); }
         break;
       case 'input_audio_buffer.speech_stopped':
+        if (ibVadT0) {
+          var vadDur = (ibVadA0 !== null && typeof ev.audio_end_ms === 'number')
+            ? ev.audio_end_ms - ibVadA0
+            : Date.now() - ibVadT0;
+          if (!paused) voiceMeterAdd(vadDur);
+          ibVadT0 = 0; ibVadA0 = null;
+        }
         if (inCall && !paused) setState('processing');
+        break;
+      case 'response.output_audio.delta':
+      case 'response.audio.delta':
+        if (!ibOutT0) ibOutT0 = Date.now();
         break;
       case 'conversation.item.input_audio_transcription.delta':
         if (ev.delta) {
@@ -3247,6 +3365,7 @@
         break;
       case 'response.done':
       case 'response.cancelled':
+        if (ibOutT0) { voiceMeterAdd(Date.now() - ibOutT0); ibOutT0 = 0; }
         if (ib.cancelled) { resetInterpTurn(); if (inCall && !paused) setState('listening'); break; }
         ib.outDone = true;
         maybeFinishInterp();
@@ -3435,6 +3554,7 @@
         return;
       }
       phraseSpeechMs += speechMs;
+      voiceMeterAdd(speechMs); // v40: la voz del usuario de esta frase
       lastOutputTextAt = Date.now();
       var c = ensureCard();
       c.fromLang = j.srcLang;
@@ -3475,6 +3595,8 @@
       function fin() {
         if (done) return;
         done = true;
+        // v40: la traducción hablada también cuenta como voz medida.
+        if (isFinite(a.duration) && a.duration > 0) voiceMeterAdd(a.duration * 1000);
         try { a.remove(); } catch (e) {}
         if (P && P.audio === a) P.audio = null;
         resolve();
@@ -3653,10 +3775,15 @@
     renderQuickLabels();
     if (!inCall) btnStart.innerHTML = startCardHTML(false);
     if (viewSoon.classList.contains('on')) openSoon(soonKind);
+    if (viewPlans.classList.contains('on')) renderPlans();
   }
 
   /* ================= Flujo de llamada ================= */
   async function start() {
+    // Compuerta de cobro (v40): solo un "no" explícito del servidor
+    // detiene el inicio; sin minutos ni saldo → vista de Planes.
+    var gateOk = await billingAuthorize('conv');
+    if (!gateOk) { openPlans(); return; }
     hideErrs();
     setState('requesting_permission');
     btnStart.disabled = true;
@@ -3670,6 +3797,7 @@
       paused = false;
       muted = false;
       accumulatedMs = 0;
+      meterReset(); // v40: el medidor de voz arranca en cero por sesión
       cards = [];
       curCard = null;
       levelHistory = [];
@@ -3818,6 +3946,7 @@
       saveList(LS_SAVED_CONVS, sl);
       lastSummary._saved = true;
     }
+    meterFlush(true); // v40: al terminar se envía el resto de la voz medida
     showView('done');
   }
 
@@ -3866,7 +3995,7 @@
 
   /* ================= Ajustes (§13) ================= */
   var panel = $('settings-panel'), panelOverlay = $('panel-overlay');
-  function openPanel() { populatePanel(); panel.classList.add('on'); panelOverlay.classList.add('on'); lockScroll(); }
+  function openPanel() { populatePanel(); billingRefresh(); panel.classList.add('on'); panelOverlay.classList.add('on'); lockScroll(); }
   function closePanel() { panel.classList.remove('on'); panelOverlay.classList.remove('on'); unlockScroll(); }
   $('btn-gear-home').addEventListener('click', openPanel);
   $('btn-gear-call').addEventListener('click', openPanel);
@@ -3998,6 +4127,7 @@
 
   /* ================= v11 · Englix: navegación e Inicio ================= */
   var viewSoon = $('view-soon');
+  var viewPlans = $('view-plans');
   var navTab = 'home';
   var soonKind = 'learn';
 
@@ -4292,11 +4422,20 @@
       .then(function (j) {
         if (!j || !j.ok || j.status !== 'ready') return;
         var calls = callStoreGet(CALLS_KEY) || [];
-        calls.unshift({ id: pending.callId, dest: pending.dest, at: pending.at, goal: pending.goal || '', summary: j.summary || '', pairs: j.pairs || [] });
+        // Duración según los datos del resumen del relay (v40): de
+        // que se marcó (pending.at) a que el relay marcó el fin
+        // (endedAt). Incluye el timbre y la espera del resumen: es
+        // la mejor medida disponible hoy en el cliente.
+        var durSec = (j.endedAt && pending.at) ? Math.max(0, Math.round((j.endedAt - pending.at) / 1000)) : 0;
+        calls.unshift({ id: pending.callId, dest: pending.dest, at: pending.at, goal: pending.goal || '', summary: j.summary || '', pairs: j.pairs || [], durationSec: durSec });
         callStoreSet(CALLS_KEY, calls.slice(0, 30)); // el registro guarda solo las últimas 30 llamadas (orden de Noel)
         callStoreSet(CALL_PENDING_KEY, null);
         stopCallPolling();
         renderCallLast(); renderCallHistory();
+        // Cobro de la llamada (v40): se descuenta una sola vez, aquí,
+        // cuando el resumen confirma que la llamada existió. Si el
+        // cobro no está configurado o falla, no se inventa nada.
+        if (durSec > 0) billingConsume('call', durSec);
       })
       .catch(function () {});
   }
@@ -4425,6 +4564,15 @@
     var dest = callDestIn.value.trim(), mine = callMineIn.value.trim();
     if (callDigits(dest).length < 10 || callDigits(mine).length < 10) { callShowErr(t('callErrNumbers')); return; }
     if (callDigits(mine).slice(-10) === '6623629216') { callShowErr(t('callErrOwnNumber')); return; }
+    // Compuerta de cobro (v40): solo un "no" explícito del servidor
+    // detiene; sin minutos de llamada ni saldo → vista de Planes.
+    billingAuthorize('call').then(function (gateOk) {
+      if (!gateOk) { closeCallSheet(); openPlans(); return; }
+      proceedCall(dest, mine);
+    });
+  });
+
+  function proceedCall(dest, mine) {
     callBusy = true; btnCallNow.disabled = true;
     callShowErr(''); callShowStatus(t('callCalling'));
     fetch('/api/call-start', {
@@ -4451,12 +4599,12 @@
         callBusy = false; btnCallNow.disabled = false;
         callShowStatus(''); callShowErr(t('callErr'));
       });
-  });
+  }
 
   renderCallLast();
   if (callStoreGet(CALL_PENDING_KEY)) startCallPolling();
 
-  $('btn-crown-home').addEventListener('click', function () { vibrate(8); openSoon('premium'); });
+  $('btn-crown-home').addEventListener('click', function () { vibrate(8); openPlans(); });
   $('btn-practice').addEventListener('click', function () { vibrate(8); openSoon('learn'); });
   $('btn-soon-back').addEventListener('click', function () { showView('home'); });
   $('tab-home').addEventListener('click', function () { showView('home'); });
@@ -4469,6 +4617,151 @@
     var g = $('globe');
     if (g) g.classList.toggle('paused', document.hidden);
   });
+
+  /* ================= Cobro: planes y saldo (v40) =================
+     Cliente de /api/usage: el servidor valida la sesión de Supabase
+     con el token y mueve los minutos/saldo con la llave de servicio.
+     Si el cobro no está configurado en el servidor (503) o no hay
+     respuesta, la app DEJA PASAR y no finge ningún descuento: mejor
+     una sesión sin cobrar que una app bloqueada. Las compras con
+     tarjeta llegan en la Fase 3 (Stripe); aquí los botones de plan y
+     recarga solo muestran el aviso honesto. */
+  function planNameOf(plan) {
+    if (plan === 'basico') return t('authPlanBasico');
+    if (plan === 'plus') return t('authPlanPlus');
+    if (plan === 'premium') return t('authPlanPremium');
+    return t('authPlanFree');
+  }
+  function fmtMinSec(sec) {
+    sec = Math.max(0, Math.round(sec || 0));
+    var m = Math.floor(sec / 60), s = sec % 60;
+    if (!m) return s + ' s';
+    return s ? m + ' min ' + s + ' s' : m + ' min';
+  }
+  function fmtUSD(cents) { return '$' + ((cents || 0) / 100).toFixed(2); }
+
+  function billingToken() {
+    if (!sb || !sbUser) return Promise.resolve(null);
+    return sb.auth.getSession().then(function (r) {
+      var s = r && r.data ? r.data.session : null;
+      return s ? s.access_token : null;
+    }).catch(function () { return null; });
+  }
+  function billingPost(payload) {
+    return billingToken().then(function (tok) {
+      if (!tok) return null;
+      return fetch('/api/usage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok },
+        body: JSON.stringify(payload)
+      }).then(function (r) { return r.json().catch(function () { return null; }); })
+        .catch(function () { return null; });
+    });
+  }
+  function billingMerge(j) {
+    if (!j) return;
+    var b = window.__englixBilling || { plan: 'free', plan_conv_seconds: 0, plan_call_seconds: 0, balance_cents: 0, cycle_ends_at: null };
+    if (typeof j.plan_conv_seconds === 'number') b.plan_conv_seconds = j.plan_conv_seconds;
+    if (typeof j.plan_call_seconds === 'number') b.plan_call_seconds = j.plan_call_seconds;
+    if (typeof j.balance_cents === 'number') b.balance_cents = j.balance_cents;
+    if (j.plan) b.plan = j.plan;
+    if (j.cycle_ends_at !== undefined) b.cycle_ends_at = j.cycle_ends_at;
+    window.__englixBilling = b;
+    renderAcct();
+    if (viewPlans && viewPlans.classList.contains('on')) renderPlans();
+  }
+  function billingRefresh() {
+    return billingPost({ action: 'status' }).then(function (j) {
+      if (j && j.ok && j.entitlements) {
+        window.__englixBilling = j.entitlements;
+        renderAcct();
+        if (viewPlans && viewPlans.classList.contains('on')) renderPlans();
+      }
+      return j;
+    });
+  }
+  // true = puede empezar. Solo un "no" EXPLÍCITO del servidor
+  // (canStart:false) bloquea; cualquier falla deja pasar.
+  function billingAuthorize(kind) {
+    return billingPost({ action: 'authorize', kind: kind }).then(function (j) {
+      if (!j || !j.ok) return true;
+      return !!j.canStart;
+    });
+  }
+  // Descuenta segundos en trozos de ≤3600 (el tope de la API) y
+  // resuelve con los segundos efectivamente descontados.
+  function billingConsume(kind, seconds) {
+    var left = Math.max(0, Math.floor(seconds || 0)), doneSec = 0;
+    function step() {
+      if (left <= 0) return Promise.resolve(doneSec);
+      var chunk = Math.min(left, 3600);
+      left -= chunk;
+      return billingPost({ action: 'consume', kind: kind, seconds: chunk }).then(function (j) {
+        if (j && j.ok) { doneSec += chunk; billingMerge(j); }
+        return step();
+      });
+    }
+    return step();
+  }
+
+  /* ---- Vista de Planes ---- */
+  function renderPlans() {
+    var b = window.__englixBilling || { plan: 'free', plan_conv_seconds: 0, plan_call_seconds: 0, balance_cents: 0 };
+    $('plans-cur-plan').textContent = planNameOf(b.plan);
+    $('plans-cur-conv').textContent = fmtMinSec(b.plan_conv_seconds);
+    $('plans-cur-call').textContent = fmtMinSec(b.plan_call_seconds);
+    $('plans-cur-bal').textContent = fmtUSD(b.balance_cents);
+    ['basico', 'plus', 'premium'].forEach(function (p) {
+      var isCur = b.plan === p;
+      $('plcard-' + p).classList.toggle('cur', isCur);
+      var btn = $('btn-plan-' + p);
+      btn.disabled = isCur;
+      btn.textContent = isCur ? t('plansCurrentBtn') : t('plansChoose');
+    });
+    $('topup-20-get').textContent = t('plansTopupGet').replace('{USD}', '$22');
+    $('topup-50-get').textContent = t('plansTopupGet').replace('{USD}', '$57.50');
+  }
+  function openPlans() {
+    renderPlans();
+    $('plans-notice').classList.remove('on');
+    showView('plans');
+    syncNav();
+    billingRefresh();
+  }
+  function plansSoonNotice() {
+    vibrate(8);
+    var n = $('plans-notice');
+    n.textContent = t('plansBuySoon');
+    n.classList.add('on');
+  }
+  ['btn-plan-basico', 'btn-plan-plus', 'btn-plan-premium',
+   'btn-topup-10', 'btn-topup-20', 'btn-topup-50'].forEach(function (id) {
+    $(id).addEventListener('click', plansSoonNotice);
+  });
+  $('btn-plans-back').addEventListener('click', function () { vibrate(8); showView('home'); });
+
+  /* ---- Medidor de voz (conversación en persona) ----
+     Se cobra por VOZ hablada, nunca por tiempo conectado: los
+     motores alimentan meterAccMs con la duración de cada turno de
+     voz del usuario + la duración de cada traducción hablada. Se
+     envía al servidor en trozos de ≥20 s y el resto al terminar.
+     Si el envío falla, los segundos quedan pendientes (no se
+     inventa ningún descuento local). */
+  var meterAccMs = 0, meterSentSec = 0, meterGen = 0, meterBusy = false;
+  function voiceMeterAdd(ms) { if (ms && isFinite(ms) && ms > 0) meterAccMs += ms; }
+  function meterReset() { meterGen++; meterAccMs = 0; meterSentSec = 0; }
+  function meterFlush(final) {
+    if (meterBusy) return;
+    var due = Math.floor(meterAccMs / 1000) - meterSentSec;
+    if (due <= 0) return;
+    if (!final && due < 20) return;
+    var gen = meterGen;
+    meterBusy = true;
+    billingConsume('conv', due).then(function (consumed) {
+      meterBusy = false;
+      if (gen === meterGen) meterSentSec += consumed;
+    });
+  }
 
   /* ================= Autenticación Englix (v33) =================
      Supabase Auth (correo + contraseña, SIN login social).
@@ -4524,11 +4817,28 @@
     $('acct-name').textContent = name;
     $('acct-email').textContent = sbUser.email || '';
     $('acct-ava').textContent = (name || 'E').trim().charAt(0).toUpperCase() || 'E';
+    var bill = window.__englixBilling;
+    var bel = $('acct-billing');
     var ent = window.__englixEntitlements;
-    if (ent) {
+    if (bill) {
+      // Datos reales del servidor (v40): plan + segundos de cada
+      // cubeta + saldo. La píldora lleva el total; la línea de
+      // detalle, el desglose exacto.
+      $('acct-plan').textContent = t('authPlanLine')
+        .replace('{PLAN}', planNameOf(bill.plan))
+        .replace('{MIN}', String(Math.floor(((bill.plan_conv_seconds || 0) + (bill.plan_call_seconds || 0)) / 60)));
+      bel.style.display = 'block';
+      bel.textContent =
+        t('billConvLine').replace('{MIN}', fmtMinSec(bill.plan_conv_seconds)) + ' · ' +
+        t('billCallLine').replace('{MIN}', fmtMinSec(bill.plan_call_seconds)) + ' · ' +
+        t('billBalanceLine').replace('{USD}', fmtUSD(bill.balance_cents));
+    } else if (ent) {
+      // Respaldo: si /api/usage no respondió, la lectura directa
+      // de entitlements de siempre (sin inventar desglose).
       var planName = ent.plan === 'premium' ? t('authPlanPremium') : t('authPlanFree');
       $('acct-plan').textContent = t('authPlanLine').replace('{PLAN}', planName).replace('{MIN}', String(ent.minutes_balance != null ? ent.minutes_balance : 0));
-    } else $('acct-plan').textContent = '';
+      bel.style.display = 'none';
+    } else { $('acct-plan').textContent = ''; bel.style.display = 'none'; }
   }
 
   function loadAccount() {
@@ -4539,6 +4849,9 @@
     sb.from('entitlements').select('plan,minutes_balance').eq('user_id', sbUser.id).single()
       .then(function (r) { if (r && r.data) { window.__englixEntitlements = r.data; renderAcct(); } })
       .catch(function () {});
+    // v40: el estado de cobro (plan, cubetas, saldo) manda el
+    // servidor vía /api/usage; si responde, renderAcct lo prefiere.
+    billingRefresh();
   }
 
   function onSignedIn(user) {
@@ -4595,7 +4908,7 @@
       } else if (event === 'SIGNED_IN' && session && session.user) {
         onSignedIn(session.user);
       } else if (event === 'SIGNED_OUT') {
-        sbUser = null; window.__englixProfile = null; window.__englixEntitlements = null;
+        sbUser = null; window.__englixProfile = null; window.__englixEntitlements = null; window.__englixBilling = null;
         renderAcct();
         showAuth(0);
       }
