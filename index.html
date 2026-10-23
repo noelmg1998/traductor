@@ -1022,7 +1022,7 @@
   </section>
 
   <footer data-i18n="footer">Traducción automática con IA · En vivo</footer>
-  <div class="verlabel">v33 · Englix</div>
+  <div class="verlabel">v34 · Englix</div>
 </div>
 
 <!-- ===== Barra inferior (v11 · Englix) ===== -->
@@ -1419,9 +1419,20 @@
 (function () {
   'use strict';
 
-  /* ===== Red de seguridad visible: ningún fallo muere en silencio ===== */
-  window.addEventListener('error', function (e) { showFatal(e && e.message); });
-  window.addEventListener('unhandledrejection', function (e) { showFatal(e && e.reason && e.reason.message); });
+  /* ===== Red de seguridad visible: ningún fallo muere en silencio =====
+     Solo errores REALES de la app: el genérico "Script error." que el
+     navegador reporta por scripts de otro origen (CDN) no trae ningún
+     detalle y suele ser ruido del webview — no asustar al usuario. */
+  window.addEventListener('error', function (e) {
+    var m = e && e.message;
+    if (!m || String(m).trim() === 'Script error.') return;
+    showFatal(m);
+  });
+  window.addEventListener('unhandledrejection', function (e) {
+    var m = e && e.reason && e.reason.message;
+    if (!m || String(m).trim() === 'Script error.') return;
+    showFatal(m);
+  });
   function showFatal(msg) {
     try {
       var b = document.getElementById('fatal-banner');
