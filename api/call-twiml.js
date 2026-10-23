@@ -57,16 +57,15 @@ module.exports = async (req, res) => {
     : '<Say language="es-US" voice="Polly.Lupe">Conectando tu llamada. Habla ' +
       'en español con calma; la otra persona te escuchará en inglés.</Say>';
 
-  const streamUrl = 'wss://' + relay + '/stream' +
-    '?leg=' + leg +
-    '&callId=' + encodeURIComponent(q.callId || '') +
-    '&pairA=' + encodeURIComponent(q.pairA || 'es') +
-    '&pairB=' + encodeURIComponent(q.pairB || 'en') +
-    '&goal=' + encodeURIComponent(q.goal || '');
+  // DIAGNÓSTICO TEMPORAL (2026-10-23): stream al eco crudo /raw con la
+  // forma EXACTA del eco público que sí aguantó (sin parámetros en la
+  // URL y sin track) pa' separar si Twilio puede conectar a este host
+  // y borde. REVERTIR en cuanto se haga la llamada de prueba.
+  const streamUrl = 'wss://' + relay + '/raw';
 
   res.status(200).send(
     '<Response>' + say +
-    '<Connect><Stream url="' + escAttr(streamUrl) + '" track="inbound_track" /></Connect>' +
+    '<Connect><Stream url="' + escAttr(streamUrl) + '" /></Connect>' +
     '</Response>'
   );
 };
