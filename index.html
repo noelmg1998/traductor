@@ -858,7 +858,7 @@
   </section>
 
   <footer data-i18n="footer">Traducción automática con IA · En vivo</footer>
-  <div class="verlabel">v18 · Englix</div>
+  <div class="verlabel">v18.1 · Englix</div>
 </div>
 
 <!-- ===== Barra inferior (v11 · Englix) ===== -->
@@ -917,7 +917,8 @@
     <label class="calllabel" for="call-dest" data-i18n="callDestLabel">Número al que quieres llamar</label>
     <input class="callinput" id="call-dest" type="tel" inputmode="tel" autocomplete="off" placeholder="(305) 555-0123">
     <label class="calllabel" for="call-mine" data-i18n="callMineLabel">Tu número de celular</label>
-    <input class="callinput" id="call-mine" type="tel" inputmode="tel" autocomplete="off" placeholder="(941) 555-0123">
+    <input class="callinput" id="call-mine" type="tel" inputmode="tel" autocomplete="tel" placeholder="(941) 555-0123">
+    <p class="callverify-note" data-i18n="callMineHint" style="margin-top:6px;">Lo escribes una sola vez: queda guardado en tu teléfono y sale solo la próxima vez.</p>
     <div class="verifywrap" id="verify-wrap" style="display:none;">
       <div id="verify-row">
         <p class="callverify-note" data-i18n="callVerifyNote">Si verificas tu número (una sola vez), la otra persona verá TU número al llamarle, no el de Englix.</p>
@@ -1168,6 +1169,7 @@
       callErrNumbers: 'Revisa los dos números: deben tener código de área (10 dígitos).',
       callSoon: 'El servicio de llamadas está casi listo: falta encender el servidor de llamadas. Muy pronto podrás llamar desde aquí.',
       callVerifyNote: 'Si verificas tu número (una sola vez), la otra persona verá TU número al llamarle, no el de Englix.',
+      callMineHint: 'Lo escribes una sola vez: queda guardado en tu teléfono y sale solo la próxima vez.',
       callVerifyBtn: 'Verificar mi número',
       callVerifyCalling: 'Te estamos llamando ahora para verificar. Contesta y marca este código en el teclado de esa llamada:',
       callVerifyCheck: 'Ya marqué el código',
@@ -1286,6 +1288,7 @@
       callErrNumbers: 'Check both numbers: they need an area code (10 digits).',
       callSoon: 'The call service is almost ready: the call server still needs to be switched on. You will be able to call from here very soon.',
       callVerifyNote: 'If you verify your number (just once), the other person will see YOUR number when you call, not the Englix one.',
+      callMineHint: 'You type it once: it stays saved on your phone and fills in by itself next time.',
       callVerifyBtn: 'Verify my number',
       callVerifyCalling: 'We are calling you now to verify. Answer and type this code on that call keypad:',
       callVerifyCheck: 'I entered the code',
