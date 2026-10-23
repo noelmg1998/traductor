@@ -44,7 +44,16 @@ module.exports = async (req, res) => {
     : '<Say language="es-US" voice="Polly.Lupe">Conectando tu llamada. Habla ' +
       'en español con calma; la otra persona te escuchará en inglés.</Say>';
 
-  const streamUrl = 'wss://' + relay + '/stream' +
+  // SONDA TEMPORAL (2026-10-22): las llamadas reales de Twilio jamás
+  // conectaron el stream al relay en Render (0 conexiones registradas en
+  // todos los intentos), aunque clientes externos sí conectan y traducen.
+  // Esta sonda manda el stream a un servidor de eco público pa' separar el
+  // problema: si la llamada se MANTIENE, Twilio sí sostiene streams con
+  // terceros y lo roto es la ruta Twilio→Render. REVERTIR tras la prueba.
+  const PROBE_ECHO = true;
+  const streamUrl = (PROBE_ECHO
+    ? 'wss://ws.postman-echo.com/raw'
+    : 'wss://' + relay + '/stream') +
     '?leg=' + leg +
     '&callId=' + encodeURIComponent(q.callId || '') +
     '&pairA=' + encodeURIComponent(q.pairA || 'es') +
