@@ -375,6 +375,7 @@
   .langlist{display:flex; flex-direction:column; gap:4px;}
   /* v14 · Englix: en el modal de idiomas SOLO se desplaza la lista; el
      encabezado, el buscador y el botón quedan fijos dentro de la hoja. */
+  #lang-overlay{z-index:80;}
   #lang-overlay .sheet{display:flex; flex-direction:column; overflow:hidden;}
   #lang-overlay .langlist{
     flex:1 1 auto; min-height:0; overflow-y:auto;
@@ -969,7 +970,7 @@
 <div class="overlay" id="call-overlay">
   <div class="sheet">
     <h3 data-i18n="callTitle">Llamar con traductor</h3>
-    <p class="sub" data-i18n="callSheetSub">Te llamamos a tu celular y conectamos la llamada. Tú hablas español; la otra persona escucha inglés.</p>
+    <p class="sub" id="call-sheet-sub">Te llamamos a tu celular y conectamos la llamada con traducción en los dos sentidos.</p>
     <label class="calllabel" for="call-dest" data-i18n="callDestLabel">Número al que quieres llamar</label>
     <input class="callinput" id="call-dest" type="tel" inputmode="tel" autocomplete="off" placeholder="(305) 555-0123">
     <label class="calllabel" for="call-mine" data-i18n="callMineLabel">Tu número de celular</label>
@@ -991,6 +992,11 @@
     </div>
     <label class="calllabel" for="call-goal" data-i18n="callGoalLabel">¿Para qué es la llamada? (opcional)</label>
     <input class="callinput" id="call-goal" type="text" maxlength="120" autocomplete="off" data-i18n-ph="callGoalPh" placeholder="Ej.: pedir una cita, una factura…">
+    <label class="calllabel" data-i18n="callLangsLabel">Idiomas de la llamada</label>
+    <div class="pills" style="margin-top:2px; margin-bottom:2px;">
+      <button class="pill" id="call-chip-a"><span class="flag"></span><span class="pinfo"><span class="pname"></span></span><span class="chev">⌄</span></button>
+      <button class="pill" id="call-chip-b"><span class="flag"></span><span class="pinfo"><span class="pname"></span></span><span class="chev">⌄</span></button>
+    </div>
     <p class="quickerr" id="call-err" style="display:none;"></p>
     <p class="callstatus" id="call-status" style="display:none;"></p>
     <div class="btnrow">
@@ -1275,6 +1281,8 @@
       callNoTalk: 'No se registró conversación en esta llamada.',
       callPastTitle: 'Llamadas anteriores',
       callsLogTitle: 'Registro de llamadas',
+      callLangsLabel: 'Idiomas de la llamada',
+      callSheetSubTpl: 'Te llamamos a tu celular y conectamos la llamada. La traducción es entre {A} y {B}, en los dos sentidos: cada quien habla su idioma y escucha el otro.',
       callsLogSub: 'Toca una llamada para ver su resumen y la conversación completa.',
       callsLogEmpty: 'Todavía no tienes llamadas registradas.',
       callsBack: '← Volver',
@@ -1406,6 +1414,8 @@
       callNoTalk: 'No conversation was recorded on this call.',
       callPastTitle: 'Previous calls',
       callsLogTitle: 'Call log',
+      callLangsLabel: 'Call languages',
+      callSheetSubTpl: 'We call your cell phone and connect the call. Translation is between {A} and {B}, both ways: each person speaks their language and hears the other.',
       callsLogSub: 'Tap a call to see its summary and the full conversation.',
       callsLogEmpty: 'You have no calls logged yet.',
       callsBack: '← Back',
@@ -3099,7 +3109,9 @@
   /* ---------- Modal de idiomas ---------- */
   var langOverlay = $('lang-overlay'), langList = $('lang-list'), langSearch = $('lang-search');
   var modalSide = 'A';
+  var langModalMode = 'pair'; // 'pair' = conversación en persona · 'call' = llamada telefónica
   function openLangModal(side) {
+    langModalMode = 'pair';
     modalSide = side;
     langSearch.value = '';
     renderLangList('');
@@ -3108,10 +3120,20 @@
     setTimeout(function () { try { langSearch.focus(); } catch (e) {} }, 60);
   }
   function closeLangModal() { langOverlay.classList.remove('on'); unlockScroll(); }
+  function openCallLangModal(side) {
+    langModalMode = 'call';
+    modalSide = side;
+    langSearch.value = '';
+    renderLangList('');
+    langOverlay.classList.add('on');
+    lockScroll();
+    setTimeout(function () { try { langSearch.focus(); } catch (e) {} }, 60);
+  }
   function renderLangList(filter) {
     langList.innerHTML = '';
-    var current = modalSide === 'A' ? settings.pairA : settings.pairB;
-    var other = modalSide === 'A' ? settings.pairB : settings.pairA;
+    var inCall = langModalMode === 'call';
+    var current = inCall ? (modalSide === 'A' ? callPair.a : callPair.b) : (modalSide === 'A' ? settings.pairA : settings.pairB);
+    var other = inCall ? (modalSide === 'A' ? callPair.b : callPair.a) : (modalSide === 'A' ? settings.pairB : settings.pairA);
     var f = (filter || '').toLowerCase();
     // v13 · Englix: orden alfabético por el nombre visible en el idioma
     // actual de la interfaz (pedido del dueño). Se ordena una COPIA al
@@ -3134,6 +3156,20 @@
     });
   }
   async function chooseLang(code) {
+    if (langModalMode === 'call') {
+      // Pareja propia de la llamada telefónica: no toca la de la
+      // conversación en persona ni reconfigura sesiones.
+      var cOther = modalSide === 'A' ? callPair.b : callPair.a;
+      if (code === cOther) {
+        var cCur = modalSide === 'A' ? callPair.a : callPair.b;
+        if (modalSide === 'A') callPair.b = cCur; else callPair.a = cCur;
+      }
+      if (modalSide === 'A') callPair.a = code; else callPair.b = code;
+      callStoreSet(CALL_PAIR_KEY, callPair);
+      closeLangModal();
+      renderCallPairChips();
+      return;
+    }
     var other = modalSide === 'A' ? settings.pairB : settings.pairA;
     if (code === other) { // nunca el mismo idioma en ambos lados: se intercambia
       var cur = modalSide === 'A' ? settings.pairA : settings.pairB;
@@ -3681,6 +3717,30 @@
   /* ===== Llamadas telefónicas traducidas (v16) ===== */
   var CALL_NUMS_KEY = 'lc_call_numbers_v1', CALL_PENDING_KEY = 'lc_call_pending_v1',
       CALLS_KEY = 'lc_phone_calls_v1';
+  /* Pareja de idiomas PROPIA de la llamada telefónica (pedido de Noel):
+     se escoge en el mismo formulario de la llamada y queda guardada;
+     arranca copiando la de la conversación en persona. */
+  var CALL_PAIR_KEY = 'lc_call_pair_v1';
+  var callPair = (function () {
+    var p = null;
+    try { p = JSON.parse(localStorage.getItem(CALL_PAIR_KEY) || 'null'); } catch (e) {}
+    if (p && langOf(p.a) && langOf(p.b) && p.a !== p.b) return { a: p.a, b: p.b };
+    return { a: settings.pairA, b: settings.pairB };
+  })();
+
+  function renderCallPairChips() {
+    var A = langOf(callPair.a), B = langOf(callPair.b);
+    if (!A || !B) return;
+    var ca = $('call-chip-a'), cb = $('call-chip-b');
+    if (ca && cb) {
+      ca.querySelector('.flag').textContent = A.flag;
+      ca.querySelector('.pname').textContent = langName(callPair.a);
+      cb.querySelector('.flag').textContent = B.flag;
+      cb.querySelector('.pname').textContent = langName(callPair.b);
+    }
+    var sub = $('call-sheet-sub');
+    if (sub) sub.textContent = t('callSheetSubTpl').replace('{A}', langName(callPair.a)).replace('{B}', langName(callPair.b));
+  }
   var callOverlay = $('call-overlay'), callDestIn = $('call-dest'), callMineIn = $('call-mine'),
       callGoalIn = $('call-goal'), callErrEl = $('call-err'), callStatusEl = $('call-status'),
       btnCallNow = $('btn-call-now'), callBusy = false,
@@ -3806,6 +3866,7 @@
     if (nums.dest && !callDestIn.value) callDestIn.value = nums.dest;
     callShowErr(''); callShowStatus('');
     renderCallHistory();
+    renderCallPairChips();
     refreshVerifyUI(); checkVerifiedRemote();
     callOverlay.classList.add('on'); lockScroll();
   }
@@ -3902,6 +3963,8 @@
   });
 
   $('btn-call-open').addEventListener('click', function () { vibrate(8); openCallSheet(); });
+  $('call-chip-a').addEventListener('click', function () { vibrate(8); openCallLangModal('A'); });
+  $('call-chip-b').addEventListener('click', function () { vibrate(8); openCallLangModal('B'); });
   $('btn-calls-open').addEventListener('click', function () { vibrate(8); openCallsSheet(); });
   $('calls-close').addEventListener('click', function () { vibrate(8); closeCallsSheet(); });
   $('calls-back').addEventListener('click', function () {
@@ -3924,7 +3987,7 @@
     callShowErr(''); callShowStatus(t('callCalling'));
     fetch('/api/call-start', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ toNumber: dest, myNumber: mine, goal: callGoalIn.value.trim(), pairA: settings.pairA, pairB: settings.pairB })
+      body: JSON.stringify({ toNumber: dest, myNumber: mine, goal: callGoalIn.value.trim(), pairA: callPair.a, pairB: callPair.b })
     })
       .then(function (r) { return r.json(); })
       .then(function (j) {
