@@ -21,8 +21,15 @@ function escAttr(s) {
 module.exports = async (req, res) => {
   const q = req.query || {};
   const leg = q.leg === 'dest' ? 'dest' : 'user';
-  const relay = String(process.env.CALL_RELAY_HOST || '')
+  // El relay vive en Fly.io desde el 2026-10-22: Twilio nunca logró
+  // conectar el stream cuando el relay estaba en Render (0 conexiones en
+  // 5 llamadas reales; la sonda a un servidor de eco público aguantó
+  // minutos — la ruta Twilio→Render era la rota). La variable
+  // CALL_RELAY_HOST de Vercel quedó con el host viejo: aquí manda el host
+  // de Fly y la variable solo se respeta si apunta a fly.dev.
+  const envRelay = String(process.env.CALL_RELAY_HOST || '')
     .replace(/^wss?:\/\//, '').replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+  const relay = envRelay.indexOf('fly.dev') >= 0 ? envRelay : 'englix-relay.fly.dev';
 
   res.setHeader('Content-Type', 'text/xml; charset=utf-8');
 
@@ -44,16 +51,7 @@ module.exports = async (req, res) => {
     : '<Say language="es-US" voice="Polly.Lupe">Conectando tu llamada. Habla ' +
       'en español con calma; la otra persona te escuchará en inglés.</Say>';
 
-  // SONDA TEMPORAL (2026-10-22): las llamadas reales de Twilio jamás
-  // conectaron el stream al relay en Render (0 conexiones registradas en
-  // todos los intentos), aunque clientes externos sí conectan y traducen.
-  // Esta sonda manda el stream a un servidor de eco público pa' separar el
-  // problema: si la llamada se MANTIENE, Twilio sí sostiene streams con
-  // terceros y lo roto es la ruta Twilio→Render. REVERTIR tras la prueba.
-  const PROBE_ECHO = true;
-  const streamUrl = (PROBE_ECHO
-    ? 'wss://ws.postman-echo.com/raw'
-    : 'wss://' + relay + '/stream') +
+  const streamUrl = 'wss://' + relay + '/stream' +
     '?leg=' + leg +
     '&callId=' + encodeURIComponent(q.callId || '') +
     '&pairA=' + encodeURIComponent(q.pairA || 'es') +
