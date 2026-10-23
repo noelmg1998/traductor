@@ -1,0 +1,1 @@
+{"dependencies":{"ws":"^8.18.0"},"description":"Relay WebSocket de llamadas traducidas de Englix (Twilio Media Streams <-> OpenAI Realtime).","engines":{"node":">=18"},"main":"server.js","name":"englix-call-relay","private":true,"scripts":{"start":"node server.js"},"version":"1.0.0"}

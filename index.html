@@ -551,6 +551,22 @@
   .qact.playing{border-color:var(--gold1); box-shadow:0 0 14px rgba(212,167,92,.5);}
   .qact.playing svg{stroke:var(--gold1);}
   .quickerr{color:#ffb4b6; font-size:13.5px; line-height:1.5; margin:12px 0 0;}
+  /* ---------- Llamadas telefónicas (v16) ---------- */
+  .callsub{color:var(--muted); font-size:13.5px; line-height:1.5; margin:2px 0 12px;}
+  .callbtn{width:100%;}
+  .calllast{margin-top:14px; border-top:1px solid var(--line-soft); padding-top:12px;}
+  .calllastmeta{color:var(--dim); font-size:12px; margin:4px 0 0;}
+  .calllasttext{font-size:14.5px; line-height:1.55; margin:6px 0 0; white-space:pre-wrap;}
+  .calllabel{display:block; font-size:12px; font-weight:600; letter-spacing:.6px; text-transform:uppercase; color:var(--dim); margin:14px 0 6px;}
+  .callinput{width:100%; box-sizing:border-box; background:rgba(255,255,255,.05); border:1px solid var(--line-soft); border-radius:12px; padding:12px; color:var(--txt); font-size:16px; font-family:var(--sans); outline:0;}
+  .callinput:focus{border-color:rgba(212,167,92,.55);}
+  .callstatus{color:var(--gold1); font-size:14px; line-height:1.5; margin:12px 0 0;}
+  .callhist{margin-top:18px; border-top:1px solid var(--line-soft); padding-top:12px;}
+  .callhist h4{margin:0 0 8px; font-size:13px; letter-spacing:.6px; text-transform:uppercase; color:var(--dim);}
+  .callhist .chitem{padding:9px 0; border-bottom:1px solid var(--line-soft);}
+  .callhist .chitem:last-child{border-bottom:0;}
+  .callhist .chmeta{color:var(--dim); font-size:12px;}
+  .callhist .chsum{font-size:13.5px; line-height:1.5; margin-top:3px; white-space:pre-wrap;}
 
   #view-soon{display:none;}
   #view-soon.on{display:block;}
@@ -703,6 +719,20 @@
       </div>
       <p class="quickerr" id="quick-err" style="display:none;" data-i18n="quickErr">No se pudo traducir. Inténtalo de nuevo.</p>
     </div>
+
+    <div class="quick rise d2">
+      <div class="quickhead">
+        <span class="qicon"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
+        <span class="qtitle" data-i18n="callTitle">Llamar con traductor</span>
+      </div>
+      <p class="callsub" data-i18n="callSub">Llama a cualquier teléfono y habla en español: la otra persona te escucha en inglés. Al colgar, recibes el resumen en español.</p>
+      <button class="quickbtn callbtn" id="btn-call-open"><span data-i18n="callOpen">Hacer una llamada</span></button>
+      <div class="calllast" id="call-last" style="display:none;">
+        <span class="quicklabel" data-i18n="callSummaryTitle">Resumen de tu última llamada</span>
+        <p class="calllastmeta" id="call-last-meta"></p>
+        <p class="calllasttext" id="call-last-text"></p>
+      </div>
+    </div>
   </section>
 
   <!-- ===== En llamada ===== -->
@@ -823,7 +853,7 @@
   </section>
 
   <footer data-i18n="footer">Traducción automática con IA · En vivo</footer>
-  <div class="verlabel">v15 · Englix</div>
+  <div class="verlabel">v16 · Englix</div>
 </div>
 
 <!-- ===== Barra inferior (v11 · Englix) ===== -->
@@ -870,6 +900,30 @@
     <div class="btnrow">
       <button class="btn-call" id="end-continue" data-i18n="endContinue">Continuar conversación</button>
       <button class="btn-ghost" id="end-confirm" style="color:#ffb4b6; border-color:rgba(229,72,77,.5);" data-i18n="endConfirm">Finalizar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Hoja de llamada telefónica (v16) ===== -->
+<div class="overlay" id="call-overlay">
+  <div class="sheet">
+    <h3 data-i18n="callTitle">Llamar con traductor</h3>
+    <p class="sub" data-i18n="callSheetSub">Te llamamos a tu celular y conectamos la llamada. Tú hablas español; la otra persona escucha inglés.</p>
+    <label class="calllabel" for="call-dest" data-i18n="callDestLabel">Número al que quieres llamar</label>
+    <input class="callinput" id="call-dest" type="tel" inputmode="tel" autocomplete="off" placeholder="(305) 555-0123">
+    <label class="calllabel" for="call-mine" data-i18n="callMineLabel">Tu número de celular</label>
+    <input class="callinput" id="call-mine" type="tel" inputmode="tel" autocomplete="off" placeholder="(941) 555-0123">
+    <label class="calllabel" for="call-goal" data-i18n="callGoalLabel">¿Para qué es la llamada? (opcional)</label>
+    <input class="callinput" id="call-goal" type="text" maxlength="120" autocomplete="off" data-i18n-ph="callGoalPh" placeholder="Ej.: pedir una cita, una factura…">
+    <p class="quickerr" id="call-err" style="display:none;"></p>
+    <p class="callstatus" id="call-status" style="display:none;"></p>
+    <div class="btnrow">
+      <button class="btn-call" id="btn-call-now"><span data-i18n="callNow">Llamar ahora</span></button>
+      <button class="btn-ghost" id="call-close" data-i18n="cancel">Cancelar</button>
+    </div>
+    <div class="callhist" id="call-history" style="display:none;">
+      <h4 data-i18n="callPastTitle">Llamadas anteriores</h4>
+      <div id="call-history-list"></div>
     </div>
   </div>
 </div>
@@ -1082,6 +1136,23 @@
       quickResult: 'Traducción',
       quickErr: 'No se pudo traducir. Inténtalo de nuevo.',
       quickSwap: 'Intercambiar idiomas',
+      callTitle: 'Llamar con traductor',
+      callSub: 'Llama a cualquier teléfono y habla en español: la otra persona te escucha en inglés. Al colgar, recibes el resumen en español.',
+      callOpen: 'Hacer una llamada',
+      callSheetSub: 'Te llamamos a tu celular y conectamos la llamada. Tú hablas español; la otra persona escucha inglés.',
+      callDestLabel: 'Número al que quieres llamar',
+      callMineLabel: 'Tu número de celular',
+      callGoalLabel: '¿Para qué es la llamada? (opcional)',
+      callGoalPh: 'Ej.: pedir una cita, una factura…',
+      callNow: 'Llamar ahora', callCalling: 'Llamando…',
+      callRinging: 'Te estamos llamando: contesta tu celular y espera a que conecte la otra persona.',
+      callErr: 'No se pudo hacer la llamada. Inténtalo de nuevo.',
+      callErrNumbers: 'Revisa los dos números: deben tener código de área (10 dígitos).',
+      callSoon: 'El servicio de llamadas está casi listo: falta encender el servidor de llamadas. Muy pronto podrás llamar desde aquí.',
+      callSummaryTitle: 'Resumen de tu última llamada',
+      callSummaryPending: 'Tu llamada terminó o sigue en curso: el resumen aparecerá aquí al colgar.',
+      callNoTalk: 'No se registró conversación en esta llamada.',
+      callPastTitle: 'Llamadas anteriores',
       navHome: 'Inicio', navLearn: 'Aprender', navHistory: 'Historial', navProfile: 'Perfil',
       soonBadge: 'En preparación',
       soonPremiumTitle: 'Englix Premium',
@@ -1175,6 +1246,23 @@
       quickResult: 'Translation',
       quickErr: 'Could not translate. Please try again.',
       quickSwap: 'Swap languages',
+      callTitle: 'Call with translator',
+      callSub: 'Call any phone and speak Spanish: the other person hears you in English. When you hang up, you get the summary in Spanish.',
+      callOpen: 'Make a call',
+      callSheetSub: 'We call your cell phone and connect the call. You speak Spanish; the other person hears English.',
+      callDestLabel: 'Number you want to call',
+      callMineLabel: 'Your cell phone number',
+      callGoalLabel: 'What is the call about? (optional)',
+      callGoalPh: 'E.g.: book an appointment, a bill…',
+      callNow: 'Call now', callCalling: 'Calling…',
+      callRinging: 'We are calling you: answer your cell phone and wait for the other person to connect.',
+      callErr: 'The call could not be placed. Please try again.',
+      callErrNumbers: 'Check both numbers: they need an area code (10 digits).',
+      callSoon: 'The call service is almost ready: the call server still needs to be switched on. You will be able to call from here very soon.',
+      callSummaryTitle: 'Summary of your last call',
+      callSummaryPending: 'Your call ended or is still going: the summary will appear here when you hang up.',
+      callNoTalk: 'No conversation was recorded on this call.',
+      callPastTitle: 'Previous calls',
       navHome: 'Home', navLearn: 'Learn', navHistory: 'History', navProfile: 'Profile',
       soonBadge: 'In preparation',
       soonPremiumTitle: 'Englix Premium',
@@ -3437,6 +3525,124 @@
     if (quickSwapBtn) quickSwapBtn.addEventListener('click', function () { vibrate(8); swapQuickPair(); });
     renderQuickLabels();
   }
+
+  /* ===== Llamadas telefónicas traducidas (v16) ===== */
+  var CALL_NUMS_KEY = 'lc_call_numbers_v1', CALL_PENDING_KEY = 'lc_call_pending_v1',
+      CALLS_KEY = 'lc_phone_calls_v1';
+  var callOverlay = $('call-overlay'), callDestIn = $('call-dest'), callMineIn = $('call-mine'),
+      callGoalIn = $('call-goal'), callErrEl = $('call-err'), callStatusEl = $('call-status'),
+      btnCallNow = $('btn-call-now'), callLastEl = $('call-last'), callBusy = false,
+      callPollTimer = null;
+
+  function callStoreGet(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } }
+  function callStoreSet(k, v) { try { if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  function callDigits(s) { return String(s || '').replace(/\D/g, ''); }
+  function callShowErr(msg) { callErrEl.textContent = msg; callErrEl.style.display = msg ? 'block' : 'none'; }
+  function callShowStatus(msg) { callStatusEl.textContent = msg; callStatusEl.style.display = msg ? 'block' : 'none'; }
+  function callWhen(ts) {
+    var d = new Date(ts);
+    return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  }
+
+  function renderCallHistory() {
+    var wrap = $('call-history'), list = $('call-history-list'), calls = callStoreGet(CALLS_KEY) || [];
+    if (!calls.length) { wrap.style.display = 'none'; return; }
+    wrap.style.display = 'block';
+    list.innerHTML = '';
+    calls.forEach(function (c) {
+      var d = document.createElement('div'); d.className = 'chitem';
+      var meta = document.createElement('div'); meta.className = 'chmeta';
+      meta.textContent = c.dest + ' · ' + callWhen(c.at);
+      var sum = document.createElement('div'); sum.className = 'chsum';
+      sum.textContent = c.summary || t('callNoTalk');
+      d.appendChild(meta); d.appendChild(sum); list.appendChild(d);
+    });
+  }
+
+  function renderCallLast() {
+    var pending = callStoreGet(CALL_PENDING_KEY), calls = callStoreGet(CALLS_KEY) || [];
+    if (pending) {
+      callLastEl.style.display = 'block';
+      $('call-last-meta').textContent = pending.dest + ' · ' + callWhen(pending.at);
+      $('call-last-text').textContent = t('callSummaryPending');
+      return;
+    }
+    if (!calls.length) { callLastEl.style.display = 'none'; return; }
+    var c = calls[0];
+    callLastEl.style.display = 'block';
+    $('call-last-meta').textContent = c.dest + ' · ' + callWhen(c.at);
+    $('call-last-text').textContent = c.summary || t('callNoTalk');
+  }
+
+  function stopCallPolling() { if (callPollTimer) { clearInterval(callPollTimer); callPollTimer = null; } }
+  function pollCallSummary() {
+    var pending = callStoreGet(CALL_PENDING_KEY);
+    if (!pending || !pending.relayHost || !pending.callId) { stopCallPolling(); renderCallLast(); return; }
+    if (Date.now() - pending.at > 90 * 60 * 1000) { callStoreSet(CALL_PENDING_KEY, null); stopCallPolling(); renderCallLast(); return; }
+    fetch('https://' + pending.relayHost + '/summary/' + pending.callId)
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (!j || !j.ok || j.status !== 'ready') return;
+        var calls = callStoreGet(CALLS_KEY) || [];
+        calls.unshift({ id: pending.callId, dest: pending.dest, at: pending.at, summary: j.summary || '', pairs: j.pairs || [] });
+        callStoreSet(CALLS_KEY, calls.slice(0, 20));
+        callStoreSet(CALL_PENDING_KEY, null);
+        stopCallPolling();
+        renderCallLast(); renderCallHistory();
+      })
+      .catch(function () {});
+  }
+  function startCallPolling() { stopCallPolling(); pollCallSummary(); callPollTimer = setInterval(pollCallSummary, 15000); }
+
+  function openCallSheet() {
+    var nums = callStoreGet(CALL_NUMS_KEY) || {};
+    if (nums.mine && !callMineIn.value) callMineIn.value = nums.mine;
+    if (nums.dest && !callDestIn.value) callDestIn.value = nums.dest;
+    callShowErr(''); callShowStatus('');
+    renderCallHistory();
+    callOverlay.classList.add('on'); lockScroll();
+  }
+  function closeCallSheet() { callOverlay.classList.remove('on'); unlockScroll(); }
+
+  $('btn-call-open').addEventListener('click', function () { vibrate(8); openCallSheet(); });
+  $('call-close').addEventListener('click', closeCallSheet);
+  callOverlay.addEventListener('click', function (e) { if (e.target === this) closeCallSheet(); });
+
+  btnCallNow.addEventListener('click', function () {
+    if (callBusy) return;
+    vibrate(8);
+    var dest = callDestIn.value.trim(), mine = callMineIn.value.trim();
+    if (callDigits(dest).length < 10 || callDigits(mine).length < 10) { callShowErr(t('callErrNumbers')); return; }
+    callBusy = true; btnCallNow.disabled = true;
+    callShowErr(''); callShowStatus(t('callCalling'));
+    fetch('/api/call-start', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ toNumber: dest, myNumber: mine, goal: callGoalIn.value.trim(), pairA: settings.pairA, pairB: settings.pairB })
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        callBusy = false; btnCallNow.disabled = false;
+        if (!j || !j.ok) {
+          var code = j && j.error;
+          callShowStatus('');
+          callShowErr(code === 'relay_not_configured' || code === 'calls_not_configured'
+            ? t('callSoon') : (code === 'bad_number' ? t('callErrNumbers') : t('callErr')));
+          return;
+        }
+        callStoreSet(CALL_NUMS_KEY, { mine: mine, dest: dest });
+        callStoreSet(CALL_PENDING_KEY, { callId: j.callId, relayHost: j.relayHost, dest: dest, at: Date.now() });
+        callShowErr(''); callShowStatus(t('callRinging'));
+        renderCallLast(); startCallPolling();
+        setTimeout(closeCallSheet, 1600);
+      })
+      .catch(function () {
+        callBusy = false; btnCallNow.disabled = false;
+        callShowStatus(''); callShowErr(t('callErr'));
+      });
+  });
+
+  renderCallLast();
+  if (callStoreGet(CALL_PENDING_KEY)) startCallPolling();
 
   $('btn-crown-home').addEventListener('click', function () { vibrate(8); openSoon('premium'); });
   $('btn-practice').addEventListener('click', function () { vibrate(8); openSoon('learn'); });
