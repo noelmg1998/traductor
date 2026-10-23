@@ -614,7 +614,7 @@
   #calls-detail-summary{background:rgba(255,255,255,.04); border:1px solid var(--line-soft); border-left:3px solid var(--gold2); border-radius:14px; padding:12px 14px;}
   #calls-overlay .cpair{background:rgba(255,255,255,.03); border:1px solid var(--line-soft); border-radius:13px; padding:10px 12px; margin-top:8px;}
 
-  /* ================= Autenticación Englix (v31) =================
+  /* ================= Autenticación Englix (v32) =================
      Luxury Premium: azul casi negro, dorado, glass, slides suaves. */
   #auth-root{position:fixed; inset:0; z-index:95; display:none; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain;
     background:
@@ -695,6 +695,14 @@
   .acheck .atxt{font-size:13.5px; color:var(--muted); line-height:1.5;}
   .acheck .atxt a{color:var(--gold1); font-weight:600;}
   .ahint{font-size:12px; color:var(--dim); margin:7px 2px 0; line-height:1.5;}
+  .apwrules{margin:10px 2px 2px;}
+  .apwhead{font-size:12px; color:var(--dim); margin:0 0 6px;}
+  .apwrules ul{list-style:none; margin:0; padding:0; display:grid; gap:4px;}
+  .apwrules li{display:flex; align-items:center; gap:8px; font-size:12.5px; color:rgba(255,255,255,.45); transition:color .2s ease;}
+  .apwrules .arbox{flex:0 0 auto; width:15px; height:15px; border-radius:50%; border:1px solid rgba(255,255,255,.28); display:inline-flex; align-items:center; justify-content:center; font-size:10px; line-height:1; color:#0d1a10; transition:background .2s ease, border-color .2s ease;}
+  .apwrules li.ok{color:#9adfae;}
+  .apwrules li.ok .arbox{background:#7ed492; border-color:#7ed492;}
+  .apwrules li.ok .arbox::after{content:"\2713"; font-weight:700;}
   .acctava{width:46px; height:46px; border-radius:50%; flex:0 0 auto; display:flex; align-items:center; justify-content:center; background:var(--gold-grad); color:#241a05; font-weight:700; font-size:19px; font-family:var(--serif);}
   #legal-overlay{z-index:97;}
   #legal-body{font-size:14px; line-height:1.65; color:var(--txt);}
@@ -1008,7 +1016,7 @@
   </section>
 
   <footer data-i18n="footer">Traducción automática con IA · En vivo</footer>
-  <div class="verlabel">v31 · Englix</div>
+  <div class="verlabel">v32 · Englix</div>
 </div>
 
 <!-- ===== Barra inferior (v11 · Englix) ===== -->
@@ -1233,7 +1241,7 @@
   </div>
 </aside>
 
-<!-- ===== Autenticación Englix (v31) ===== -->
+<!-- ===== Autenticación Englix (v32) ===== -->
 <div id="auth-root">
   <div class="authwrap">
     <div class="authwaves" aria-hidden="true"></div>
@@ -1289,7 +1297,16 @@
             <input id="su-pass" type="password" autocomplete="new-password" data-i18n-ph="authPassPh" placeholder="Password">
             <button class="aeye" data-eye="su-pass" aria-label="Show password"><svg class="eyeon" viewBox="0 0 24 24"><path d="M1 12s4-7.5 11-7.5S23 12 23 12s-4 7.5-11 7.5S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eyeoff" viewBox="0 0 24 24"><path d="M17.94 17.94A10.6 10.6 0 0 1 12 19.5c-7 0-11-7.5-11-7.5a20.3 20.3 0 0 1 5.06-5.94M9.9 4.24A9.5 9.5 0 0 1 12 4.5c7 0 11 7.5 11 7.5a20.4 20.4 0 0 1-2.16 3.19M14.12 14.12A3 3 0 1 1 9.88 9.88"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button>
           </div>
-          <p class="ahint" data-i18n="authPassRules">Use at least 6 characters.</p>
+          <div class="apwrules" id="su-rules">
+            <p class="apwhead" data-i18n="authPassRules">Your password must include:</p>
+            <ul>
+              <li data-rule="len"><span class="arbox"></span><span data-i18n="authPwLen">At least 8 characters</span></li>
+              <li data-rule="upper"><span class="arbox"></span><span data-i18n="authPwUpper">An uppercase letter</span></li>
+              <li data-rule="lower"><span class="arbox"></span><span data-i18n="authPwLower">A lowercase letter</span></li>
+              <li data-rule="num"><span class="arbox"></span><span data-i18n="authPwNum">A number</span></li>
+              <li data-rule="sym"><span class="arbox"></span><span data-i18n="authPwSym">A special symbol (!@#$%)</span></li>
+            </ul>
+          </div>
           <p class="aerr" id="e-su-pass"></p>
           <div class="afield" id="f-su-pass2">
             <svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
@@ -1345,7 +1362,16 @@
               <input id="rs-pass" type="password" autocomplete="new-password" data-i18n-ph="authNewPassPh" placeholder="New password">
               <button class="aeye" data-eye="rs-pass" aria-label="Show password"><svg class="eyeon" viewBox="0 0 24 24"><path d="M1 12s4-7.5 11-7.5S23 12 23 12s-4 7.5-11 7.5S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eyeoff" viewBox="0 0 24 24"><path d="M17.94 17.94A10.6 10.6 0 0 1 12 19.5c-7 0-11-7.5-11-7.5a20.3 20.3 0 0 1 5.06-5.94M9.9 4.24A9.5 9.5 0 0 1 12 4.5c7 0 11 7.5 11 7.5a20.4 20.4 0 0 1-2.16 3.19M14.12 14.12A3 3 0 1 1 9.88 9.88"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button>
             </div>
-            <p class="ahint" data-i18n="authPassRules">Use at least 6 characters.</p>
+            <div class="apwrules" id="rs-rules">
+              <p class="apwhead" data-i18n="authPassRules">Your password must include:</p>
+              <ul>
+                <li data-rule="len"><span class="arbox"></span><span data-i18n="authPwLen">At least 8 characters</span></li>
+                <li data-rule="upper"><span class="arbox"></span><span data-i18n="authPwUpper">An uppercase letter</span></li>
+                <li data-rule="lower"><span class="arbox"></span><span data-i18n="authPwLower">A lowercase letter</span></li>
+                <li data-rule="num"><span class="arbox"></span><span data-i18n="authPwNum">A number</span></li>
+                <li data-rule="sym"><span class="arbox"></span><span data-i18n="authPwSym">A special symbol (!@#$%)</span></li>
+              </ul>
+            </div>
             <p class="aerr" id="e-rs-pass"></p>
             <div class="afield" id="f-rs-pass2">
               <svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
@@ -1553,7 +1579,9 @@
       authNoAccount: '¿No tienes una cuenta?', authNeedConfirm: 'Tu correo aún necesita confirmación. Revisa tu bandeja o reenvía la verificación.',
       authResend: 'Reenviar correo de verificación',
       authCreateTitle: 'Crea tu cuenta', authCreateSub: 'Empieza hoy a traducir, aprender y conectar.',
-      authPassRules: 'Usa al menos 6 caracteres.',
+      authPassRules: 'Tu contraseña debe incluir:',
+      authPwLen: 'Mínimo 8 caracteres', authPwUpper: 'Una letra mayúscula', authPwLower: 'Una letra minúscula',
+      authPwNum: 'Un número', authPwSym: 'Un símbolo especial (!@#$%)',
       authAgreePre: 'Acepto los', authAgreeAnd: 'y la', authTerms: 'Términos de Servicio', authPrivacy: 'Política de Privacidad',
       authHaveAccount: '¿Ya tienes una cuenta?',
       authForgotTitle: '¿Olvidaste tu contraseña?', authForgotSub: 'Escribe tu correo y te enviaremos un enlace para recuperar tu contraseña.',
@@ -1564,7 +1592,7 @@
       authRequestNew: 'Solicitar otro enlace', authSignOut: 'Cerrar sesión',
       authErrEmail: 'Escribe un correo electrónico válido.', authErrPassEmpty: 'Escribe tu contraseña.',
       authErrBadCreds: 'El correo o la contraseña no son correctos.', authErrConn: 'No pudimos conectar. Inténtalo nuevamente.',
-      authErrName: 'Escribe tu nombre completo.', authErrPassShort: 'La contraseña debe tener al menos 6 caracteres.',
+      authErrName: 'Escribe tu nombre completo.', authErrPassShort: 'La contraseña no cumple todos los requisitos.',
       authErrPassMatch: 'Las contraseñas no coinciden.', authErrTerms: 'Debes aceptar los Términos y la Privacidad para continuar.',
       authForgotSent: 'Si existe una cuenta asociada a este correo, recibirás instrucciones para recuperar tu contraseña.',
       authWaitSec: 'Espera {S} segundos para intentarlo de nuevo.', authResentOk: 'Te enviamos otro correo de verificación.',
@@ -1711,7 +1739,9 @@
       authNoAccount: "Don't have an account?", authNeedConfirm: 'Your email still needs confirmation. Check your inbox or resend the verification.',
       authResend: 'Resend verification email',
       authCreateTitle: 'Create your account', authCreateSub: 'Start translating, learning and connecting today.',
-      authPassRules: 'Use at least 6 characters.',
+      authPassRules: 'Your password must include:',
+      authPwLen: 'At least 8 characters', authPwUpper: 'An uppercase letter', authPwLower: 'A lowercase letter',
+      authPwNum: 'A number', authPwSym: 'A special symbol (!@#$%)',
       authAgreePre: 'I agree to the', authAgreeAnd: 'and', authTerms: 'Terms of Service', authPrivacy: 'Privacy Policy',
       authHaveAccount: 'Already have an account?',
       authForgotTitle: 'Forgot password?', authForgotSub: "Enter your email address and we'll send you a link to reset your password.",
@@ -1722,7 +1752,7 @@
       authRequestNew: 'Request a new link', authSignOut: 'Sign out',
       authErrEmail: 'Enter a valid email address.', authErrPassEmpty: 'Enter your password.',
       authErrBadCreds: 'The email or password is not correct.', authErrConn: 'We could not connect. Please try again.',
-      authErrName: 'Enter your full name.', authErrPassShort: 'Password must be at least 6 characters long.',
+      authErrName: 'Enter your full name.', authErrPassShort: 'Password does not meet all the requirements.',
       authErrPassMatch: 'Passwords do not match.', authErrTerms: 'You must accept the Terms and Privacy Policy to continue.',
       authForgotSent: 'If an account exists for this email, you will receive instructions to recover your password.',
       authWaitSec: 'Wait {S} seconds and try again.', authResentOk: 'We sent you another verification email.',
@@ -4331,7 +4361,7 @@
     if (g) g.classList.toggle('paused', document.hidden);
   });
 
-  /* ================= Autenticación Englix (v31) =================
+  /* ================= Autenticación Englix (v32) =================
      Supabase Auth (correo + contraseña, SIN login social).
      La config se llena al crear el proyecto «englix»; sin config,
      la puerta queda apagada y la app funciona como siempre. */
@@ -4513,10 +4543,10 @@
         terms = $('su-terms').checked;
     authFieldErr('f-su-name', 'e-su-name', name ? '' : t('authErrName'));
     authFieldErr('f-su-email', 'e-su-email', emailOk(email) ? '' : t('authErrEmail'));
-    authFieldErr('f-su-pass', 'e-su-pass', pass.length >= 6 ? '' : t('authErrPassShort'));
+    authFieldErr('f-su-pass', 'e-su-pass', pwAllOk(pass) ? '' : t('authErrPassShort'));
     authFieldErr('f-su-pass2', 'e-su-pass2', pass2 === pass ? '' : t('authErrPassMatch'));
     authFormErr('e-su-form', terms ? '' : t('authErrTerms'));
-    if (!name || !emailOk(email) || pass.length < 6 || pass2 !== pass || !terms) return;
+    if (!name || !emailOk(email) || !pwAllOk(pass) || pass2 !== pass || !terms) return;
     $('su-name').value = name; $('su-email').value = email;
     window.__englixLastEmail = email;
     authBusy = true; authBtnLoad($('btn-su'), true);
@@ -4567,10 +4597,10 @@
   function doResetSave() {
     if (authBusy || !sb) return;
     var pass = $('rs-pass').value, pass2 = $('rs-pass2').value;
-    authFieldErr('f-rs-pass', 'e-rs-pass', pass.length >= 6 ? '' : t('authErrPassShort'));
+    authFieldErr('f-rs-pass', 'e-rs-pass', pwAllOk(pass) ? '' : t('authErrPassShort'));
     authFieldErr('f-rs-pass2', 'e-rs-pass2', pass2 === pass ? '' : t('authErrPassMatch'));
     authFormErr('e-rs-form', '');
-    if (pass.length < 6 || pass2 !== pass) return;
+    if (!pwAllOk(pass) || pass2 !== pass) return;
     authBusy = true; authBtnLoad($('btn-rs'), true);
     sb.auth.updateUser({ password: pass }).then(function (res) {
       authBusy = false; authBtnLoad($('btn-rs'), false);
@@ -4621,6 +4651,35 @@
       btn.classList.toggle('showing', show);
     });
   });
+  /* ---- Contraseña fuerte: requisitos en vivo + coincidencia en vivo ---- */
+  function pwCheck(pw) {
+    return {
+      len: pw.length >= 8,
+      upper: /[A-Z\u00C0-\u00D6\u00D8-\u00DE]/.test(pw),
+      lower: /[a-z\u00E0-\u00F6\u00F8-\u00FF]/.test(pw),
+      num: /[0-9]/.test(pw),
+      sym: /[^\p{L}\p{N}\s]/u.test(pw)
+    };
+  }
+  function pwAllOk(pw) { var r = pwCheck(pw); return r.len && r.upper && r.lower && r.num && r.sym; }
+  function paintPwRules(id, pw) {
+    var box = $(id); if (!box) return;
+    var r = pwCheck(pw);
+    box.querySelectorAll('li[data-rule]').forEach(function (li) {
+      li.classList.toggle('ok', !!r[li.getAttribute('data-rule')]);
+    });
+  }
+  function liveMatch(pId, p2Id, fId, eId) {
+    var a = $(pId).value, b = $(p2Id).value, f = $(fId);
+    if (!b) { authFieldErr(fId, eId, ''); if (f) f.classList.remove('valid'); return; }
+    if (a === b) { authFieldErr(fId, eId, ''); if (f) f.classList.add('valid'); }
+    else { if (f) f.classList.remove('valid'); authFieldErr(fId, eId, t('authErrPassMatch')); }
+  }
+  $('su-pass').addEventListener('input', function () { paintPwRules('su-rules', $('su-pass').value); liveMatch('su-pass', 'su-pass2', 'f-su-pass2', 'e-su-pass2'); });
+  $('su-pass2').addEventListener('input', function () { liveMatch('su-pass', 'su-pass2', 'f-su-pass2', 'e-su-pass2'); });
+  $('rs-pass').addEventListener('input', function () { paintPwRules('rs-rules', $('rs-pass').value); liveMatch('rs-pass', 'rs-pass2', 'f-rs-pass2', 'e-rs-pass2'); });
+  $('rs-pass2').addEventListener('input', function () { liveMatch('rs-pass', 'rs-pass2', 'f-rs-pass2', 'e-rs-pass2'); });
+
   document.querySelectorAll('[data-authback]').forEach(function (btn) {
     btn.addEventListener('click', function () { vibrate(8); authGo(0); });
   });
