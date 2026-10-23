@@ -21,15 +21,21 @@ function escAttr(s) {
 module.exports = async (req, res) => {
   const q = req.query || {};
   const leg = q.leg === 'dest' ? 'dest' : 'user';
-  // El relay vive en Fly.io desde el 2026-10-22: Twilio nunca logró
-  // conectar el stream cuando el relay estaba en Render (0 conexiones en
-  // 5 llamadas reales; la sonda a un servidor de eco público aguantó
-  // minutos — la ruta Twilio→Render era la rota). La variable
-  // CALL_RELAY_HOST de Vercel quedó con el host viejo: aquí manda el host
-  // de Fly y la variable solo se respeta si apunta a fly.dev.
+  // El relay vive en Fly.io desde el 2026-10-22, servido bajo el dominio
+  // propio relay.englix.app (registrado en Porkbun el 2026-10-23;
+  // certificado Let's Encrypt EXACTO pa' ese nombre + IP dedicada de
+  // Fly): Twilio jamás conectó el stream a los subdominios de
+  // plataforma (englix-relay.onrender.com, luego englix-relay.fly.dev
+  // — 0 conexiones registradas en el relay y 0 errores en Twilio, en
+  // 8+ llamadas reales), mientras que al servidor de eco público
+  // (ws.postman-echo.com) conectaba y aguantaba minutos. Antes se
+  // intentó relay.fluxari.app, pero el DNS de Vercel nunca publicó los
+  // registros (7+ horas) y se abandonó esa ruta.
+  // La variable CALL_RELAY_HOST de Vercel quedó con el host viejo: aquí
+  // manda el dominio propio y la variable solo se respeta si coincide.
   const envRelay = String(process.env.CALL_RELAY_HOST || '')
     .replace(/^wss?:\/\//, '').replace(/^https?:\/\//, '').replace(/\/.*$/, '');
-  const relay = envRelay.indexOf('fly.dev') >= 0 ? envRelay : 'englix-relay.fly.dev';
+  const relay = envRelay === 'relay.englix.app' ? envRelay : 'relay.englix.app';
 
   res.setHeader('Content-Type', 'text/xml; charset=utf-8');
 

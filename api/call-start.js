@@ -35,11 +35,12 @@ module.exports = async (req, res) => {
     const sid = process.env.TWILIO_ACCOUNT_SID;
     const token = process.env.TWILIO_AUTH_TOKEN;
     const from = process.env.TWILIO_PHONE_NUMBER;
-    // Relay en Fly.io (ver la nota en call-twiml.js): la variable
-    // CALL_RELAY_HOST quedó con el host viejo de Render; manda fly.dev.
+    // Relay en Fly.io bajo relay.englix.app (ver la nota en
+    // call-twiml.js): la variable CALL_RELAY_HOST quedó con el host
+    // viejo de Render; manda el dominio propio.
     const envRelay = String(process.env.CALL_RELAY_HOST || '')
       .replace(/^wss?:\/\//, '').replace(/^https?:\/\//, '').replace(/\/.*$/, '');
-    const relay = envRelay.indexOf('fly.dev') >= 0 ? envRelay : 'englix-relay.fly.dev';
+    const relay = envRelay === 'relay.englix.app' ? envRelay : 'relay.englix.app';
     if (!sid || !token || !from) return fail('calls_not_configured');
     if (!relay) return fail('relay_not_configured');
 
