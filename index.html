@@ -433,6 +433,38 @@
   .panel.on{transform:translateX(0); box-shadow:-18px 0 44px rgba(0,0,0,.5);}
   .panel .phead{display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;}
   .panel h3{font-family:var(--serif); font-size:21px; font-weight:600; margin:0;}
+  /* ===== Ajustes v37 — diseño de la maqueta de Noel (2026-10-23) ===== */
+  #settings-panel{width:min(94vw,402px); background:linear-gradient(180deg,#111a2e 0%,#0a0f1e 55%,#070a13 100%); padding:24px 16px calc(20px + env(safe-area-inset-bottom));}
+  #settings-panel::before{content:''; position:absolute; left:0; right:0; top:0; height:200px; pointer-events:none; background:radial-gradient(300px 170px at 88% -30px, rgba(233,201,121,.26), rgba(233,201,121,.05) 55%, transparent 72%);}
+  #settings-panel .phead{position:relative; margin-bottom:2px;}
+  #settings-panel .phead h3{font-family:var(--sans); font-size:31px; font-weight:800; letter-spacing:-.01em; background:linear-gradient(92deg,#ffffff 42%,#f2d287 78%,#c99b45 100%); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  #settings-panel #btn-panel-close{width:38px; height:38px; border-radius:50%; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.16); color:#f2d287; display:flex; align-items:center; justify-content:center; flex:0 0 auto; padding:0;}
+  #settings-panel #btn-panel-close svg{width:17px; height:17px;}
+  .setcard{position:relative; background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.018)); border:1px solid rgba(233,201,121,.17); border-radius:20px; padding:4px 16px 10px; margin-top:14px;}
+  .setcard-head{display:flex; align-items:center; gap:11px; padding:12px 0 11px; border-bottom:1px solid rgba(255,255,255,.07);}
+  .setcard-head b{font-size:16.5px; font-weight:700;}
+  .setcard-head small{margin-left:auto; text-align:right; color:var(--dim); font-size:11.5px; line-height:1.35; max-width:54%;}
+  .sicon{width:38px; height:38px; border-radius:50%; background:rgba(233,201,121,.09); border:1px solid rgba(233,201,121,.16); display:flex; align-items:center; justify-content:center; color:var(--gold1); flex:0 0 auto;}
+  .sicon svg{width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;}
+  .setcard-head .sicon{width:34px; height:34px;}
+  .setcard-head .sicon svg{width:18px; height:18px;}
+  #settings-panel .setrow{border-bottom:1px solid rgba(255,255,255,.06); padding:13px 0; gap:11px;}
+  #settings-panel .setcard .setrow:last-child{border-bottom:0;}
+  #settings-panel .setrow .sinfo b{font-size:14.5px;}
+  #settings-panel .setrow select{appearance:none; -webkit-appearance:none; background-color:#131c33; border:1px solid rgba(255,255,255,.14); border-radius:12px; padding:10px 30px 10px 13px; font-size:13.5px; max-width:47%; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23e9c979' fill='none' stroke-width='1.7' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 11px center;}
+  #settings-panel .switch input:checked + .tr{background:linear-gradient(90deg,#a87f27,#e9c979);}
+  #settings-panel .switch input:checked + .tr::after{background:#fff3d6;}
+  .micpill{flex:0 0 auto; background-color:#131c33; border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:10px 30px 10px 13px; font-size:13.5px; color:var(--dim); background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237C8698' fill='none' stroke-width='1.7' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 11px center;}
+  .pnote{color:var(--muted); font-size:13px; line-height:1.5;}
+  #settings-panel .btn-danger{display:flex; align-items:center; gap:11px; text-align:left; background:linear-gradient(180deg, rgba(229,72,77,.17), rgba(229,72,77,.06)); border:1px solid rgba(229,72,77,.45); color:#ffa4a6; border-radius:14px; padding:13px 15px; font-size:14.5px; width:100%;}
+  #settings-panel .btn-danger::before{content:''; width:19px; height:19px; flex:0 0 auto; background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ff9d9f' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 6h18'/%3E%3Cpath d='M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2'/%3E%3Cpath d='M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6'/%3E%3Cpath d='M10 11v6M14 11v6'/%3E%3C/svg%3E") center/contain no-repeat;}
+  #settings-panel .btn-danger::after{content:'›'; margin-left:auto; font-size:21px; line-height:1; color:#ff9d9f;}
+  #settings-panel #acct-block{position:relative; background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.018)); border:1px solid rgba(233,201,121,.17); border-radius:20px; padding:16px; margin-top:14px;}
+  #settings-panel .acctrow{display:flex; align-items:center; gap:13px; flex-wrap:wrap;}
+  #settings-panel .acctava{width:56px; height:56px; font-size:23px; box-shadow:0 0 22px rgba(233,201,121,.35);}
+  #settings-panel #acct-plan{display:inline-block; margin:8px 0 0; border:1px solid rgba(233,201,121,.55); color:var(--gold1); border-radius:999px; padding:5px 12px; font-size:12.5px; font-weight:600; background:rgba(233,201,121,.08); line-height:1.35;}
+  #settings-panel #btn-signout{display:inline-flex; align-items:center; gap:8px; border:1px solid rgba(233,201,121,.55); color:var(--gold1); background:rgba(233,201,121,.05); border-radius:999px; padding:10px 16px; font-weight:600; font-size:13.5px; width:auto; margin-left:auto;}
+  #settings-panel #btn-signout::before{content:''; width:16px; height:16px; flex:0 0 auto; background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e9c979' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4'/%3E%3Cpath d='M16 17l5-5-5-5'/%3E%3Cpath d='M21 12H9'/%3E%3C/svg%3E") center/contain no-repeat;}
   .toast{
     position:fixed; left:50%; bottom:calc(26px + env(safe-area-inset-bottom)); transform:translateX(-50%) translateY(16px);
     z-index:90; background:rgba(14,16,26,.94); border:1px solid var(--line); color:var(--gold1);
@@ -1022,7 +1054,7 @@
   </section>
 
   <footer data-i18n="footer">Traducción automática con IA · En vivo</footer>
-  <div class="verlabel">v36 · Englix</div>
+  <div class="verlabel">v37 · Englix</div>
 </div>
 
 <!-- ===== Barra inferior (v11 · Englix) ===== -->
@@ -1161,89 +1193,130 @@
     </button>
   </div>
 
-  <div id="acct-block" style="display:none; padding:6px 0 14px; border-bottom:1px solid var(--line-soft); margin-bottom:8px;">
-    <div style="display:flex; align-items:center; gap:12px;">
+  <div id="acct-block" style="display:none">
+    <div class="acctrow">
       <span class="acctava" id="acct-ava">E</span>
       <div style="flex:1; min-width:0;">
-        <b id="acct-name" style="display:block; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></b>
+        <b id="acct-name" style="display:block; font-size:16.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></b>
         <span id="acct-email" style="color:var(--dim); font-size:13px;"></span>
+        <p id="acct-plan"></p>
       </div>
+      <button class="btn-ghost" id="btn-signout" data-i18n="authSignOut">Cerrar sesión</button>
     </div>
-    <p id="acct-plan" style="margin:11px 0 0; font-size:13.5px; color:var(--gold1); line-height:1.5;"></p>
-    <button class="btn-ghost" id="btn-signout" style="margin-top:12px;" data-i18n="authSignOut">Cerrar sesión</button>
   </div>
 
-  <div class="setrow">
-    <div class="sinfo"><b data-i18n="setUiLang">Idioma de la interfaz</b></div>
-    <select id="set-uilang">
-      <option value="es">Español</option>
-      <option value="en">English</option>
-    </select>
+  <div class="setcard">
+    <div class="setcard-head">
+      <span class="sicon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.6 3.9 5.7 3.9 9s-1.4 6.4-3.9 9c-2.5-2.6-3.9-5.7-3.9-9S9.5 5.6 12 3z"/></svg></span>
+      <b data-i18n="setSecGeneral">General</b>
+      <small data-i18n="setSecGeneralSub">Idioma y configuración general de la app.</small>
+    </div>
+    <div class="setrow">
+      <span class="sicon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.6 3.9 5.7 3.9 9s-1.4 6.4-3.9 9c-2.5-2.6-3.9-5.7-3.9-9S9.5 5.6 12 3z"/></svg></span>
+      <div class="sinfo"><b data-i18n="setUiLang">Idioma de la interfaz</b><small data-i18n="setUiLangSub">Selecciona el idioma de la aplicación.</small></div>
+      <select id="set-uilang">
+        <option value="es">Español</option>
+        <option value="en">English</option>
+      </select>
+    </div>
   </div>
 
-  <div class="setrow">
-    <div class="sinfo"><b data-i18n="setEngine">Motor de llamada</b><small data-i18n="setEngineSub">Intérprete IA: una sesión en vivo que interpreta entre los dos idiomas (económico). Traductor dedicado: dos sesiones en vivo, una por sentido. Frase completa: espera a que termines de hablar y traduce la frase entera con la mejor calidad.</small></div>
-    <select id="set-engine">
-      <option value="interpreter" data-i18n="engineInterpreter">Intérprete IA (económico)</option>
-      <option value="translator" data-i18n="engineTranslate">Traductor dedicado</option>
-      <option value="phrase" data-i18n="enginePhrase">Frase completa (máxima calidad)</option>
-    </select>
+  <div class="setcard">
+    <div class="setcard-head">
+      <span class="sicon"><svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 19v3"/></svg></span>
+      <b data-i18n="setSecAudio">Traducción y audio</b>
+      <small data-i18n="setSecAudioSub">Configura el motor de traducción y las voces.</small>
+    </div>
+    <div class="setrow">
+      <span class="sicon"><svg viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.5 2.1L8 10a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 2z"/></svg></span>
+      <div class="sinfo"><b data-i18n="setEngine">Motor de llamada</b><small data-i18n="setEngineSub">Selecciona cómo se realizan las llamadas con traducción en vivo.</small></div>
+      <select id="set-engine">
+        <option value="interpreter" data-i18n="engineInterpreter">Intérprete IA (económico)</option>
+        <option value="translator" data-i18n="engineTranslate">Traductor dedicado</option>
+        <option value="phrase" data-i18n="enginePhrase">Frase completa (máxima calidad)</option>
+      </select>
+    </div>
+    <div class="setrow">
+      <span class="sicon"><svg viewBox="0 0 24 24"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.6 5.4a9 9 0 0 1 0 13.2"/></svg></span>
+      <div class="sinfo"><b data-i18n="setVoiceInterp">Voz de la traducción</b><small data-i18n="setVoiceInterpSub">La voz con la que hablan el Intérprete IA y el motor Frase completa.</small></div>
+      <select id="set-voice-interp">
+        <option value="marin">Marin</option>
+        <option value="cedar">Cedar</option>
+        <option value="alloy">Alloy</option>
+        <option value="ash">Ash</option>
+        <option value="ballad">Ballad</option>
+        <option value="coral">Coral</option>
+        <option value="echo">Echo</option>
+        <option value="sage">Sage</option>
+        <option value="shimmer">Shimmer</option>
+        <option value="verse">Verse</option>
+      </select>
+    </div>
+    <div class="setrow">
+      <span class="sicon"><svg viewBox="0 0 24 24"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></span>
+      <div class="sinfo"><b data-i18n="setVoice">Voz para repetir frases</b><small data-i18n="setVoiceSub">Se usa al tocar el botón de reproducir en una tarjeta.</small></div>
+      <select id="set-voice"></select>
+    </div>
+    <div class="setrow">
+      <span class="sicon"><svg viewBox="0 0 24 24"><path d="M5 19a9 9 0 1 1 14 0"/><path d="M12 13l4-4"/></svg></span>
+      <div class="sinfo"><b data-i18n="setRate">Velocidad de repetición</b><small data-i18n="setRateSub">Ajusta la velocidad de la reproducción de frases.</small></div>
+      <select id="set-rate">
+        <option value="0.75">0.75×</option>
+        <option value="1">1×</option>
+        <option value="1.25">1.25×</option>
+        <option value="1.5">1.5×</option>
+      </select>
+    </div>
   </div>
 
-  <div class="setrow">
-    <div class="sinfo"><b data-i18n="setVoiceInterp">Voz de la traducción</b><small data-i18n="setVoiceInterpSub">La voz con la que hablan el Intérprete IA y el motor Frase completa. En Frase completa se aplica a cada frase; en el Intérprete, en la próxima llamada.</small></div>
-    <select id="set-voice-interp">
-      <option value="marin">Marin</option>
-      <option value="cedar">Cedar</option>
-      <option value="alloy">Alloy</option>
-      <option value="ash">Ash</option>
-      <option value="ballad">Ballad</option>
-      <option value="coral">Coral</option>
-      <option value="echo">Echo</option>
-      <option value="sage">Sage</option>
-      <option value="shimmer">Shimmer</option>
-      <option value="verse">Verse</option>
-    </select>
+  <div class="setcard">
+    <div class="setcard-head">
+      <span class="sicon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09c.24.6.8 1.06 1 1.51.24.53.94.36 1.87.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9c.23.6.9 1 1.51 1H21a2 2 0 1 1 0 4h-.09c-.6 0-1.28.4-1.51 1z"/></svg></span>
+      <b data-i18n="setSecPrefs">Preferencias</b>
+      <small data-i18n="setSecPrefsSub">Personaliza tu experiencia.</small>
+    </div>
+    <div class="setrow">
+      <span class="sicon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l6 3.5-6 3.5z"/></svg></span>
+      <div class="sinfo"><b data-i18n="setAutoplay">Reproducción automática</b><small data-i18n="setAutoplaySub">La traducción suena sola al llegar.</small></div>
+      <label class="switch"><input type="checkbox" id="set-autoplay"><span class="tr"></span></label>
+    </div>
+    <div class="setrow">
+      <span class="sicon"><svg viewBox="0 0 24 24"><path d="M4 10v4M8 7v10M12 4v16M16 7v10M20 10v4"/></svg></span>
+      <div class="sinfo"><b data-i18n="setNoise">Reducción de ruido</b><small data-i18n="setNoiseSub">Se aplica la próxima vez que conectes.</small></div>
+      <label class="switch"><input type="checkbox" id="set-noise"><span class="tr"></span></label>
+    </div>
+    <div class="setrow">
+      <span class="sicon"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg></span>
+      <div class="sinfo"><b data-i18n="setSaveHist">Guardar historial</b><small data-i18n="setSaveHistSub">Permite guardar conversaciones y frases en este teléfono.</small></div>
+      <label class="switch"><input type="checkbox" id="set-savehist"><span class="tr"></span></label>
+    </div>
   </div>
 
-  <div class="setrow">
-    <div class="sinfo"><b data-i18n="setVoice">Voz para repetir frases</b><small data-i18n="setVoiceSub">Se usa al tocar el botón de reproducir en una tarjeta.</small></div>
-    <select id="set-voice"></select>
+  <div class="setcard">
+    <div class="setcard-head">
+      <span class="sicon"><svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 19v3"/></svg></span>
+      <b data-i18n="setSecMic">Micrófono</b>
+      <small data-i18n="setSecMicSub">Función próximamente disponible.</small>
+    </div>
+    <div class="setrow disabled">
+      <span class="sicon"><svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 19v3"/><line x1="2" y1="2" x2="22" y2="22"/></svg></span>
+      <div class="sinfo"><b data-i18n="setMicSens">Sensibilidad del micrófono</b><small data-i18n="setMicSensSub">No disponible: el proveedor de traducción no permite ajustarla.</small></div>
+      <span class="micpill" data-i18n="setMicPill">No disponible</span>
+    </div>
   </div>
 
-  <div class="setrow">
-    <div class="sinfo"><b data-i18n="setRate">Velocidad de repetición</b></div>
-    <select id="set-rate">
-      <option value="0.75">0.75×</option>
-      <option value="1">1×</option>
-      <option value="1.25">1.25×</option>
-      <option value="1.5">1.5×</option>
-    </select>
-  </div>
-
-  <div class="setrow">
-    <div class="sinfo"><b data-i18n="setAutoplay">Reproducción automática</b><small data-i18n="setAutoplaySub">La traducción suena sola al llegar.</small></div>
-    <label class="switch"><input type="checkbox" id="set-autoplay"><span class="tr"></span></label>
-  </div>
-
-  <div class="setrow">
-    <div class="sinfo"><b data-i18n="setNoise">Reducción de ruido</b><small data-i18n="setNoiseSub">Se aplica la próxima vez que conectes.</small></div>
-    <label class="switch"><input type="checkbox" id="set-noise"><span class="tr"></span></label>
-  </div>
-
-  <div class="setrow disabled">
-    <div class="sinfo"><b data-i18n="setMicSens">Sensibilidad del micrófono</b><small data-i18n="setMicSensSub">No disponible: el proveedor de traducción no permite ajustarla.</small></div>
-  </div>
-
-  <div class="setrow">
-    <div class="sinfo"><b data-i18n="setSaveHist">Guardar historial</b><small data-i18n="setSaveHistSub">Permite guardar conversaciones y frases en este teléfono.</small></div>
-    <label class="switch"><input type="checkbox" id="set-savehist"><span class="tr"></span></label>
-  </div>
-
-  <div class="setrow" style="display:block;">
-    <div class="sinfo" style="margin-bottom:10px;"><b data-i18n="setPrivacy">Privacidad</b><small data-i18n="setPrivacySub">Las conversaciones solo se guardan si tú lo pides, y solo en este teléfono.</small></div>
+  <div class="setcard">
+    <div class="setcard-head">
+      <span class="sicon"><svg viewBox="0 0 24 24"><path d="M12 22s8-3.6 8-10V5l-8-3-8 3v7c0 6.4 8 10 8 10z"/></svg></span>
+      <b data-i18n="setPrivacy">Privacidad</b>
+      <small data-i18n="setSecPrivacySub">Gestiona tus datos y privacidad.</small>
+    </div>
+    <div class="setrow" style="border-bottom:0; padding-bottom:4px;">
+      <span class="sicon"><svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+      <div class="sinfo"><span class="pnote" data-i18n="setPrivacySub">Las conversaciones solo se guardan si tú lo pides, y solo en este teléfono.</span></div>
+    </div>
     <button class="btn-danger" id="btn-clear-saved" data-i18n="clearSaved">Borrar conversaciones guardadas</button>
-    <button class="btn-danger" id="btn-clear-favs" style="margin-top:8px;" data-i18n="clearFavs">Borrar frases favoritas</button>
+    <button class="btn-danger" id="btn-clear-favs" style="margin-top:9px;" data-i18n="clearFavs">Borrar frases favoritas</button>
   </div>
 </aside>
 
@@ -1515,12 +1588,12 @@
       settings: 'Ajustes',
       setUiLang: 'Idioma de la interfaz',
       setEngine: 'Motor de llamada',
-      setEngineSub: 'Intérprete IA: una sesión en vivo que interpreta entre los dos idiomas (económico). Traductor dedicado: dos sesiones en vivo, una por sentido. Frase completa: espera a que termines de hablar y traduce la frase entera con la mejor calidad.',
+      setEngineSub: 'Selecciona cómo se realizan las llamadas con traducción en vivo.',
       engineInterpreter: 'Intérprete IA (económico)',
       engineTranslate: 'Traductor dedicado',
       enginePhrase: 'Frase completa (máxima calidad)',
       setVoiceInterp: 'Voz de la traducción',
-      setVoiceInterpSub: 'La voz con la que hablan el Intérprete IA y el motor Frase completa. En Frase completa se aplica a cada frase; en el Intérprete, en la próxima llamada.',
+      setVoiceInterpSub: 'La voz con la que hablan el Intérprete IA y el motor Frase completa.',
       provNoteInterp: 'Nota: la llamada usa una sola sesión de intérprete, así que los minutos del proveedor son los mismos de la llamada: {prov} min.',
       minutesLineInterp: '1 sesión activa · {call} min de llamada · {prov} min del proveedor',
       provNotePhrase: 'Nota: este motor no consume minutos de llamada: procesa cada frase por separado (transcripción + traducción + voz). Voz procesada en esta conversación: {prov} min. Costo estimado de la cascada: aprox. $0.02–0.04 por minuto de voz.',
@@ -1536,6 +1609,14 @@
       setSaveHist: 'Guardar historial', setSaveHistSub: 'Permite guardar conversaciones y frases en este teléfono.',
       setPrivacy: 'Privacidad', setPrivacySub: 'Las conversaciones solo se guardan si tú lo pides, y solo en este teléfono.',
       clearSaved: 'Borrar conversaciones guardadas', clearFavs: 'Borrar frases favoritas',
+      setSecGeneral: 'General', setSecGeneralSub: 'Idioma y configuración general de la app.',
+      setSecAudio: 'Traducción y audio', setSecAudioSub: 'Configura el motor de traducción y las voces.',
+      setSecPrefs: 'Preferencias', setSecPrefsSub: 'Personaliza tu experiencia.',
+      setSecMic: 'Micrófono', setSecMicSub: 'Función próximamente disponible.',
+      setSecPrivacySub: 'Gestiona tus datos y privacidad.',
+      setUiLangSub: 'Selecciona el idioma de la aplicación.',
+      setRateSub: 'Ajusta la velocidad de la reproducción de frases.',
+      setMicPill: 'No disponible',
       footer: 'Traducción automática con IA · En vivo',
       brandTag: 'Expande tu vocabulario a otro nivel con nosotros.',
       headA: 'Un solo lugar', headB: 'con idiomas diferentes.',
@@ -1675,12 +1756,12 @@
       settings: 'Settings',
       setUiLang: 'Interface language',
       setEngine: 'Call engine',
-      setEngineSub: 'AI Interpreter: one live session that interprets between the two languages (budget). Dedicated translator: two live sessions, one per direction. Full phrase: waits until you finish speaking and translates the whole phrase at the best quality.',
+      setEngineSub: 'Choose how live translated calls are made.',
       engineInterpreter: 'AI interpreter (budget)',
       engineTranslate: 'Dedicated translator',
       enginePhrase: 'Full phrase (best quality)',
       setVoiceInterp: 'Translation voice',
-      setVoiceInterpSub: 'The voice the AI Interpreter and the Full phrase engine speak with. For Full phrase it applies to every phrase; for the Interpreter, on the next call.',
+      setVoiceInterpSub: 'The voice the AI Interpreter and the Full phrase engine speak with.',
       provNoteInterp: 'Note: the call uses a single interpreter session, so provider minutes are the same as the call minutes: {prov} min.',
       minutesLineInterp: '1 session live · {call} call min · {prov} provider min',
       provNotePhrase: 'Note: this engine does not use call minutes: it processes each phrase separately (transcription + translation + speech). Speech processed in this conversation: {prov} min. Estimated cascade cost: approx. $0.02–0.04 per minute of speech.',
@@ -1696,6 +1777,14 @@
       setSaveHist: 'Save history', setSaveHistSub: 'Allows saving conversations and phrases on this phone.',
       setPrivacy: 'Privacy', setPrivacySub: 'Conversations are only saved when you ask, and only on this phone.',
       clearSaved: 'Delete saved conversations', clearFavs: 'Delete favorite phrases',
+      setSecGeneral: 'General', setSecGeneralSub: 'App language and general settings.',
+      setSecAudio: 'Translation & audio', setSecAudioSub: 'Set up the translation engine and the voices.',
+      setSecPrefs: 'Preferences', setSecPrefsSub: 'Personalize your experience.',
+      setSecMic: 'Microphone', setSecMicSub: 'Feature coming soon.',
+      setSecPrivacySub: 'Manage your data and privacy.',
+      setUiLangSub: 'Choose the app language.',
+      setRateSub: 'Adjust the playback speed for phrases.',
+      setMicPill: 'Not available',
       footer: 'Automatic AI translation · Live',
       brandTag: 'Take your vocabulary to the next level with us.',
       headA: 'One single place', headB: 'with different languages.',
