@@ -3851,7 +3851,7 @@
         if (!j || !j.ok || j.status !== 'ready') return;
         var calls = callStoreGet(CALLS_KEY) || [];
         calls.unshift({ id: pending.callId, dest: pending.dest, at: pending.at, goal: pending.goal || '', summary: j.summary || '', pairs: j.pairs || [] });
-        callStoreSet(CALLS_KEY, calls.slice(0, 20));
+        callStoreSet(CALLS_KEY, calls.slice(0, 30)); // el registro guarda solo las últimas 30 llamadas (orden de Noel)
         callStoreSet(CALL_PENDING_KEY, null);
         stopCallPolling();
         renderCallLast(); renderCallHistory();
