@@ -614,7 +614,7 @@
   #calls-detail-summary{background:rgba(255,255,255,.04); border:1px solid var(--line-soft); border-left:3px solid var(--gold2); border-radius:14px; padding:12px 14px;}
   #calls-overlay .cpair{background:rgba(255,255,255,.03); border:1px solid var(--line-soft); border-radius:13px; padding:10px 12px; margin-top:8px;}
 
-  /* ================= Autenticación Englix (v32) =================
+  /* ================= Autenticación Englix (v33) =================
      Luxury Premium: azul casi negro, dorado, glass, slides suaves. */
   #auth-root{position:fixed; inset:0; z-index:95; display:none; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain;
     background:
@@ -653,6 +653,12 @@
   .afield > svg{width:20px; height:20px; stroke:rgba(255,255,255,.78); fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; flex:0 0 auto;}
   .afield input{flex:1; min-width:0; background:none; border:0; outline:0; color:#fff; font-size:16px; font-family:var(--sans); height:100%;}
   .afield input::placeholder{color:rgba(255,255,255,.38);}
+  /* Autorrelleno de iOS: sin cuadro amarillo; el campo queda oscuro y solo las letras en dorado */
+  input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:focus,
+  textarea:-webkit-autofill, textarea:-webkit-autofill:hover, textarea:-webkit-autofill:focus{
+    -webkit-text-fill-color:#F2D287; caret-color:#F2D287;
+    -webkit-box-shadow:0 0 0 1000px #0B1426 inset; box-shadow:0 0 0 1000px #0B1426 inset;
+    transition:background-color 99999s ease-out 0s;}
   .aeye{flex:0 0 auto; width:36px; height:36px; display:flex; align-items:center; justify-content:center; border-radius:10px;}
   .aeye svg{width:20px; height:20px; stroke:rgba(255,255,255,.55); fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; transition:opacity .18s ease;}
   .aeye .eyeoff{display:none;}
@@ -1016,7 +1022,7 @@
   </section>
 
   <footer data-i18n="footer">Traducción automática con IA · En vivo</footer>
-  <div class="verlabel">v32 · Englix</div>
+  <div class="verlabel">v33 · Englix</div>
 </div>
 
 <!-- ===== Barra inferior (v11 · Englix) ===== -->
@@ -1241,7 +1247,7 @@
   </div>
 </aside>
 
-<!-- ===== Autenticación Englix (v32) ===== -->
+<!-- ===== Autenticación Englix (v33) ===== -->
 <div id="auth-root">
   <div class="authwrap">
     <div class="authwaves" aria-hidden="true"></div>
@@ -4361,7 +4367,7 @@
     if (g) g.classList.toggle('paused', document.hidden);
   });
 
-  /* ================= Autenticación Englix (v32) =================
+  /* ================= Autenticación Englix (v33) =================
      Supabase Auth (correo + contraseña, SIN login social).
      La config se llena al crear el proyecto «englix»; sin config,
      la puerta queda apagada y la app funciona como siempre. */
