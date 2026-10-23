@@ -19,6 +19,13 @@
 const http = require('http');
 const { WebSocket, WebSocketServer } = require('ws');
 
+// v2 (diagnóstico 2026-10-22): que NADA tumbe el proceso en silencio —
+// todo error global queda en el registro de Render con su causa.
+process.on('uncaughtException', (e) =>
+  console.error('[relay] UNCAUGHT', e && e.stack ? e.stack : String(e)));
+process.on('unhandledRejection', (e) =>
+  console.error('[relay] UNHANDLED', e && e.stack ? e.stack : String(e)));
+
 const PORT = process.env.PORT || 8080;
 const OPENAI_KEY = process.env.OPENAI_API_KEY || '';
 const MODEL = 'gpt-realtime-2.1-mini';
@@ -79,6 +86,7 @@ function openSession(call, leg) {
   leg.pendingOrig = null;
 
   oa.on('open', () => {
+    console.log('[relay] openai ws abierto', call.id, leg.name);
     // La configuración se manda al recibir session.created (orden oficial).
   });
 
@@ -88,7 +96,7 @@ function openSession(call, leg) {
     if (!ev || !ev.type) return;
 
     if (ev.type === 'session.created') {
-      oa.send(JSON.stringify({
+      try { oa.send(JSON.stringify({
         type: 'session.update',
         session: {
           type: 'realtime',
@@ -115,6 +123,10 @@ function openSession(call, leg) {
         }
       }));
       leg.ready = true;
+      console.log('[relay] sesión lista', call.id, leg.name, leg.hearLang, '->', leg.speakLang);
+      } catch (e) {
+        console.error('[relay] session.update falló', call.id, leg.name, e.message);
+      }
       return;
     }
 
@@ -122,11 +134,15 @@ function openSession(call, leg) {
       // La voz traducida de ESTA pata suena en la pata contraria.
       const other = call.legs[leg.name === 'user' ? 'dest' : 'user'];
       if (other && other.ws && other.ws.readyState === WebSocket.OPEN && other.streamSid) {
-        other.ws.send(JSON.stringify({
-          event: 'media',
-          streamSid: other.streamSid,
-          media: { payload: ev.delta }
-        }));
+        try {
+          other.ws.send(JSON.stringify({
+            event: 'media',
+            streamSid: other.streamSid,
+            media: { payload: ev.delta }
+          }));
+        } catch (e) {
+          console.error('[relay] envío a la otra pata falló', call.id, leg.name, e.message);
+        }
       }
       return;
     }
@@ -148,12 +164,16 @@ function openSession(call, leg) {
 
     if (ev.type === 'error') {
       console.error('[relay] openai error', call.id, leg.name,
-        ev.error && ev.error.message ? ev.error.message : ev);
+        JSON.stringify(ev).slice(0, 400));
     }
   });
 
   oa.on('error', (e) => console.error('[relay] openai ws error', call.id, leg.name, e.message));
-  oa.on('close', () => { leg.ready = false; });
+  oa.on('close', (code, reason) => {
+    leg.ready = false;
+    console.log('[relay] openai ws cerrado', call.id, leg.name, 'code', code,
+      reason ? String(reason).slice(0, 120) : '');
+  });
 }
 
 function flushPair(call, leg, transText) {
@@ -285,6 +305,8 @@ wss.on('connection', (ws, req) => {
 
   const leg = { name: legName, ws, streamSid: null, oa: null, ready: false };
   call.legs[legName] = leg;
+  console.log('[relay] stream conectado', callId, legName,
+    call.pairA, call.pairB, 'desde', (req.socket && req.socket.remoteAddress) || '?');
 
   ws.on('message', (raw) => {
     let msg;
@@ -293,20 +315,26 @@ wss.on('connection', (ws, req) => {
 
     if (msg.event === 'start') {
       leg.streamSid = msg.start && msg.start.streamSid;
+      console.log('[relay] start', callId, legName, 'streamSid', leg.streamSid || '?');
       if (OPENAI_KEY) openSession(call, leg);
       else console.error('[relay] falta OPENAI_API_KEY en el servidor');
       return;
     }
     if (msg.event === 'media') {
       if (leg.oa && leg.oa.readyState === WebSocket.OPEN && leg.ready) {
-        leg.oa.send(JSON.stringify({
-          type: 'input_audio_buffer.append',
-          audio: msg.media && msg.media.payload
-        }));
+        try {
+          leg.oa.send(JSON.stringify({
+            type: 'input_audio_buffer.append',
+            audio: msg.media && msg.media.payload
+          }));
+        } catch (e) {
+          console.error('[relay] append a openai falló', callId, legName, e.message);
+        }
       }
       return;
     }
     if (msg.event === 'stop') {
+      console.log('[relay] stop de twilio', callId, legName);
       call.stopped += 1;
       try { if (leg.oa) leg.oa.close(); } catch (e) {}
       if (call.stopped >= 2) finalize(call);
@@ -315,10 +343,12 @@ wss.on('connection', (ws, req) => {
     }
   });
 
-  ws.on('close', () => {
+  ws.on('close', (code, reason) => {
+    console.log('[relay] stream cerrado', callId, legName, 'code', code,
+      reason ? String(reason).slice(0, 120) : '');
     try { if (leg.oa) leg.oa.close(); } catch (e) {}
   });
-  ws.on('error', () => {});
+  ws.on('error', (e) => console.error('[relay] stream error', callId, legName, e.message));
 });
 
 /* Limpieza: ninguna llamada vive más de 6 horas en memoria. */
@@ -337,6 +367,6 @@ setInterval(() => {
 }, 10 * 60 * 1000);
 
 server.listen(PORT, () => {
-  console.log('[relay] Englix call relay en puerto ' + PORT +
+  console.log('[relay v2] Englix call relay en puerto ' + PORT +
     (OPENAI_KEY ? '' : ' — OJO: falta OPENAI_API_KEY'));
 });
