@@ -4663,7 +4663,18 @@
     sendPassCode();
   });
   $('btn-pass-resend').addEventListener('click', function () { vibrate(8); sendPassCode(); });
-  $('btn-pass-cancel').addEventListener('click', function () { vibrate(8); passShowCode(false); });
+  /* Cancelar = volver al paso inicial con TODO en blanco (orden de
+     Noel, 2026-10-24): sin la contraseña escrita, sin código a medias
+     y sin mensajes viejos. La misma limpieza se usa al lograr el
+     cambio, pa' que la sección siempre reabra limpia. */
+  function passResetAll() {
+    $('prof-newpass').value = ''; $('prof-newpass2').value = '';
+    paintPwRules('ep-rules', '');
+    epClearCode();
+    pfeed('pass-feed', ''); pfeed('code-feed', '');
+    passShowCode(false);
+  }
+  $('btn-pass-cancel').addEventListener('click', function () { vibrate(8); passResetAll(); });
   $('btn-pass-confirm').addEventListener('click', function () {
     vibrate(8);
     var code = epCode(), pw = $('prof-newpass').value;
@@ -4678,9 +4689,7 @@
         if (m.indexOf('nonce') >= 0 || m.indexOf('otp') >= 0 || m.indexOf('invalid') >= 0 || m.indexOf('expired') >= 0 || m.indexOf('code') >= 0) { pfeed('code-feed', t('profCodeWrong')); return; }
         pfeed('code-feed', mapAuthErr(res.error, 'reset')); return;
       }
-      passShowCode(false);
-      $('prof-newpass').value = ''; $('prof-newpass2').value = '';
-      paintPwRules('ep-rules', '');
+      passResetAll();
       pfeed('pass-feed', t('profPassChanged'), true);
       toast(t('profPassChanged'));
     }).catch(function () { btn.disabled = false; pfeed('code-feed', t('authErrConn')); });
