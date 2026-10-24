@@ -1257,6 +1257,11 @@
         <button class="sala-btn" id="btn-sala-join" data-i18n="salaJoinBtn">Entrar a la sala</button>
         <button class="sala-btn ghost" id="btn-sala-dismiss" data-i18n="salaDismiss">Ahora no</button>
         <p class="sala-err" id="sala-join-err"></p>
+        <div class="sala-knock" id="sala-join-nomins" style="display:none;">
+          <p data-i18n="salaNoMins">No tienes minutos para unirte a la sala. Verifica tu número y recibe tu regalo: 20 minutos gratis (10 de conversación y 10 de llamadas).</p>
+          <button class="sala-btn" id="btn-sala-verify" data-i18n="salaVerifyBtn">Verificar mi número</button>
+          <button class="sala-btn ghost" id="btn-sala-plans" data-i18n="salaPlansBtn">Ver planes y saldo</button>
+        </div>
       </div>
 
       <!-- Sala creada: compartir y esperar (anfitrión) -->
@@ -2151,6 +2156,8 @@
       salaAdmit: 'Dejar entrar', salaCancel: 'Cancelar sala',
       salaJoinSub: 'Te invitaron a una sala con traducción en vivo. Elige el idioma en que TÚ vas a hablar y entra: cada quien escucha el suyo.',
       salaJoinBtn: 'Entrar a la sala', salaDismiss: 'Ahora no',
+      salaNoMins: 'No tienes minutos para unirte a la sala. Verifica tu número y recibe tu regalo: 20 minutos gratis (10 de conversación y 10 de llamadas).',
+      salaVerifyBtn: 'Verificar mi número', salaPlansBtn: 'Ver planes y saldo',
       salaLobby: 'Ya estás en la puerta. Esperando que el anfitrión te deje entrar…',
       salaLeave: 'Salir',
       salaNotReady: 'La sala aún no está lista. Espera un momento y toca Reintentar.',
@@ -2426,6 +2433,8 @@
       salaAdmit: 'Let them in', salaCancel: 'Cancel room',
       salaJoinSub: 'You were invited to a room with live translation. Pick the language YOU will speak and join: everyone hears their own language.',
       salaJoinBtn: 'Join the room', salaDismiss: 'Not now',
+      salaNoMins: 'You have no minutes to join the room. Verify your number and get your gift: 20 free minutes (10 conversation and 10 calls).',
+      salaVerifyBtn: 'Verify my number', salaPlansBtn: 'See plans and balance',
       salaLobby: 'You are at the door. Waiting for the host to let you in…',
       salaLeave: 'Leave',
       salaNotReady: 'The room is not ready yet. Wait a moment and tap Retry.',
@@ -5677,19 +5686,21 @@
     if (ss.length < 2) ss = '0' + ss;
     var st = $('sala-live-status');
     if (st) st.textContent = t('salaLive') + ' · ' + mm + ':' + ss;
-    if (S.role === 'user') {
-      var rem = salaRemainingSec();
-      var pill = $('sala-pill');
-      if (rem <= 300 && pill) {
-        pill.textContent = t('warnPillLeft').replace('{N}', Math.max(0, Math.ceil(rem / 60)));
-        pill.style.display = '';
-      }
-      if (rem <= 300 && !S.warned) {
-        S.warned = true;
-        if (typeof toast === 'function') toast(t('warnCallLow'));
-      }
-      if (rem <= 0) salaEnd(true);
+    // Los DOS consumen de SUS minutos (regla de Noel): la
+    // píldora, el aviso de 5 minutos y el corte al agotarse
+    // corren pa' el anfitrión y pa' el invitado por igual,
+    // cada quien contra su propia cuenta.
+    var rem = salaRemainingSec();
+    var pill = $('sala-pill');
+    if (rem <= 300 && pill) {
+      pill.textContent = t('warnPillLeft').replace('{N}', Math.max(0, Math.ceil(rem / 60)));
+      pill.style.display = '';
     }
+    if (rem <= 300 && !S.warned) {
+      S.warned = true;
+      if (typeof toast === 'function') toast(t('warnCallLow'));
+    }
+    if (rem <= 0) salaEnd(true);
   }
 
   /* ---- fin de la sala: resumen, guardado y cobro (anfitrión) ---- */
@@ -5726,6 +5737,31 @@
     })();
   }
 
+  /* El invitado también paga su parte: al terminar la sala,
+     su cliente pide el resumen con SU token (solo pa' leer la
+     hora de fin del relay) y se descuenta la duración de SUS
+     minutos de llamada. El registro y el resumen bonito los
+     guarda el anfitrión; esto es solo el cobro del invitado. */
+  function salaGuestSettle(roomId, rt, startedAt) {
+    var tries = 0;
+    (function poll() {
+      fetch('https://relay.englix.app/summary/' + roomId, {
+        headers: rt ? { 'x-relay-token': rt } : {}
+      }).then(function (r) { return r.json().catch(function () { return null; }); })
+        .then(function (j) {
+          if (j && j.ok && j.status === 'ready') {
+            var durSec = (j.endedAt && startedAt)
+              ? Math.max(0, Math.round((j.endedAt - startedAt) / 1000))
+              : Math.max(0, Math.round((Date.now() - startedAt) / 1000));
+            if (durSec > 0) billingConsume('call', durSec, 'room:' + roomId + ':' + durSec);
+            return;
+          }
+          if (++tries < 18) setTimeout(poll, 5000);
+        })
+        .catch(function () { if (++tries < 18) setTimeout(poll, 5000); });
+    })();
+  }
+
   function salaCleanup() {
     if (!S) return;
     if (S.tickInt) { clearInterval(S.tickInt); S.tickInt = null; }
@@ -5751,6 +5787,7 @@
       if (wasLive && startedAt) salaSaveFinished(roomId, rt, startedAt, pairA, pairB);
     } else {
       salaShow('sala-ended');
+      if (wasLive && startedAt) salaGuestSettle(roomId, rt, startedAt);
     }
   }
 
@@ -5765,6 +5802,7 @@
       if (wasLive && startedAt) salaSaveFinished(roomId, rt, startedAt, pairA, pairB);
     } else {
       salaShow('sala-ended');
+      if (wasLive && startedAt) salaGuestSettle(roomId, rt, startedAt);
     }
   }
 
@@ -5917,6 +5955,7 @@
     if (!roomId) { salaShow('sala-create'); return; }
     if (!sbUser) { if (err) err.textContent = t('salaNeedAccount'); return; }
     var myLang = ($('sala-join-lang') && $('sala-join-lang').value) || 'en';
+    var nm = $('sala-join-nomins'); if (nm) nm.style.display = 'none';
     btn.disabled = true;
     salaGetMedia().then(function (stream) {
       S = {
@@ -5933,7 +5972,9 @@
         body: JSON.stringify({ roomId: roomId })
       }).then(function (r) { return r.json().catch(function () { return null; }); });
     }).then(function (j) {
-      if (!j || !j.ok) throw new Error('join_failed');
+      if (!j || !j.ok) {
+        throw new Error(j && j.error === 'no_minutes' ? 'no_minutes' : 'join_failed');
+      }
       S.rt = j.relayToken;
       var ll = $('sala-local-lobby'); if (ll) ll.srcObject = S.localStream;
       salaShow('sala-lobby');
@@ -5946,6 +5987,13 @@
       btn.disabled = false;
       if (S && !S.live) salaCleanup();
       salaShow('sala-join');
+      if (e && e.message === 'no_minutes') {
+        // Sin minutos no se une (regla de Noel): aviso claro y
+        // el camino del regalo — verificar el número.
+        var nm2 = $('sala-join-nomins'); if (nm2) nm2.style.display = '';
+        var le2 = $('sala-join-err'); if (le2) le2.textContent = '';
+        return;
+      }
       var le = $('sala-join-err');
       if (!le) return;
       if (e && e.message === 'room_not_ready') le.textContent = t('salaNotReady');
@@ -5960,6 +6008,15 @@
   $('btn-sala-dismiss').addEventListener('click', function () {
     salaSetPending(null);
     salaShow('sala-create');
+  });
+  $('btn-sala-verify').addEventListener('click', function () {
+    // El regalo se reclama verificando el número (flujo que ya
+    // existe pa' la bienvenida). La sala queda pendiente: al
+    // volver a la pestaña Reunión, la tarjeta de entrada sigue.
+    if (typeof openVerifyPhone === 'function') openVerifyPhone();
+  });
+  $('btn-sala-plans').addEventListener('click', function () {
+    if (typeof openPlans === 'function') openPlans();
   });
   $('btn-sala-copy').addEventListener('click', function () {
     var li = $('sala-link');

@@ -1,10 +1,11 @@
 // Sala de reunión (2026-10): entrada del invitado.
-// Decisión de Noel: AMBOS necesitan cuenta de Englix. El invitado
-// abre el enlace, inicia sesión (o crea su cuenta) y la app llama
-// aquí con su sesión: este endpoint acuña SU token del relay pa'
-// esa sala. Unirse NO cuesta minutos — paga solo quien crea la
-// sala, como en una llamada telefónica (al que recibe no se le
-// cobra); el invitado paga cuando él crea salas o llama.
+// Decisiones de Noel: AMBOS necesitan cuenta de Englix y AMBOS
+// consumen de SUS minutos — el invitado también necesita minutos
+// de llamada pa' poder unirse; si no tiene, la app le avisa y lo
+// manda a verificar su número pa' reclamar su regalo de
+// bienvenida (10 min de conversación + 10 min de llamadas).
+// Este endpoint valida su sesión, CHEQUEA sus minutos y, si
+// pasa, acuña SU token del relay pa' esa sala.
 
 const crypto = require('crypto');
 
@@ -24,6 +25,38 @@ async function userFromToken(token) {
   const u = await r.json().catch(() => null);
   if (!u || !u.id) return null;
   return u;
+}
+
+async function svc(path, options) {
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const r = await fetch(SUPABASE_URL + path, Object.assign({}, options || {}, {
+    headers: Object.assign({
+      apikey: key,
+      ['Authori' + 'zation']: 'Bearer ' + key,
+      'Content-Type': 'application/json'
+    }, (options && options.headers) || {})
+  }));
+  const j = await r.json().catch(() => null);
+  return { ok: r.ok, status: r.status, json: j };
+}
+
+async function readEntitlements(userId) {
+  const q = '/rest/v1/entitlements?user_id=eq.' + encodeURIComponent(userId) +
+    '&select=user_id,plan,plan_conv_seconds,plan_call_seconds,balance_cents,cycle_ends_at&limit=1';
+  const r = await svc(q);
+  if (!r.ok) return null;
+  const row = Array.isArray(r.json) && r.json.length ? r.json[0] : null;
+  return row || {
+    user_id: userId, plan: 'free',
+    plan_conv_seconds: 0, plan_call_seconds: 0,
+    balance_cents: 0, cycle_ends_at: null
+  };
+}
+
+// La sala consume del bote de llamadas de CADA participante.
+function availableCallSeconds(ent) {
+  return (ent.plan_call_seconds || 0) +
+    Math.floor((ent.balance_cents || 0) / 15) * 60;
 }
 
 const rlBuckets = new Map();
@@ -78,6 +111,14 @@ module.exports = async (req, res) => {
     if (rateLimited(user.id + '|' + clientIp(req), 20, 60 * 1000)) {
       return fail('rate_limited', 429);
     }
+    // Chequeo de minutos del invitado (regla de Noel): sin
+    // minutos de llamada no se une, y la app le avisa.
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      return fail('billing_not_configured', 503);
+    }
+    const ent = await readEntitlements(user.id);
+    if (!ent) return fail('db_error', 503);
+    if (availableCallSeconds(ent) <= 0) return fail('no_minutes', 402);
 
     const relayToken = mintRelayToken(roomId);
     if (!relayToken) return fail('relay_not_configured', 503);
