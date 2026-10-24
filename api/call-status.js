@@ -12,11 +12,33 @@
 // idiomas, motivo, números de la pata hermana) viaja en los parámetros de
 // esta misma URL o en el cuerpo que Twilio manda.
 
+const crypto = require('crypto');
+
 function twilioAuth(sid, token) {
   return {
     ['Authori' + 'zation']:
       'Basic ' + Buffer.from(sid + ':' + token).toString('base64')
   };
+}
+
+// Firma de Twilio (auditoría 2026-10): los avisos de estado los
+// manda Twilio con el header X-Twilio-Signature calculado sobre la
+// URL EXACTA pedida (con su query string) + los parámetros POST
+// ordenados. Sin firma válida NO se actúa (crear/colgar patas es
+// gastar dinero y tocar llamadas vivas). El navegador nunca llama
+// esta ruta: solo Twilio.
+function twilioSignatureOk(req, bodyParams) {
+  const authToken = process.env.TWILIO_AUTH_TOKEN;
+  const sig = req.headers['x-twilio-signature'];
+  if (!authToken || !sig) return false;
+  let base = 'https://englix.app' + (req.url || '');
+  const keys = Object.keys(bodyParams || {}).sort();
+  for (const k of keys) base += k + bodyParams[k];
+  const expected = crypto.createHmac('sha1', authToken)
+    .update(base, 'utf8').digest('base64');
+  const a = Buffer.from(expected);
+  const c = Buffer.from(String(sig));
+  return a.length === c.length && crypto.timingSafeEqual(a, c);
 }
 
 module.exports = async (req, res) => {
@@ -29,6 +51,12 @@ module.exports = async (req, res) => {
     if (typeof b === 'string') b = Object.fromEntries(new URLSearchParams(b));
     else if (Buffer.isBuffer(b)) {
       b = Object.fromEntries(new URLSearchParams(b.toString('utf8')));
+    }
+
+    // Firma ANTES de cualquier acción.
+    if (!twilioSignatureOk(req, b)) {
+      res.status(403).send('');
+      return;
     }
 
     const sid = process.env.TWILIO_ACCOUNT_SID;
@@ -78,14 +106,17 @@ module.exports = async (req, res) => {
     }
 
     // — El usuario contestó: crear la pata destino.
-    if (q.leg === 'user' && q.dest &&
+    // El destino se valida con el mismo formato estricto de las
+    // demás ramas (auditoría 2026-10): nada se marca sin E.164 US.
+    if (q.leg === 'user' && /^\+1\d{10}$/.test(q.dest || '') &&
         (b.CallStatus === 'in-progress' || b.CallStatus === 'answered')) {
       // v18: el origen de la pata destino lo decide call-start (el número
       // verificado del usuario si lo tiene; si no, el de Englix).
       const from = (typeof q.from === 'string' && /^\+1\d{10}$/.test(q.from))
         ? q.from : process.env.TWILIO_PHONE_NUMBER;
       if (sid && token && from) {
-        const base = 'https://' + (req.headers.host || 'traductor-prueba-muse-ce8f.vercel.app');
+        // Base FIJA: nunca se confía en el header Host.
+        const base = 'https://englix.app';
         const twimlQ = new URLSearchParams({
           leg: 'dest',
           callId: q.callId || '',
@@ -93,6 +124,9 @@ module.exports = async (req, res) => {
           pairA: q.pairA || 'es',
           pairB: q.pairB || 'en'
         });
+        // El token del relay se hereda a la pata destino: su TwiML
+        // lo pasa al stream como <Parameter>.
+        if (q.rt) twimlQ.set('rt', q.rt);
         // La pata destino avisa a ESTA misma función al terminar, pa'
         // poder colgar la del usuario si la otra persona cuelga primero.
         // En el cuerpo de este aviso, To/From son los de la pata usuario.

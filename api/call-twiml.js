@@ -13,13 +13,48 @@
 // Sin relay configurado, se dice honestamente que el servicio aún no está
 // disponible y se cuelga (nunca se finge la llamada).
 
+const crypto = require('crypto');
+
 function escAttr(s) {
   return String(s || '')
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 }
 
+// Firma de Twilio (auditoría 2026-10): esta URL la pide Twilio al
+// conectar cada pata, con el header X-Twilio-Signature calculado
+// sobre la URL EXACTA pedida (con su query string) + los parámetros
+// POST ordenados. Sin firma válida NO se sirve TwiML a nadie (el
+// navegador nunca llama esta ruta: solo Twilio).
+// Verificado antes de codificar: index.html no usa /api/call-twiml
+// ni /api/call-status directamente.
+function twilioSignatureOk(req) {
+  const authToken = process.env.TWILIO_AUTH_TOKEN;
+  const sig = req.headers['x-twilio-signature'];
+  if (!authToken || !sig) return false;
+  let params = {};
+  let b = req.body;
+  if (b && typeof b === 'object' && !Buffer.isBuffer(b)) params = b;
+  else if (typeof b === 'string') {
+    params = Object.fromEntries(new URLSearchParams(b));
+  } else if (Buffer.isBuffer(b)) {
+    params = Object.fromEntries(new URLSearchParams(b.toString('utf8')));
+  }
+  let base = 'https://englix.app' + (req.url || '');
+  const keys = Object.keys(params).sort();
+  for (const k of keys) base += k + params[k];
+  const expected = crypto.createHmac('sha1', authToken)
+    .update(base, 'utf8').digest('base64');
+  const a = Buffer.from(expected);
+  const c = Buffer.from(String(sig));
+  return a.length === c.length && crypto.timingSafeEqual(a, c);
+}
+
 module.exports = async (req, res) => {
+  if (!twilioSignatureOk(req)) {
+    res.status(403).send('');
+    return;
+  }
   const q = req.query || {};
   const leg = q.leg === 'dest' ? 'dest' : 'user';
   // El relay vive en Fly.io desde el 2026-10-22, servido bajo el dominio
@@ -57,12 +92,16 @@ module.exports = async (req, res) => {
   // conectó el stream a ningún relay (Render, Fly, dominio propio),
   // mientras que sin parámetros (eco /raw) conectó al instante.
   const streamUrl = 'wss://' + relay + '/stream';
-  const params =
+  let params =
     '<Parameter name="leg" value="' + escAttr(leg) + '"/>' +
     '<Parameter name="callId" value="' + escAttr(q.callId || '') + '"/>' +
     '<Parameter name="pairA" value="' + escAttr(q.pairA || 'es') + '"/>' +
     '<Parameter name="pairB" value="' + escAttr(q.pairB || 'en') + '"/>' +
     '<Parameter name="goal" value="' + escAttr(q.goal || '') + '"/>';
+  // El token del relay (query rt, puesto por call-start o por
+  // call-status) viaja como <Parameter>: la URL del stream sigue
+  // SIN parámetros, como manda la bisección.
+  if (q.rt) params += '<Parameter name="rt" value="' + escAttr(q.rt) + '"/>';
 
   res.status(200).send(
     '<Response>' +

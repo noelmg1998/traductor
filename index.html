@@ -2112,6 +2112,7 @@
       errMic: 'Necesito permiso para usar el micrófono. Actívalo cuando el navegador lo pida (o en los ajustes) e inténtalo otra vez.',
       errNoMic: 'No encontré un micrófono en este aparato. Conecta uno e inténtalo otra vez.',
       errKey: 'Falta conectar el motor de traducción. Avísale a Mister.',
+      errNoMinutes: 'No te quedan minutos. Elige un plan o recarga saldo para seguir.',
       errSession: 'Hubo un problema con la traducción. Si sigue pasando, termina la llamada y vuelve a empezar.',
       errReconnect: 'Se perdió la conexión y no se pudo recuperar. Termina la llamada y vuelve a empezar.',
       pausedBanner: 'Conversación pausada'
@@ -2335,6 +2336,7 @@
       errMic: 'I need microphone permission. Allow it when the browser asks (or in settings) and try again.',
       errNoMic: 'No microphone found on this device. Connect one and try again.',
       errKey: 'The translation engine is not connected yet. Let Mister know.',
+      errNoMinutes: 'You are out of minutes. Choose a plan or top up to keep going.',
       errSession: 'There was a problem with the translation. If it keeps happening, end the call and start again.',
       errReconnect: 'The connection was lost and could not recover. End the call and start again.',
       pausedBanner: 'Conversation paused'
@@ -2880,6 +2882,10 @@
     if (e && (e.name === 'NotAllowedError' || e.name === 'SecurityError')) return t('errMic');
     if (e && e.name === 'NotFoundError') return t('errNoMic');
     if (e && e.code === 'missing_key') return t('errKey');
+    // Auditoría 2026-10: los endpoints de costo exigen sesión (401)
+    // y minutos (402); se muestran con los mensajes de la app.
+    if (e && e.code === 'unauthorized') return t('idleClosed');
+    if (e && e.code === 'no_minutes') return t('errNoMinutes');
     return t('errGeneric');
   }
   function showView(name) {
@@ -3222,9 +3228,10 @@
   setInterval(echoGuardTick, 120);
 
   async function mintToken(outLang) {
+    var tok = await billingToken();
     var tr = await fetch(TOKEN_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok },
       body: JSON.stringify({ targetLanguage: outLang, noiseReduction: !!settings.noise })
     });
     var tj = await tr.json().catch(function () { return {}; });
@@ -3493,9 +3500,10 @@
   }
 
   async function mintTokenInterp() {
+    var tok = await billingToken();
     var tr = await fetch(TOKEN_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok },
       body: JSON.stringify({
         engine: 'interpreter',
         pairA: settings.pairA,
@@ -3920,9 +3928,10 @@
     if (inCall && !paused) setState('processing'); // estado real: esperando al servidor (sin progreso simulado)
     try {
       var b64 = await blobToBase64(blob);
+      var tok = await billingToken();
       var r = await fetch(PHRASE_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok },
         body: JSON.stringify({
           audio: b64, mime: mime,
           pairA: settings.pairA, pairB: settings.pairB,
@@ -4200,7 +4209,9 @@
       convLowEnd(); // v47: la sesión no arrancó: sin aviso colgando
       setState('idle');
       showView('home');
-      showErr('home', errorMessage(e));
+      // Sin minutos (402 del servidor): a Planes, como la compuerta.
+      if (e && e.code === 'no_minutes') openPlans();
+      else showErr('home', errorMessage(e));
     } finally {
       btnStart.disabled = false;
       btnStart.innerHTML = startCardHTML(false);
@@ -4269,7 +4280,8 @@
       } catch (e) {
         paused = true;
         setState('paused');
-        showErr('call', errorMessage(e));
+        if (e && e.code === 'no_minutes') openPlans();
+        else showErr('call', errorMessage(e));
       } finally {
         btnPause.disabled = false;
       }
@@ -4840,12 +4852,17 @@
     quickErr.style.display = 'none';
     syncQuickBtn();
     try {
+      var tok = await billingToken();
       var r = await fetch('/api/quick-translate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok },
         body: JSON.stringify({ text: text, from: settings.pairA, to: settings.pairB })
       });
       var j = await r.json().catch(function () { return {}; });
+      // Auditoría 2026-10: sin sesión → aviso de sesión; sin
+      // minutos → vista de Planes (como la compuerta de cobro).
+      if (r.status === 401) { toast(t('idleClosed')); throw new Error('unauthorized'); }
+      if (r.status === 402) { openPlans(); throw new Error('no_minutes'); }
       if (!r.ok || !j.ok || !j.translation) throw new Error((j && j.error) || 'translate_failed');
       quickData = { text: j.translation, toLang: settings.pairB };
       quickText.textContent = j.translation;
@@ -5014,8 +5031,21 @@
     if (!pending || !pending.relayHost || !pending.callId) { stopCallPolling(); renderCallLast(); return; }
     if (typeof liveUsePing === 'function') liveUsePing(); // v48: llamada telefónica en curso = actividad
     if (Date.now() - pending.at > 90 * 60 * 1000) { callStoreSet(CALL_PENDING_KEY, null); stopCallPolling(); renderCallLast(); return; }
-    fetch('https://' + pending.relayHost + '/summary/' + pending.callId)
-      .then(function (r) { return r.json(); })
+    fetch('https://' + pending.relayHost + '/summary/' + pending.callId, {
+        headers: pending.relayToken ? { 'x-relay-token': pending.relayToken } : {}
+      })
+      .then(function (r) {
+        // Auditoría 2026-10: el relay exige el token de la llamada.
+        // Un 401 (registro viejo sin token) = resumen no disponible,
+        // en silencio: se suelta el registro y se deja de preguntar.
+        if (r.status === 401) {
+          callStoreSet(CALL_PENDING_KEY, null);
+          stopCallPolling();
+          renderCallLast();
+          return null;
+        }
+        return r.json();
+      })
       .then(function (j) {
         if (!j || !j.ok || j.status !== 'ready') return;
         var calls = callStoreGet(CALLS_KEY) || [];
@@ -5082,7 +5112,11 @@
   function checkVerifiedRemote() {
     var e164 = mineE164();
     if (!e164 || verifiedMap()[e164]) { refreshVerifyUI(); return; }
-    fetch('/api/call-verify-status?number=' + encodeURIComponent(e164))
+    billingToken().then(function (tok) {
+      return fetch('/api/call-verify-status?number=' + encodeURIComponent(e164), {
+        headers: tok ? { 'Authorization': 'Bearer ' + tok } : {}
+      });
+    })
       .then(function (r) { return r.json(); })
       .then(function (j) { if (j && j.ok && j.verified) markVerified(e164); refreshVerifyUI(); })
       .catch(function () { refreshVerifyUI(); });
@@ -5109,9 +5143,11 @@
     if (!e164) { callShowErr(t('callErrNumbers')); return; }
     if (e164 === '+16623629216') { callShowErr(t('callErrOwnNumber')); return; }
     vibrate(8); btnVerify.disabled = true;
-    fetch('/api/call-verify-start', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ myNumber: callMineIn.value.trim() })
+    billingToken().then(function (tok) {
+      return fetch('/api/call-verify-start', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok },
+        body: JSON.stringify({ myNumber: callMineIn.value.trim() })
+      });
     })
       .then(function (r) { return r.json(); })
       .then(function (j) {
@@ -5131,7 +5167,11 @@
     var e164 = mineE164();
     if (!e164) return;
     vibrate(8); verifyShowStatus(t('callVerifyWait'));
-    fetch('/api/call-verify-status?number=' + encodeURIComponent(e164))
+    billingToken().then(function (tok) {
+      return fetch('/api/call-verify-status?number=' + encodeURIComponent(e164), {
+        headers: tok ? { 'Authorization': 'Bearer ' + tok } : {}
+      });
+    })
       .then(function (r) { return r.json(); })
       .then(function (j) {
         if (j && j.ok && j.verified) {
@@ -5173,9 +5213,11 @@
   function proceedCall(dest, mine) {
     callBusy = true; btnCallNow.disabled = true;
     callShowErr(''); callShowStatus(t('callCalling'));
-    fetch('/api/call-start', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ toNumber: dest, myNumber: mine, goal: callGoalIn.value.trim(), pairA: callPair.a, pairB: callPair.b })
+    billingToken().then(function (tok) {
+      return fetch('/api/call-start', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok },
+        body: JSON.stringify({ toNumber: dest, myNumber: mine, goal: callGoalIn.value.trim(), pairA: callPair.a, pairB: callPair.b })
+      });
     })
       .then(function (r) { return r.json(); })
       .then(function (j) {
@@ -5183,12 +5225,16 @@
         if (!j || !j.ok) {
           var code = j && j.error;
           callShowStatus('');
+          // Auditoría 2026-10: sin sesión → aviso de sesión; sin
+          // minutos → vista de Planes (como la compuerta de cobro).
+          if (code === 'unauthorized') { callShowErr(t('idleClosed')); return; }
+          if (code === 'no_minutes') { closeCallSheet(); openPlans(); return; }
           callShowErr(code === 'relay_not_configured' || code === 'calls_not_configured'
             ? t('callSoon') : (code === 'bad_number' ? t('callErrNumbers') : t('callErr')));
           return;
         }
         callStoreSet(CALL_NUMS_KEY, { mine: mine, dest: dest });
-        callStoreSet(CALL_PENDING_KEY, { callId: j.callId, relayHost: j.relayHost, dest: dest, at: Date.now(), goal: (callGoalIn.value || '').trim(), availSec: availCallSecSnap() });
+        callStoreSet(CALL_PENDING_KEY, { callId: j.callId, relayHost: j.relayHost, relayToken: j.relayToken || null, dest: dest, at: Date.now(), goal: (callGoalIn.value || '').trim(), availSec: availCallSecSnap() });
         callLowCheck(); // v47: si ya arranca con ≤5 min de llamadas, el aviso sale ahora mismo
         callShowErr(''); callShowStatus(t('callRinging'));
         renderCallLast(); startCallPolling();
