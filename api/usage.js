@@ -138,14 +138,22 @@ module.exports = async (req, res) => {
       return;
     }
 
-    // action === 'consume'
+    // action === 'consume'. La llave de idempotencia (idem) es
+    // opcional: si viene, la RPC de 4 argumentos devuelve el
+    // resultado guardado en vez de descontar dos veces cuando el
+    // cliente reintenta el mismo segmento.
     const seconds = body.seconds;
     if (!Number.isInteger(seconds) || seconds < 1 || seconds > 3600) {
       return fail('bad_seconds', 400);
     }
+    const idem = body.idem;
+    if (idem !== undefined && idem !== null &&
+        (typeof idem !== 'string' || !/^[A-Za-z0-9:_-]{8,90}$/.test(idem))) {
+      return fail('bad_idem', 400);
+    }
     const r = await svc('/rest/v1/rpc/consume_seconds', {
       method: 'POST',
-      body: JSON.stringify({ p_user: user.id, p_kind: kind, p_seconds: seconds })
+      body: JSON.stringify({ p_user: user.id, p_kind: kind, p_seconds: seconds, p_idem: idem || null })
     });
     if (!r.ok || !r.json) return fail('db_error');
     res.status(200).json(Object.assign({ ok: true }, r.json));

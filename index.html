@@ -5139,7 +5139,7 @@
         // Cobro de la llamada (v40): se descuenta una sola vez, aquí,
         // cuando el resumen confirma que la llamada existió. Si el
         // cobro no está configurado o falla, no se inventa nada.
-        if (durSec > 0) billingConsume('call', durSec);
+        if (durSec > 0) billingConsume('call', durSec, 'call:' + pending.callId + ':' + durSec);
       })
       .catch(function () {});
   }
@@ -5414,13 +5414,21 @@
   }
   // Descuenta segundos en trozos de ≤3600 (el tope de la API) y
   // resuelve con los segundos efectivamente descontados.
-  function billingConsume(kind, seconds) {
-    var left = Math.max(0, Math.floor(seconds || 0)), doneSec = 0;
+  function billingConsume(kind, seconds, idemBase) {
+    var left = Math.max(0, Math.floor(seconds || 0)), doneSec = 0, chunkIdx = 0;
+    // Llave de idempotencia por trozo (auditoría): si el mismo
+    // segmento se reintenta con la MISMA base, el servidor devuelve
+    // el resultado guardado en vez de descontar dos veces. Sin base
+    // explícita se genera una por llamada (protege los reintentos
+    // internos de esta misma llamada).
+    var base = idemBase || ('auto:' + Date.now().toString(36) + ':' + Math.random().toString(36).slice(2, 10));
     function step() {
       if (left <= 0) return Promise.resolve(doneSec);
       var chunk = Math.min(left, 3600);
       left -= chunk;
-      return billingPost({ action: 'consume', kind: kind, seconds: chunk }).then(function (j) {
+      var payload = { action: 'consume', kind: kind, seconds: chunk, idem: base + ':' + chunkIdx };
+      chunkIdx++;
+      return billingPost(payload).then(function (j) {
         if (j && j.ok) { doneSec += chunk; billingMerge(j); }
         return step();
       });
@@ -5536,18 +5544,32 @@
      Si el envío falla, los segundos quedan pendientes (no se
      inventa ningún descuento local). */
   var meterAccMs = 0, meterSentSec = 0, meterGen = 0, meterBusy = false;
+  var meterSegBase = null, meterSegDue = 0; // segmento en vuelo o fallido (idempotencia)
   function voiceMeterAdd(ms) { if (ms && isFinite(ms) && ms > 0) meterAccMs += ms; }
-  function meterReset() { meterGen++; meterAccMs = 0; meterSentSec = 0; }
+  function meterReset() { meterGen++; meterAccMs = 0; meterSentSec = 0; meterSegBase = null; meterSegDue = 0; }
   function meterFlush(final) {
     if (meterBusy) return;
     var due = Math.floor(meterAccMs / 1000) - meterSentSec;
-    if (due <= 0) return;
-    if (!final && due < 20) return;
-    var gen = meterGen;
+    if (due <= 0) { meterSegBase = null; meterSegDue = 0; return; }
+    if (!final && due < 20 && !meterSegBase) return;
+    var gen = meterGen, sendDue, base;
+    if (meterSegBase && meterSegDue > 0) {
+      // Reintento del MISMO segmento: misma base y mismo monto
+      // (o el resto), pa' que el servidor no descuente dos veces.
+      sendDue = Math.min(due, meterSegDue); base = meterSegBase;
+    } else {
+      sendDue = due;
+      base = 'conv:' + gen + ':' + meterSentSec + ':' + due;
+      meterSegBase = base; meterSegDue = due;
+    }
     meterBusy = true;
-    billingConsume('conv', due).then(function (consumed) {
+    billingConsume('conv', sendDue, base).then(function (consumed) {
       meterBusy = false;
-      if (gen === meterGen) meterSentSec += consumed;
+      if (gen === meterGen) {
+        meterSentSec += consumed;
+        if (consumed >= sendDue) { meterSegBase = null; meterSegDue = 0; }
+        else meterSegDue = sendDue - consumed;
+      }
     });
   }
 
