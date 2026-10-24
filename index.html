@@ -287,6 +287,35 @@
   .saveditem .smeta{color:var(--dim); font-size:12.5px; margin-top:3px;}
   .savedmeta{color:var(--muted); font-size:13.5px; margin:0 0 12px;}
   .savedempty{color:var(--dim); font-size:14px; line-height:1.6; text-align:center; padding:26px 10px;}
+  /* ===== Sala de reunión (2026-10) ===== */
+  .sala-sub{color:var(--dim); font-size:14px; line-height:1.55; margin:0 0 14px;}
+  .sala-lab{display:block; font-size:12.5px; letter-spacing:.4px; text-transform:uppercase; color:var(--muted); margin:16px 2px 8px;}
+  .sala-sel{width:100%; padding:13px 14px; border-radius:14px; background:var(--card); border:1px solid var(--line-soft); color:var(--ink); font-size:16px; appearance:none;}
+  .sala-hint{color:var(--dim); font-size:13px; margin:10px 2px 0;}
+  .sala-err{color:#ff9c9c; font-size:13.5px; min-height:18px; margin:8px 2px 0;}
+  .sala-btn{display:block; width:100%; margin-top:16px; padding:15px; border:none; border-radius:16px; background:linear-gradient(135deg,#E9C87E,#C99634); color:#1A1405; font-size:16.5px; font-weight:700; cursor:pointer;}
+  .sala-btn:disabled{opacity:.45;}
+  .sala-btn.ghost{background:transparent; border:1px solid var(--line-soft); color:var(--ink); font-weight:600;}
+  .sala-btn.danger{background:#3A1518; border:1px solid #7A2E35; color:#FFB4B4;}
+  .sala-linkbox{display:flex; gap:8px; margin-top:6px;}
+  .sala-linkbox input{flex:1; min-width:0; padding:12px; border-radius:12px; background:var(--card); border:1px solid var(--line-soft); color:var(--goldt); font-size:13.5px;}
+  .sala-linkbox button{padding:0 16px; border-radius:12px; border:1px solid var(--gold); background:transparent; color:var(--goldt); font-weight:700; cursor:pointer; white-space:nowrap;}
+  .sala-wa{display:block; text-align:center; margin-top:10px; padding:13px; border-radius:14px; background:#17351F; border:1px solid #2E7D46; color:#B9F2C6; font-weight:700; text-decoration:none;}
+  .sala-knock{margin-top:16px; padding:14px; border-radius:16px; border:1px solid var(--gold); background:rgba(212,167,92,.08);}
+  .sala-knock p{margin:0; font-size:15px;}
+  .sala-stage{position:relative; border-radius:20px; overflow:hidden; background:#000; aspect-ratio:3/4; max-height:62vh; margin:0 auto;}
+  .sala-stage video.rv{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;}
+  .sala-stage video.lv{position:absolute; right:10px; bottom:10px; width:27%; aspect-ratio:3/4; object-fit:cover; border-radius:12px; border:1px solid rgba(255,255,255,.35); background:#111;}
+  .sala-waitprev{width:120px; aspect-ratio:3/4; object-fit:cover; border-radius:14px; border:1px solid var(--line-soft); background:#000; display:block; margin:4px 0 6px;}
+  .sala-liverow{display:flex; align-items:center; justify-content:space-between; gap:10px; margin:2px 0 12px;}
+  .sala-livestatus{font-size:14.5px; font-weight:600;}
+  .sala-controls{display:flex; gap:10px; margin-top:14px;}
+  .sala-controls .sala-btn{margin-top:0; flex:1; padding:13px 6px; font-size:14.5px;}
+  .sala-histtitle{font-family:var(--serif); font-size:19px; font-weight:600; margin:30px 0 12px; padding-top:20px; border-top:1px solid var(--line-soft);}
+  .sala-lastbox{margin-top:18px; padding:14px; border-radius:16px; background:var(--card); border:1px solid var(--line-soft);}
+  .sala-lastbox h4{margin:0 0 8px; font-size:15.5px;}
+  .sala-lastbox .sm{color:var(--dim); font-size:12.5px; margin:0 0 8px;}
+  .sala-lastbox .sb{font-size:14.5px; line-height:1.55; white-space:pre-wrap;}
 
   /* ---------- Controls ---------- */
   .controls{display:grid; grid-template-columns:1fr auto 1fr; align-items:start; padding:10px 0 2px;}
@@ -1203,14 +1232,93 @@
     </div>
   </section>
 
-  <!-- ===== Conversaciones guardadas ===== -->
+  <!-- ===== Sala de reunión + conversaciones guardadas ===== -->
   <section id="view-saved">
     <div class="savedhead">
       <button class="iconbtn" id="btn-saved-back" aria-label="Back">
         <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
-      <h2 data-i18n="savedConvs">Conversaciones guardadas</h2>
+      <h2 data-i18n="salaTitle">Sala de reunión</h2>
     </div>
+
+    <div id="sala-main">
+      <!-- Crear la sala (anfitrión) -->
+      <div id="sala-create">
+        <p class="sala-sub" data-i18n="salaSub">Videollamada con traducción en vivo: tú hablas tu idioma y la otra persona escucha el suyo. La otra persona también necesita su cuenta de Englix.</p>
+        <label class="sala-lab" for="sala-lang" data-i18n="salaMyLang">El idioma en que TÚ vas a hablar</label>
+        <select class="sala-sel" id="sala-lang"></select>
+        <p class="sala-hint" id="sala-mins"></p>
+        <button class="sala-btn" id="btn-sala-create" data-i18n="salaCreate">Crear sala</button>
+        <p class="sala-err" id="sala-create-err"></p>
+      </div>
+
+      <!-- Invitación recibida (invitado) -->
+      <div id="sala-join" style="display:none;">
+        <p class="sala-sub" data-i18n="salaJoinSub">Te invitaron a una sala con traducción en vivo. Elige el idioma en que TÚ vas a hablar y entra: cada quien escucha el suyo.</p>
+        <label class="sala-lab" for="sala-join-lang" data-i18n="salaMyLang">El idioma en que TÚ vas a hablar</label>
+        <select class="sala-sel" id="sala-join-lang"></select>
+        <button class="sala-btn" id="btn-sala-join" data-i18n="salaJoinBtn">Entrar a la sala</button>
+        <button class="sala-btn ghost" id="btn-sala-dismiss" data-i18n="salaDismiss">Ahora no</button>
+        <p class="sala-err" id="sala-join-err"></p>
+      </div>
+
+      <!-- Sala creada: compartir y esperar (anfitrión) -->
+      <div id="sala-wait" style="display:none;">
+        <p class="sala-sub" data-i18n="salaShareHint">Tu sala está creada. Manda este enlace a la otra persona: al abrirlo con su cuenta de Englix, entra a la sala contigo.</p>
+        <video class="sala-waitprev" id="sala-local-wait" autoplay playsinline muted></video>
+        <div class="sala-linkbox">
+          <input id="sala-link" readonly value="">
+          <button id="btn-sala-copy" data-i18n="salaCopy">Copiar</button>
+        </div>
+        <a class="sala-wa" id="btn-sala-wa" href="#" target="_blank" rel="noopener" data-i18n="salaWhats">Enviar por WhatsApp</a>
+        <p class="sala-hint" id="sala-wait-status" data-i18n="salaWaitingGuest">Esperando a que tu invitado entre…</p>
+        <div class="sala-knock" id="sala-knock" style="display:none;">
+          <p id="sala-knock-txt"></p>
+          <button class="sala-btn" id="btn-sala-admit" data-i18n="salaAdmit">Dejar entrar</button>
+        </div>
+        <button class="sala-btn ghost" id="btn-sala-cancel" data-i18n="salaCancel">Cancelar sala</button>
+      </div>
+
+      <!-- Esperando admisión (invitado) -->
+      <div id="sala-lobby" style="display:none;">
+        <p class="sala-sub" data-i18n="salaLobby">Ya estás en la puerta. Esperando que el anfitrión te deje entrar…</p>
+        <video class="sala-waitprev" id="sala-local-lobby" autoplay playsinline muted></video>
+        <p class="sala-err" id="sala-lobby-err"></p>
+        <button class="sala-btn ghost" id="btn-sala-leave" data-i18n="salaLeave">Salir</button>
+      </div>
+
+      <!-- Sala en vivo (ambos) -->
+      <div id="sala-live" style="display:none;">
+        <div class="sala-liverow">
+          <span class="sala-livestatus" id="sala-live-status">Sala en vivo</span>
+          <span class="lowpill" id="sala-pill" style="display:none;"></span>
+        </div>
+        <div class="sala-stage">
+          <video class="rv" id="sala-remote" autoplay playsinline muted></video>
+          <video class="lv" id="sala-local" autoplay playsinline muted></video>
+        </div>
+        <div class="sala-controls">
+          <button class="sala-btn ghost" id="btn-sala-mute" data-i18n="salaMute">Silencio</button>
+          <button class="sala-btn ghost" id="btn-sala-cam" data-i18n="salaCamOff">Apagar cámara</button>
+          <button class="sala-btn danger" id="btn-sala-end" data-i18n="salaEnd">Terminar</button>
+        </div>
+      </div>
+
+      <!-- Sala terminada (invitado) -->
+      <div id="sala-ended" style="display:none;">
+        <p class="sala-sub" data-i18n="salaEndedSub">La sala terminó. Gracias por usar Englix — puedes crear tu propia sala cuando quieras, aquí mismo.</p>
+        <button class="sala-btn" id="btn-sala-again" data-i18n="salaCreate">Crear sala</button>
+      </div>
+
+      <!-- Resumen de la última sala (anfitrión) -->
+      <div class="sala-lastbox" id="sala-last" style="display:none;">
+        <h4 data-i18n="salaLastTitle">Resumen de la sala</h4>
+        <p class="sm" id="sala-last-meta"></p>
+        <div class="sb" id="sala-last-summary"></div>
+      </div>
+    </div>
+
+    <h3 class="sala-histtitle" data-i18n="savedConvs">Conversaciones guardadas</h3>
     <div id="saved-list"></div>
     <p class="savedempty" id="saved-empty" data-i18n="savedEmpty" style="display:none;">Todavía no tienes conversaciones guardadas. Al terminar una llamada, queda guardada aquí automáticamente.</p>
     <div id="saved-detail" style="display:none;">
@@ -1435,8 +1543,8 @@
     <span data-i18n="navLearn">Aprender</span><i></i>
   </button>
   <button class="tab" data-tab="history" id="tab-history">
-    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg>
-    <span data-i18n="navHistory">Historial</span><i></i>
+    <svg viewBox="0 0 24 24"><path d="M22 8.5l-8 5v-5z"/><rect x="2" y="6.5" width="13" height="12" rx="2.5"/></svg>
+    <span data-i18n="navHistory">Sala</span><i></i>
   </button>
   <button class="tab" data-tab="profile" id="tab-profile">
     <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -2036,6 +2144,32 @@
       convTitle: 'Conversación', savedConvs: 'Conversaciones guardadas',
       savedEmpty: 'Todavía no tienes conversaciones guardadas. Al terminar una llamada, queda guardada aquí automáticamente.',
       savedBack: 'Volver a la lista', savedMeta: '{langs} · {mins} min · {n} frases',
+      salaTitle: 'Sala de reunión',
+      salaSub: 'Videollamada con traducción en vivo: tú hablas tu idioma y la otra persona escucha el suyo. La otra persona también necesita su cuenta de Englix.',
+      salaMyLang: 'El idioma en que TÚ vas a hablar',
+      salaCreate: 'Crear sala', salaCreating: 'Creando…',
+      salaShareHint: 'Tu sala está creada. Manda este enlace a la otra persona: al abrirlo con su cuenta de Englix, entra a la sala contigo.',
+      salaCopy: 'Copiar', salaCopied: '¡Enlace copiado!',
+      salaWhats: 'Enviar por WhatsApp',
+      salaWaText: 'Te invito a una videollamada con traducción en vivo por Englix. Abre el enlace y entra a la sala conmigo: ',
+      salaWaitingGuest: 'Esperando a que tu invitado entre…',
+      salaKnock: 'Tu invitado está en la puerta y escucha en {L}.',
+      salaAdmit: 'Dejar entrar', salaCancel: 'Cancelar sala',
+      salaJoinSub: 'Te invitaron a una sala con traducción en vivo. Elige el idioma en que TÚ vas a hablar y entra: cada quien escucha el suyo.',
+      salaJoinBtn: 'Entrar a la sala', salaDismiss: 'Ahora no',
+      salaLobby: 'Ya estás en la puerta. Esperando que el anfitrión te deje entrar…',
+      salaLeave: 'Salir',
+      salaNotReady: 'La sala aún no está lista. Espera un momento y toca Reintentar.',
+      salaRetry: 'Reintentar',
+      salaLive: 'Sala en vivo', salaEnd: 'Terminar',
+      salaMute: 'Silencio', salaUnmute: 'Activar micrófono',
+      salaCamOff: 'Apagar cámara', salaCamOn: 'Encender cámara',
+      salaEndedSub: 'La sala terminó. Gracias por usar Englix — puedes crear tu propia sala cuando quieras, aquí mismo.',
+      salaLastTitle: 'Resumen de la sala',
+      salaNeedAccount: 'Inicia sesión para usar la sala.',
+      salaMicErr: 'No se pudo usar el micrófono o la cámara. Revisa los permisos del navegador.',
+      salaMinsHint: 'La sala usa tus minutos de llamadas. Te quedan {N}.',
+      salaDestLabel: 'Sala de reunión',
       saveLocalNote: 'Lo guardado queda solo en este teléfono (almacenamiento local), nunca en un servidor.',
       chooseLang: 'Elige un idioma', langSub: 'Solo aparecen los idiomas que el proveedor puede traducir en voz alta.',
       searchPh: 'Buscar idioma…', cancel: 'Cancelar',
@@ -2208,7 +2342,7 @@
       faq5a: 'Puedes cancelar la renovación en cualquier momento desde «Mi plan». El plan sigue activo hasta que termine el ciclo ya pagado y tu saldo nunca se pierde.',
       faq6q: '¿Dónde se guardan mis conversaciones?',
       faq6a: 'Solo en tu teléfono, y únicamente si activas «Guardar historial» en Privacidad y seguridad. Desde ahí mismo puedes borrarlas cuando quieras.',
-      navHome: 'Inicio', navLearn: 'Aprender', navHistory: 'Historial', navProfile: 'Perfil',
+      navHome: 'Inicio', navLearn: 'Aprender', navHistory: 'Sala', navProfile: 'Perfil',
       soonBadge: 'En preparación',
       soonPremiumTitle: 'Englix Premium',
       soonPremiumText: 'Los planes Premium están en preparación. Muy pronto podrás verlos y suscribirte desde aquí.',
@@ -2285,6 +2419,32 @@
       convTitle: 'Conversation', savedConvs: 'Saved conversations',
       savedEmpty: 'You have no saved conversations yet. When a call ends, it is saved here automatically.',
       savedBack: 'Back to the list', savedMeta: '{langs} · {mins} min · {n} phrases',
+      salaTitle: 'Meeting room',
+      salaSub: 'A video call with live translation: you speak your language and the other person hears theirs. The other person also needs their own Englix account.',
+      salaMyLang: 'The language YOU will speak',
+      salaCreate: 'Create room', salaCreating: 'Creating…',
+      salaShareHint: 'Your room is ready. Send this link to the other person: when they open it with their Englix account, they join the room with you.',
+      salaCopy: 'Copy', salaCopied: 'Link copied!',
+      salaWhats: 'Send via WhatsApp',
+      salaWaText: 'I invite you to a video call with live translation on Englix. Open the link and join my room: ',
+      salaWaitingGuest: 'Waiting for your guest to join…',
+      salaKnock: 'Your guest is at the door and listens in {L}.',
+      salaAdmit: 'Let them in', salaCancel: 'Cancel room',
+      salaJoinSub: 'You were invited to a room with live translation. Pick the language YOU will speak and join: everyone hears their own language.',
+      salaJoinBtn: 'Join the room', salaDismiss: 'Not now',
+      salaLobby: 'You are at the door. Waiting for the host to let you in…',
+      salaLeave: 'Leave',
+      salaNotReady: 'The room is not ready yet. Wait a moment and tap Retry.',
+      salaRetry: 'Retry',
+      salaLive: 'Live room', salaEnd: 'End',
+      salaMute: 'Mute', salaUnmute: 'Unmute',
+      salaCamOff: 'Camera off', salaCamOn: 'Camera on',
+      salaEndedSub: 'The room has ended. Thanks for using Englix — you can create your own room anytime, right here.',
+      salaLastTitle: 'Room summary',
+      salaNeedAccount: 'Sign in to use the room.',
+      salaMicErr: 'The microphone or camera could not be used. Check the browser permissions.',
+      salaMinsHint: 'The room uses your call minutes. You have {N} left.',
+      salaDestLabel: 'Meeting room',
       saveLocalNote: 'Saved items stay only on this phone (local storage), never on a server.',
       chooseLang: 'Choose a language', langSub: 'Only languages the provider can speak out loud are listed.',
       searchPh: 'Search language…', cancel: 'Cancel',
@@ -2457,7 +2617,7 @@
       faq5a: 'You can cancel renewal at any time from "My plan". The plan stays active until the end of the paid cycle, and your balance is never lost.',
       faq6q: 'Where are my conversations stored?',
       faq6a: 'Only on your phone, and only if you turn on "Save history" in Privacy and security. You can delete them from there at any time.',
-      navHome: 'Home', navLearn: 'Learn', navHistory: 'History', navProfile: 'Profile',
+      navHome: 'Home', navLearn: 'Learn', navHistory: 'Room', navProfile: 'Profile',
       soonBadge: 'In preparation',
       soonPremiumTitle: 'Englix Premium',
       soonPremiumText: 'Premium plans are in preparation. Very soon you will be able to see them and subscribe right here.',
@@ -4884,6 +5044,8 @@
   function openSavedList() {
     savedDetailIdx = -1;
     $('saved-detail').style.display = 'none';
+    var sm = $('sala-main'); if (sm) sm.style.display = '';
+    var ht = document.querySelector('.sala-histtitle'); if (ht) ht.style.display = '';
     $('saved-list').style.display = '';
     var list = loadList(LS_SAVED_CONVS);
     var box = $('saved-list');
@@ -4908,6 +5070,8 @@
     savedDetailIdx = idx;
     $('saved-list').style.display = 'none';
     $('saved-empty').style.display = 'none';
+    var sm2 = $('sala-main'); if (sm2) sm2.style.display = 'none';
+    var ht2 = document.querySelector('.sala-histtitle'); if (ht2) ht2.style.display = 'none';
     $('saved-detail').style.display = '';
     $('saved-meta').textContent = fmtSavedDate(conv.date) + ' · ' + savedMetaText(conv);
     renderConvList($('saved-conv'), conv.cards || []);
@@ -5318,6 +5482,557 @@
   }
   function startCallPolling() { stopCallPolling(); pollCallSummary(); callPollTimer = setInterval(pollCallSummary, 15000); }
 
+  /* ================= Sala de reunión (2026-10) =================
+     Videollamada con traducción entre dos cuentas de Englix.
+     El anfitrión crea la sala (api/room-create acuña su token),
+     comparte el enlace englix.app/sala/<id>, el invitado entra
+     con SU cuenta (api/room-join acuña el suyo), declara su
+     idioma y el anfitrión lo deja entrar. El relay (wss
+     /room) abre las dos sesiones intérprete de siempre; el
+     video viaja directo entre navegadores (WebRTC) y el audio
+     traducido pasa por el relay. Paga solo el anfitrión, con
+     sus minutos de llamada — como en la llamada telefónica. */
+  var SALA_PENDING_KEY = 'lc_pending_room_v1';
+  var S = null; // estado vivo de la sala (null = no hay sala)
+
+  function salaPending() {
+    var p = null;
+    try { p = JSON.parse(localStorage.getItem(SALA_PENDING_KEY) || 'null'); } catch (e) {}
+    if (p && p.id && Date.now() - (p.at || 0) < 4 * 60 * 60 * 1000) return p.id;
+    return null;
+  }
+  function salaSetPending(id) {
+    try {
+      if (id) localStorage.setItem(SALA_PENDING_KEY, JSON.stringify({ id: id, at: Date.now() }));
+      else localStorage.removeItem(SALA_PENDING_KEY);
+    } catch (e) {}
+  }
+  function salaShow(id) {
+    ['sala-create', 'sala-join', 'sala-wait', 'sala-lobby', 'sala-live', 'sala-ended'].forEach(function (x) {
+      var el = $(x); if (el) el.style.display = (x === id) ? '' : 'none';
+    });
+  }
+  function salaFillLangs(sel, current) {
+    if (!sel) return;
+    var sorted = LANGS.slice().sort(function (x, y) {
+      return langName(x.code).localeCompare(langName(y.code));
+    });
+    sel.innerHTML = '';
+    sorted.forEach(function (l) {
+      var o = document.createElement('option');
+      o.value = l.code;
+      o.textContent = l.flag + ' ' + langName(l.code);
+      if (l.code === current) o.selected = true;
+      sel.appendChild(o);
+    });
+  }
+  function salaMinsText() {
+    var b = window.__englixBilling;
+    if (!b) return '';
+    var sec = (b.plan_call_seconds || 0) + Math.floor((b.balance_cents || 0) / 15) * 60;
+    return t('salaMinsHint').replace('{N}', fmtMinFloor(sec));
+  }
+  function openSalaView() {
+    openSavedList();
+    salaFillLangs($('sala-lang'), callPair.a || 'es');
+    salaFillLangs($('sala-join-lang'), 'en');
+    var hint = $('sala-mins'); if (hint) hint.textContent = salaMinsText();
+    billingRefresh().then(function () {
+      var h2 = $('sala-mins'); if (h2) h2.textContent = salaMinsText();
+    });
+    if (S && S.state) salaShow(S.state);
+    else if (salaPending() && sbUser) salaShow('sala-join');
+    else salaShow('sala-create');
+  }
+
+  /* ---- audio PCM16 24 kHz: captura y reproducción ---- */
+  function salaB64(bytes) {
+    var s = '';
+    for (var i = 0; i < bytes.length; i += 0x8000) {
+      s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    }
+    return btoa(s);
+  }
+  function salaUnB64(d) {
+    var bin = atob(d), u8 = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    return u8;
+  }
+  function salaStartCapture() {
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC || !S || !S.localStream) return;
+    var ctx = new AC();
+    S.actx = ctx;
+    var src = ctx.createMediaStreamSource(S.localStream);
+    var proc = ctx.createScriptProcessor(4096, 1, 1);
+    S.proc = proc;
+    var ratio = ctx.sampleRate / 24000;
+    proc.onaudioprocess = function (e) {
+      if (!S || !S.live || S.muted) return;
+      var inp = e.inputBuffer.getChannelData(0);
+      var outLen = Math.floor(inp.length / ratio);
+      var pcm = new Int16Array(outLen);
+      for (var i = 0; i < outLen; i++) {
+        var v = inp[Math.floor(i * ratio)] || 0;
+        v = Math.max(-1, Math.min(1, v));
+        pcm[i] = v < 0 ? v * 0x8000 : v * 0x7FFF;
+      }
+      if (S.ws && S.ws.readyState === 1) {
+        try { S.ws.send(JSON.stringify({ t: 'audio', d: salaB64(new Uint8Array(pcm.buffer)) })); } catch (err) {}
+      }
+    };
+    src.connect(proc);
+    proc.connect(ctx.destination);
+  }
+  function salaPlay(d) {
+    if (!S) return;
+    if (!S.playCtx) {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      S.playCtx = new AC({ sampleRate: 24000 });
+      S.playNext = 0;
+    }
+    var ctx = S.playCtx;
+    if (ctx.state === 'suspended') ctx.resume();
+    var u8 = salaUnB64(d);
+    var i16 = new Int16Array(u8.buffer, 0, Math.floor(u8.length / 2));
+    var buf = ctx.createBuffer(1, i16.length, 24000);
+    var ch = buf.getChannelData(0);
+    for (var i = 0; i < i16.length; i++) ch[i] = i16[i] / 0x8000;
+    var node = ctx.createBufferSource();
+    node.buffer = buf;
+    node.connect(ctx.destination);
+    var startAt = Math.max(ctx.currentTime + 0.04, S.playNext || 0);
+    node.start(startAt);
+    S.playNext = startAt + buf.duration;
+  }
+
+  /* ---- video WebRTC (directo entre navegadores) ---- */
+  function salaSetupPc(isOfferer) {
+    var pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+    S.pc = pc;
+    S.iceQueue = [];
+    if (S.localStream) {
+      S.localStream.getTracks().forEach(function (tr) {
+        try { pc.addTrack(tr, S.localStream); } catch (e) {}
+      });
+    }
+    pc.ontrack = function (e) {
+      var rv = $('sala-remote');
+      if (rv && e.streams && e.streams[0]) rv.srcObject = e.streams[0];
+    };
+    pc.onicecandidate = function (e) {
+      if (e.candidate && S.ws && S.ws.readyState === 1) {
+        try { S.ws.send(JSON.stringify({ t: 'rtc', d: { ice: e.candidate.toJSON() } })); } catch (err) {}
+      }
+    };
+    if (isOfferer) {
+      pc.createOffer().then(function (off) { return pc.setLocalDescription(off); })
+        .then(function () {
+          if (S.ws && S.ws.readyState === 1) {
+            S.ws.send(JSON.stringify({ t: 'rtc', d: { sdp: pc.localDescription.toJSON() } }));
+          }
+        }).catch(function () {});
+    }
+  }
+  function salaOnRtc(d) {
+    if (!S || !S.pc || !d) return;
+    var pc = S.pc;
+    if (d.sdp) {
+      var desc = new RTCSessionDescription(d.sdp);
+      if (d.sdp.type === 'offer') {
+        pc.setRemoteDescription(desc).then(function () { return pc.createAnswer(); })
+          .then(function (ans) { return pc.setLocalDescription(ans); })
+          .then(function () {
+            if (S.ws && S.ws.readyState === 1) {
+              S.ws.send(JSON.stringify({ t: 'rtc', d: { sdp: pc.localDescription.toJSON() } }));
+            }
+            salaFlushIce();
+          }).catch(function () {});
+      } else {
+        pc.setRemoteDescription(desc).then(function () { salaFlushIce(); }).catch(function () {});
+      }
+    } else if (d.ice) {
+      if (pc.remoteDescription && pc.remoteDescription.type) {
+        pc.addIceCandidate(new RTCIceCandidate(d.ice)).catch(function () {});
+      } else {
+        S.iceQueue.push(d.ice);
+      }
+    }
+  }
+  function salaFlushIce() {
+    if (!S || !S.pc) return;
+    (S.iceQueue || []).forEach(function (c) {
+      S.pc.addIceCandidate(new RTCIceCandidate(c)).catch(function () {});
+    });
+    S.iceQueue = [];
+  }
+
+  /* ---- minutos del anfitrión durante la sala ---- */
+  function salaRemainingSec() {
+    var b = window.__englixBilling;
+    if (!b || !S || !S.startedAt) return 99999;
+    var total = (b.plan_call_seconds || 0) + Math.floor((b.balance_cents || 0) / 15) * 60;
+    return total - Math.floor((Date.now() - S.startedAt) / 1000);
+  }
+  function salaTick() {
+    if (!S || !S.live) return;
+    if (typeof liveUsePing === 'function') liveUsePing();
+    var el = Math.floor((Date.now() - S.startedAt) / 1000);
+    var mm = String(Math.floor(el / 60)), ss = String(el % 60);
+    if (ss.length < 2) ss = '0' + ss;
+    var st = $('sala-live-status');
+    if (st) st.textContent = t('salaLive') + ' · ' + mm + ':' + ss;
+    if (S.role === 'user') {
+      var rem = salaRemainingSec();
+      var pill = $('sala-pill');
+      if (rem <= 300 && pill) {
+        pill.textContent = t('warnPillLeft').replace('{N}', Math.max(0, Math.ceil(rem / 60)));
+        pill.style.display = '';
+      }
+      if (rem <= 300 && !S.warned) {
+        S.warned = true;
+        if (typeof toast === 'function') toast(t('warnCallLow'));
+      }
+      if (rem <= 0) salaEnd(true);
+    }
+  }
+
+  /* ---- fin de la sala: resumen, guardado y cobro (anfitrión) ---- */
+  function salaSaveFinished(roomId, rt, startedAt, pairA, pairB) {
+    var tries = 0;
+    (function poll() {
+      fetch('https://relay.englix.app/summary/' + roomId, {
+        headers: rt ? { 'x-relay-token': rt } : {}
+      }).then(function (r) { return r.json().catch(function () { return null; }); })
+        .then(function (j) {
+          if (j && j.ok && j.status === 'ready') {
+            var durSec = (j.endedAt && startedAt)
+              ? Math.max(0, Math.round((j.endedAt - startedAt) / 1000))
+              : Math.max(0, Math.round((Date.now() - startedAt) / 1000));
+            var calls = callStoreGet(CALLS_KEY) || [];
+            if (!calls.some(function (c) { return c.id === roomId; })) {
+              calls.unshift({ id: roomId, dest: t('salaDestLabel'), at: startedAt, goal: '', summary: j.summary || '', pairs: j.pairs || [], durationSec: durSec, sala: true });
+              callStoreSet(CALLS_KEY, calls.slice(0, 30));
+            }
+            if (durSec > 0) billingConsume('call', durSec, 'room:' + roomId + ':' + durSec);
+            var lb = $('sala-last');
+            if (lb) {
+              lb.style.display = '';
+              $('sala-last-meta').textContent = callWhen(startedAt) + ' · ' + fmtMinSec(durSec) +
+                ' · ' + langName(pairA || 'es') + ' ⇄ ' + langName(pairB || 'en');
+              $('sala-last-summary').textContent = j.summary || t('callNoTalk');
+            }
+            renderCallHistory();
+            return;
+          }
+          if (++tries < 18) setTimeout(poll, 5000);
+        })
+        .catch(function () { if (++tries < 18) setTimeout(poll, 5000); });
+    })();
+  }
+
+  function salaCleanup() {
+    if (!S) return;
+    if (S.tickInt) { clearInterval(S.tickInt); S.tickInt = null; }
+    try { if (S.proc) S.proc.disconnect(); } catch (e) {}
+    try { if (S.actx) S.actx.close(); } catch (e) {}
+    try { if (S.playCtx) S.playCtx.close(); } catch (e) {}
+    try { if (S.pc) S.pc.close(); } catch (e) {}
+    try { if (S.ws) S.ws.close(); } catch (e) {}
+    if (S.localStream) {
+      S.localStream.getTracks().forEach(function (tr) { try { tr.stop(); } catch (e) {} });
+    }
+    S = null;
+  }
+  function salaEnd(byMinutes) {
+    if (!S) return;
+    var role = S.role, wasLive = S.live, roomId = S.roomId, rt = S.rt,
+        startedAt = S.startedAt, pairA = S.pairA, pairB = S.guestLang || S.pairB;
+    try { if (S.ws && S.ws.readyState === 1) S.ws.send(JSON.stringify({ t: 'end' })); } catch (e) {}
+    salaCleanup();
+    if (byMinutes && typeof toast === 'function') toast(t('errNoMinutes'));
+    if (role === 'user') {
+      salaShow('sala-create');
+      if (wasLive && startedAt) salaSaveFinished(roomId, rt, startedAt, pairA, pairB);
+    } else {
+      salaShow('sala-ended');
+    }
+  }
+
+  function salaTeardownRemote() {
+    // La otra pata terminó la sala (o se cayó en vivo).
+    if (!S) return;
+    var role = S.role, wasLive = S.live, roomId = S.roomId, rt = S.rt,
+        startedAt = S.startedAt, pairA = S.pairA, pairB = S.guestLang || S.pairB;
+    salaCleanup();
+    if (role === 'user') {
+      salaShow('sala-create');
+      if (wasLive && startedAt) salaSaveFinished(roomId, rt, startedAt, pairA, pairB);
+    } else {
+      salaShow('sala-ended');
+    }
+  }
+
+  /* ---- conexión al relay ---- */
+  function salaConnect(role, roomId, rt, myLang, otherLang) {
+    return new Promise(function (resolve, reject) {
+      var ws;
+      try { ws = new WebSocket('wss://relay.englix.app/room'); }
+      catch (e) { reject(new Error('ws')); return; }
+      S.ws = ws;
+      var settled = false;
+      ws.onopen = function () {
+        var join = { t: 'join', leg: role === 'user' ? 'user' : 'dest', roomId: roomId, rt: rt };
+        if (role === 'user') join.pairA = myLang; else join.pairB = myLang;
+        try { ws.send(JSON.stringify(join)); } catch (e) {}
+      };
+      ws.onmessage = function (ev) {
+        var msg;
+        try { msg = JSON.parse(ev.data); } catch (e) { return; }
+        if (!msg || !msg.t) return;
+        if (msg.t === 'joined') {
+          if (!settled) { settled = true; resolve(msg); }
+          return;
+        }
+        if (msg.t === 'error') {
+          if (!settled) { settled = true; reject(new Error(msg.error || 'error')); }
+          return;
+        }
+        if (!S) return;
+        if (msg.t === 'guest_waiting') {
+          S.guestLang = msg.pairB || S.pairB;
+          var kw = $('sala-knock'), kt = $('sala-knock-txt'), wst = $('sala-wait-status');
+          if (kt) kt.textContent = t('salaKnock').replace('{L}', langName(S.guestLang || 'en'));
+          if (kw) kw.style.display = '';
+          if (wst) wst.style.display = 'none';
+          if (typeof vibrate === 'function') vibrate(30);
+          return;
+        }
+        if (msg.t === 'guest_left') {
+          var kw2 = $('sala-knock'), wst2 = $('sala-wait-status');
+          if (kw2) kw2.style.display = 'none';
+          if (wst2) wst2.style.display = '';
+          return;
+        }
+        if (msg.t === 'admitted') {
+          S.live = true;
+          S.startedAt = Date.now();
+          salaShow('sala-live');
+          var lv = $('sala-local');
+          if (lv && S.localStream) lv.srcObject = S.localStream;
+          salaStartCapture();
+          // El invitado ofrece el video; el anfitrión responde.
+          salaSetupPc(S.role === 'dest');
+          S.tickInt = setInterval(salaTick, 1000);
+          salaTick();
+          return;
+        }
+        if (msg.t === 'audio') { salaPlay(msg.d); return; }
+        if (msg.t === 'rtc') { salaOnRtc(msg.d); return; }
+        if (msg.t === 'ended') { salaTeardownRemote(); return; }
+      };
+      ws.onclose = function (ev) {
+        if (!settled) {
+          settled = true;
+          reject(new Error(ev && ev.code === 4404 ? 'room_not_ready' : (ev && ev.code === 4401 ? 'bad_token' : 'closed')));
+          return;
+        }
+        if (S && S.live) salaTeardownRemote();
+        else if (S && S.state === 'sala-wait') {
+          // El anfitrión perdió la conexión esperando: la sala
+          // ya no existe pa' el relay; se vuelve a crear.
+          salaCleanup();
+          salaShow('sala-create');
+          var ce = $('sala-create-err'); if (ce) ce.textContent = t('salaNotReady');
+        }
+      };
+      ws.onerror = function () {};
+    });
+  }
+
+  function salaGetMedia() {
+    var gum = navigator.mediaDevices && navigator.mediaDevices.getUserMedia;
+    if (!gum) return Promise.reject(new Error('no_gum'));
+    return gum.call(navigator.mediaDevices, { audio: true, video: { facingMode: 'user' } })
+      .catch(function () {
+        // Sin cámara (permiso o aparato): la sala sigue por audio.
+        return gum.call(navigator.mediaDevices, { audio: true });
+      });
+  }
+
+  /* ---- crear (anfitrión) ---- */
+  function salaCreate() {
+    var err = $('sala-create-err');
+    var btn = $('btn-sala-create');
+    if (err) err.textContent = '';
+    if (!sbUser) { if (err) err.textContent = t('salaNeedAccount'); return; }
+    var myLang = ($('sala-lang') && $('sala-lang').value) || 'es';
+    btn.disabled = true;
+    btn.textContent = t('salaCreating');
+    billingAuthorize('call').then(function (can) {
+      if (!can) throw new Error('no_minutes');
+      return salaGetMedia();
+    }).then(function (stream) {
+      S = {
+        role: 'user', state: 'sala-wait', roomId: null, rt: null,
+        pairA: myLang, pairB: 'en', localStream: stream,
+        live: false, muted: false, camOff: false, warned: false, startedAt: 0
+      };
+      return billingToken();
+    }).then(function (tok) {
+      if (!tok) throw new Error('unauthorized');
+      return fetch('/api/room-create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok },
+        body: JSON.stringify({ pairA: myLang })
+      }).then(function (r) { return r.json().catch(function () { return null; }); });
+    }).then(function (j) {
+      if (!j || !j.ok) {
+        throw new Error(j && j.error === 'no_minutes' ? 'no_minutes' : 'create_failed');
+      }
+      S.roomId = j.roomId;
+      S.rt = j.relayToken;
+      var link = j.shareUrl || ('https://englix.app/sala/' + j.roomId);
+      var li = $('sala-link'); if (li) li.value = link;
+      var wa = $('btn-sala-wa');
+      if (wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent(t('salaWaText') + link);
+      var lw = $('sala-local-wait'); if (lw) lw.srcObject = S.localStream;
+      salaShow('sala-wait');
+      return salaConnect('user', j.roomId, j.relayToken, myLang);
+    }).then(function () {
+      btn.disabled = false;
+      btn.textContent = t('salaCreate');
+    }).catch(function (e) {
+      btn.disabled = false;
+      btn.textContent = t('salaCreate');
+      if (S && S.localStream && !S.roomId) salaCleanup();
+      if (!err) return;
+      if (e && e.message === 'no_minutes') err.textContent = t('errNoMinutes');
+      else if (e && (e.message === 'no_gum' || e.name === 'NotAllowedError')) err.textContent = t('salaMicErr');
+      else err.textContent = t('salaNotReady');
+    });
+  }
+
+  /* ---- entrar (invitado) ---- */
+  function salaJoin() {
+    var roomId = salaPending();
+    var err = $('sala-join-err');
+    var btn = $('btn-sala-join');
+    if (err) err.textContent = '';
+    if (!roomId) { salaShow('sala-create'); return; }
+    if (!sbUser) { if (err) err.textContent = t('salaNeedAccount'); return; }
+    var myLang = ($('sala-join-lang') && $('sala-join-lang').value) || 'en';
+    btn.disabled = true;
+    salaGetMedia().then(function (stream) {
+      S = {
+        role: 'dest', state: 'sala-lobby', roomId: roomId, rt: null,
+        pairA: 'es', pairB: myLang, localStream: stream,
+        live: false, muted: false, camOff: false, warned: false, startedAt: 0
+      };
+      return billingToken();
+    }).then(function (tok) {
+      if (!tok) throw new Error('unauthorized');
+      return fetch('/api/room-join', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok },
+        body: JSON.stringify({ roomId: roomId })
+      }).then(function (r) { return r.json().catch(function () { return null; }); });
+    }).then(function (j) {
+      if (!j || !j.ok) throw new Error('join_failed');
+      S.rt = j.relayToken;
+      var ll = $('sala-local-lobby'); if (ll) ll.srcObject = S.localStream;
+      salaShow('sala-lobby');
+      return salaConnect('dest', roomId, j.relayToken, myLang);
+    }).then(function (joined) {
+      btn.disabled = false;
+      if (joined && joined.pairA) S.pairA = joined.pairA;
+      salaSetPending(null); // ya entró: el enlace no se reusa solo
+    }).catch(function (e) {
+      btn.disabled = false;
+      if (S && !S.live) salaCleanup();
+      salaShow('sala-join');
+      var le = $('sala-join-err');
+      if (!le) return;
+      if (e && e.message === 'room_not_ready') le.textContent = t('salaNotReady');
+      else if (e && (e.message === 'no_gum' || e.name === 'NotAllowedError')) le.textContent = t('salaMicErr');
+      else le.textContent = t('salaNeedAccount');
+    });
+  }
+
+  /* ---- botones de la sala ---- */
+  $('btn-sala-create').addEventListener('click', salaCreate);
+  $('btn-sala-join').addEventListener('click', salaJoin);
+  $('btn-sala-dismiss').addEventListener('click', function () {
+    salaSetPending(null);
+    salaShow('sala-create');
+  });
+  $('btn-sala-copy').addEventListener('click', function () {
+    var li = $('sala-link');
+    if (!li || !li.value) return;
+    var done = function () {
+      var b = $('btn-sala-copy');
+      if (b) { b.textContent = t('salaCopied'); setTimeout(function () { b.textContent = t('salaCopy'); }, 1600); }
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(li.value).then(done).catch(function () { li.select(); document.execCommand('copy'); done(); });
+    } else { li.select(); document.execCommand('copy'); done(); }
+  });
+  $('btn-sala-admit').addEventListener('click', function () {
+    if (S && S.ws && S.ws.readyState === 1) {
+      try { S.ws.send(JSON.stringify({ t: 'admit' })); } catch (e) {}
+    }
+  });
+  $('btn-sala-cancel').addEventListener('click', function () {
+    if (S && S.ws && S.ws.readyState === 1) {
+      try { S.ws.send(JSON.stringify({ t: 'end' })); } catch (e) {}
+    }
+    salaCleanup();
+    salaShow('sala-create');
+  });
+  $('btn-sala-leave').addEventListener('click', function () {
+    salaCleanup();
+    salaShow('sala-join');
+  });
+  $('btn-sala-end').addEventListener('click', function () { salaEnd(false); });
+  $('btn-sala-again').addEventListener('click', function () { salaShow('sala-create'); });
+  $('btn-sala-mute').addEventListener('click', function () {
+    if (!S) return;
+    S.muted = !S.muted;
+    if (S.localStream) {
+      S.localStream.getAudioTracks().forEach(function (tr) { tr.enabled = !S.muted; });
+    }
+    this.textContent = S.muted ? t('salaUnmute') : t('salaMute');
+  });
+  $('btn-sala-cam').addEventListener('click', function () {
+    if (!S) return;
+    S.camOff = !S.camOff;
+    if (S.localStream) {
+      S.localStream.getVideoTracks().forEach(function (tr) { tr.enabled = !S.camOff; });
+    }
+    this.textContent = S.camOff ? t('salaCamOn') : t('salaCamOff');
+  });
+
+  /* Al llegar por un enlace /sala/<id>: la sala queda pendiente
+     y, en cuanto hay sesión, se abre la vista de la Sala con la
+     tarjeta de entrada. Si aún no hay sesión, la app muestra el
+     ingreso de siempre y esto espera a que la sesión aparezca. */
+  (function salaBoot() {
+    var m = location.pathname.match(/^\/sala\/([A-Za-z0-9-]{8,80})/);
+    if (m) salaSetPending(m[1]);
+    if (!salaPending()) return;
+    var tries = 0;
+    var iv = setInterval(function () {
+      tries++;
+      if (sbUser) {
+        clearInterval(iv);
+        openSalaView();
+      } else if (tries > 40) {
+        clearInterval(iv);
+      }
+    }, 500);
+  })();
+
   function openCallSheet() {
     var nums = callStoreGet(CALL_NUMS_KEY) || {};
     if (nums.mine && !callMineIn.value) callMineIn.value = nums.mine;
@@ -5504,7 +6219,7 @@
   $('btn-soon-back').addEventListener('click', function () { showView('home'); });
   $('tab-home').addEventListener('click', function () { showView('home'); });
   $('tab-learn').addEventListener('click', function () { openLearn(); });
-  $('tab-history').addEventListener('click', function () { openSavedList(); });
+  $('tab-history').addEventListener('click', function () { openSalaView(); });
   $('tab-profile').addEventListener('click', function () { navTab = 'profile'; syncNav(); openPanel(); });
   $('btn-panel-close').addEventListener('click', resyncNav);
   panelOverlay.addEventListener('click', resyncNav);
