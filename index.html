@@ -749,6 +749,7 @@
   .afield > svg{width:20px; height:20px; stroke:rgba(255,255,255,.78); fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; flex:0 0 auto;}
   .afield input{flex:1; min-width:0; background:none; border:0; outline:0; color:#fff; font-size:16px; font-family:var(--sans); height:100%;}
   .afield input::placeholder{color:rgba(255,255,255,.38);}
+  .aprefix{font-family:var(--sans); font-size:16px; font-weight:700; color:#F2D287; flex:0 0 auto; padding-right:11px; border-right:1px solid rgba(255,255,255,.14);}
   /* Autorrelleno de iOS: sin cuadro amarillo; el campo queda oscuro y solo las letras en dorado */
   input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:focus,
   textarea:-webkit-autofill, textarea:-webkit-autofill:hover, textarea:-webkit-autofill:focus{
@@ -1729,7 +1730,8 @@
           <p class="aerr" id="e-su-email"></p>
           <div class="afield" id="f-su-phone">
             <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.33 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-            <input id="su-phone" type="tel" inputmode="tel" autocomplete="tel" data-i18n-ph="authPhonePh" placeholder="Phone number">
+            <span class="aprefix">+1</span>
+            <input id="su-phone" type="tel" inputmode="tel" autocomplete="tel" data-i18n-ph="authPhonePh" placeholder="239 555 0134">
           </div>
           <p class="aerr" id="e-su-phone"></p>
           <div class="afield" id="f-su-pass">
@@ -2156,7 +2158,7 @@
       errNoMic: 'No encontré un micrófono en este aparato. Conecta uno e inténtalo otra vez.',
       errKey: 'Falta conectar el motor de traducción. Avísale a Mister.',
       errNoMinutes: 'No te quedan minutos. Elige un plan o recarga saldo para seguir.',
-      authPhonePh: 'Número de teléfono',
+      authPhonePh: '239 555 0134',
       authErrPhone: 'Escribe tu número de teléfono de 10 dígitos.',
       wcTitle: '¡Tienes minutos GRATIS!',
       wcSub: '10 min de llamadas y 10 min de traducción, sin pagar nada. Verifica tu número {PHONE} y se activan al instante.',
@@ -2397,7 +2399,7 @@
       errNoMic: 'No microphone found on this device. Connect one and try again.',
       errKey: 'The translation engine is not connected yet. Let Mister know.',
       errNoMinutes: 'You are out of minutes. Choose a plan or top up to keep going.',
-      authPhonePh: 'Phone number',
+      authPhonePh: '239 555 0134',
       authErrPhone: 'Enter your 10-digit phone number.',
       wcTitle: 'You have FREE minutes!',
       wcSub: '10 min of calls and 10 min of translation, free. Verify your number {PHONE} and they activate instantly.',
