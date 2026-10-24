@@ -502,6 +502,16 @@
   #settings-panel .afield{margin-top:0;}
   .pseclab{font-size:19px; font-weight:800; letter-spacing:-.2px; margin:30px 2px 2px;}
   .codeboxes{display:flex; gap:8px; margin-top:14px;}
+  .welcomecard{position:relative;margin:2px 0 14px;padding:16px;border-radius:18px;background:linear-gradient(160deg,#1a1407,#0c0c0e 65%);border:1px solid rgba(242,210,135,.55);box-shadow:0 10px 28px rgba(0,0,0,.45);}
+  .welcomecard[hidden]{display:none;}
+  .wc-x{position:absolute;top:6px;right:8px;background:none;border:none;color:#9a8f74;font-size:22px;line-height:1;padding:8px;cursor:pointer;}
+  .wc-title{margin:0 30px 6px 0;font-size:17px;font-weight:800;color:#F6DC9A;}
+  .wc-sub{margin:0 0 12px;font-size:14px;line-height:1.5;color:#EDE6D2;}
+  .wc-btn{width:100%;padding:13px;border:none;border-radius:13px;background:linear-gradient(180deg,#F2D287,#D4A75C);color:#241B04;font-size:15px;font-weight:800;cursor:pointer;}
+  .wc-btn:disabled{opacity:.55;}
+  #verify-overlay .codeboxes{justify-content:center;margin:16px 0 4px;}
+  #vf-err{min-height:18px;text-align:center;}
+  #verify-overlay .wc-btn{margin-top:10px;}
   .codebox{flex:1; min-width:0; height:58px; text-align:center; font-family:var(--sans); font-size:24px; font-weight:700; color:#fff; background:rgba(11,20,38,.88); border:1px solid rgba(255,255,255,.14); border-radius:14px; outline:none; caret-color:var(--gold1);}
   .codebox:focus{border-color:var(--gold2); box-shadow:0 0 0 3px rgba(212,167,92,.18);}
   .plinkbtn{display:block; margin:14px auto 0; background:none; border:none; color:var(--muted); font-family:var(--sans); font-size:14px; font-weight:600; cursor:pointer; padding:6px 12px;}
@@ -1032,6 +1042,13 @@
         <span class="cr-tx"><span class="cr-t" data-i18n="callsLogTitle">Registro de llamadas</span></span>
         <span class="cr-arrow">›</span>
       </button>
+    </div>
+
+    <div class="welcomecard" id="welcome-card" hidden>
+      <button class="wc-x" id="wc-close" aria-label="Cerrar">&times;</button>
+      <p class="wc-title" data-i18n="wcTitle">¡Tienes minutos GRATIS!</p>
+      <p class="wc-sub" id="wc-sub">10 min de llamadas y 10 min de traducci&oacute;n gratis. Verifica tu n&uacute;mero y se activan al instante.</p>
+      <button class="wc-btn" id="wc-verify" data-i18n="wcBtn">Verificar mi n&uacute;mero</button>
     </div>
 
     <div class="pills" id="home-pills"></div>
@@ -1710,6 +1727,11 @@
             <input id="su-email" type="email" inputmode="email" autocomplete="email" data-i18n-ph="authEmailPh" placeholder="Email address">
           </div>
           <p class="aerr" id="e-su-email"></p>
+          <div class="afield" id="f-su-phone">
+            <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.33 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            <input id="su-phone" type="tel" inputmode="tel" autocomplete="tel" data-i18n-ph="authPhonePh" placeholder="Phone number">
+          </div>
+          <p class="aerr" id="e-su-phone"></p>
           <div class="afield" id="f-su-pass">
             <svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
             <input id="su-pass" type="password" autocomplete="new-password" data-i18n-ph="authPassPh" placeholder="Password">
@@ -1813,6 +1835,27 @@
 </div>
 
 <!-- ===== Términos / Privacidad ===== -->
+<div class="overlay" id="verify-overlay">
+  <div class="sheet">
+    <h3 data-i18n="vfTitle">Verifica tu n&uacute;mero</h3>
+    <p class="sub" id="vf-sub"></p>
+    <div class="codeboxes" id="vf-codeboxes">
+        <input class="codebox" type="text" inputmode="numeric" autocomplete="one-time-code" aria-label="1">
+        <input class="codebox" type="text" inputmode="numeric" aria-label="2">
+        <input class="codebox" type="text" inputmode="numeric" aria-label="3">
+        <input class="codebox" type="text" inputmode="numeric" aria-label="4">
+        <input class="codebox" type="text" inputmode="numeric" aria-label="5">
+        <input class="codebox" type="text" inputmode="numeric" aria-label="6">
+    </div>
+    <p class="aerr" id="vf-err"></p>
+    <button class="wc-btn" id="vf-confirm"><span data-i18n="vfConfirm">Activar mis minutos</span></button>
+    <div class="btnrow">
+      <button class="btn-ghost" id="vf-resend" data-i18n="vfResend">Reenviar c&oacute;digo</button>
+      <button class="btn-ghost" id="vf-cancel" data-i18n="vfCancel">Ahora no</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="legal-overlay">
   <div class="sheet">
     <h3 id="legal-title">Terms of Service</h3>
@@ -2113,6 +2156,23 @@
       errNoMic: 'No encontré un micrófono en este aparato. Conecta uno e inténtalo otra vez.',
       errKey: 'Falta conectar el motor de traducción. Avísale a Mister.',
       errNoMinutes: 'No te quedan minutos. Elige un plan o recarga saldo para seguir.',
+      authPhonePh: 'Número de teléfono',
+      authErrPhone: 'Escribe tu número de teléfono de 10 dígitos.',
+      wcTitle: '¡Tienes minutos GRATIS!',
+      wcSub: '10 min de llamadas y 10 min de traducción, sin pagar nada. Verifica tu número {PHONE} y se activan al instante.',
+      wcBtn: 'Verificar mi número',
+      vfTitle: 'Verifica tu número',
+      vfSub: 'Te enviamos un código de 6 dígitos por mensaje de texto al {PHONE}. Escríbelo aquí y tus minutos gratis se activan al instante.',
+      vfConfirm: 'Activar mis minutos',
+      vfResend: 'Reenviar código',
+      vfCancel: 'Ahora no',
+      vfErrCode: 'Ese código no es correcto. Revisa el mensaje e inténtalo de nuevo.',
+      vfErrExpired: 'Ese código ya venció. Pide uno nuevo con «Reenviar código».',
+      vfErrUsed: 'Ese número o ese correo ya recibieron los minutos gratis una vez.',
+      vfErrRate: 'Ya pediste varios códigos seguidos. Espera unos minutos e inténtalo de nuevo.',
+      vfErrGeneric: 'Algo salió mal. Inténtalo de nuevo en un momento.',
+      vfErrNoPhone: 'No encontramos tu número. Vuelve a crear la cuenta con tu número para reclamar los minutos.',
+      vfGranted: '🎉 ¡Listo! Tus 10 min de llamadas y 10 min de traducción ya están activos.',
       errSession: 'Hubo un problema con la traducción. Si sigue pasando, termina la llamada y vuelve a empezar.',
       errReconnect: 'Se perdió la conexión y no se pudo recuperar. Termina la llamada y vuelve a empezar.',
       pausedBanner: 'Conversación pausada'
@@ -2337,6 +2397,23 @@
       errNoMic: 'No microphone found on this device. Connect one and try again.',
       errKey: 'The translation engine is not connected yet. Let Mister know.',
       errNoMinutes: 'You are out of minutes. Choose a plan or top up to keep going.',
+      authPhonePh: 'Phone number',
+      authErrPhone: 'Enter your 10-digit phone number.',
+      wcTitle: 'You have FREE minutes!',
+      wcSub: '10 min of calls and 10 min of translation, free. Verify your number {PHONE} and they activate instantly.',
+      wcBtn: 'Verify my number',
+      vfTitle: 'Verify your number',
+      vfSub: 'We sent a 6-digit code by text message to {PHONE}. Enter it here and your free minutes activate instantly.',
+      vfConfirm: 'Activate my minutes',
+      vfResend: 'Resend code',
+      vfCancel: 'Not now',
+      vfErrCode: 'That code is not correct. Check the message and try again.',
+      vfErrExpired: 'That code has expired. Get a new one with "Resend code".',
+      vfErrUsed: 'That number or that email already received the free minutes once.',
+      vfErrRate: 'You requested several codes in a row. Wait a few minutes and try again.',
+      vfErrGeneric: 'Something went wrong. Try again in a moment.',
+      vfErrNoPhone: 'We could not find your number. Sign up again with your number to claim the minutes.',
+      vfGranted: '🎉 Done! Your 10 min of calls and 10 min of translation are now active.',
       errSession: 'There was a problem with the translation. If it keeps happening, end the call and start again.',
       errReconnect: 'The connection was lost and could not recover. End the call and start again.',
       pausedBanner: 'Conversation paused'
@@ -5314,14 +5391,14 @@
     if (j.plan) b.plan = j.plan;
     if (j.cycle_ends_at !== undefined) b.cycle_ends_at = j.cycle_ends_at;
     window.__englixBilling = b;
-    renderAcct();
+    renderAcct(); renderWelcomeCard();
     if (viewPlans && viewPlans.classList.contains('on')) renderPlans();
   }
   function billingRefresh() {
     return billingPost({ action: 'status' }).then(function (j) {
       if (j && j.ok && j.entitlements) {
         window.__englixBilling = j.entitlements;
-        renderAcct();
+        renderAcct(); renderWelcomeCard();
         if (viewPlans && viewPlans.classList.contains('on')) renderPlans();
       }
       return j;
@@ -5651,8 +5728,8 @@
     sb.from('profiles').select('full_name,email').eq('id', sbUser.id).single()
       .then(function (r) { if (r && r.data) { window.__englixProfile = r.data; renderAcct(); } })
       .catch(function () {});
-    sb.from('entitlements').select('plan,minutes_balance,plan_conv_seconds,plan_call_seconds').eq('user_id', sbUser.id).single()
-      .then(function (r) { if (r && r.data) { window.__englixEntitlements = r.data; renderAcct(); } })
+    sb.from('entitlements').select('plan,minutes_balance,plan_conv_seconds,plan_call_seconds,welcome_claimed').eq('user_id', sbUser.id).single()
+      .then(function (r) { if (r && r.data) { window.__englixEntitlements = r.data; renderAcct(); renderWelcomeCard(); } })
       .catch(function () {});
     // v40: el estado de cobro (plan, cubetas, saldo) manda el
     // servidor vía /api/usage; si responde, renderAcct lo prefiere.
@@ -5859,21 +5936,25 @@
     var name = $('su-name').value.trim().replace(/\s+/g, ' '),
         email = $('su-email').value.trim(),
         pass = $('su-pass').value, pass2 = $('su-pass2').value,
-        terms = $('su-terms').checked;
+        terms = $('su-terms').checked,
+        phoneD = ($('su-phone').value || '').replace(/\D/g, '');
+    if (phoneD.length === 11 && phoneD.charAt(0) === '1') phoneD = phoneD.slice(1);
     authFieldErr('f-su-name', 'e-su-name', name ? '' : t('authErrName'));
     authFieldErr('f-su-email', 'e-su-email', emailOk(email) ? '' : t('authErrEmail'));
+    authFieldErr('f-su-phone', 'e-su-phone', phoneD.length === 10 ? '' : t('authErrPhone'));
     authFieldErr('f-su-pass', 'e-su-pass', pwAllOk(pass) ? '' : t('authErrPassShort'));
     authFieldErr('f-su-pass2', 'e-su-pass2', pass2 === pass ? '' : t('authErrPassMatch'));
     authFormErr('e-su-form', terms ? '' : t('authErrTerms'));
-    if (!name || !emailOk(email) || !pwAllOk(pass) || pass2 !== pass || !terms) return;
+    if (!name || !emailOk(email) || !pwAllOk(pass) || pass2 !== pass || !terms || phoneD.length !== 10) return;
     $('su-name').value = name; $('su-email').value = email;
+    try { localStorage.setItem('lc_signup_phone_v1', '+1' + phoneD); } catch (e) {}
     window.__englixLastEmail = email;
     authBusy = true; authBtnLoad($('btn-su'), true);
     explicitAuthPending = true; // v48: si el registro entra directo, es acción del usuario → Inicio
     sb.auth.signUp({
       email: email, password: pass,
       options: {
-        data: { full_name: name, terms_version: TERMS_VERSION, terms_accepted_at: new Date().toISOString() },
+        data: { full_name: name, phone: '+1' + phoneD, terms_version: TERMS_VERSION, terms_accepted_at: new Date().toISOString() },
         emailRedirectTo: authOrigin() + '/'
       }
     }).then(function (res) {
@@ -5969,6 +6050,136 @@
   }
   function closeLegal() { $('legal-overlay').classList.remove('on'); unlockScroll(); }
 
+  /* ---- Minutos gratis: verificar el teléfono (reclamo de bienvenida) ----
+     El regalo (10 min de llamada + 10 de traducción) ya NO nace con la
+     cuenta: se activa SOLO cuando el dueño verifica su número por SMS
+     (POST /api/phone-verify; el servidor exige sesión y aplica la doble
+     llave correo+teléfono). El cartel vive en Inicio y se ofrece solo
+     si el servidor dice welcome_claimed=false y hay un número guardado
+     (metadata del registro o el guardado local de este aparato). */
+  var vfBusy = false, vfResendTimer = null;
+  function signupPhone() {
+    var p = (sbUser && sbUser.user_metadata && sbUser.user_metadata.phone) || '';
+    if (!p) { try { p = localStorage.getItem('lc_signup_phone_v1') || ''; } catch (e) {} }
+    return p;
+  }
+  function claimedState() {
+    var b = window.__englixBilling;
+    if (b && typeof b.welcome_claimed === 'boolean') return b.welcome_claimed;
+    var ent = window.__englixEntitlements;
+    if (ent && typeof ent.welcome_claimed === 'boolean') return ent.welcome_claimed;
+    return null;
+  }
+  function maskPhone(p) {
+    var d = (p || '').replace(/\D/g, '');
+    return d.length >= 4 ? '\u2022\u2022\u2022 \u2022\u2022\u2022 ' + d.slice(-4) : (p || '');
+  }
+  function renderWelcomeCard() {
+    var card = $('welcome-card');
+    if (!card) return;
+    var resolved = false, dismissed = false;
+    try { resolved = !!localStorage.getItem('lc_welcome_resolved_v1'); } catch (e) {}
+    try { dismissed = !!sessionStorage.getItem('lc_wc_dismissed_v1'); } catch (e) {}
+    var show = !!sbUser && claimedState() === false && !resolved && !dismissed && !!signupPhone();
+    card.hidden = !show;
+    if (show) $('wc-sub').textContent = t('wcSub').replace('{PHONE}', maskPhone(signupPhone()));
+  }
+  function vfBoxes() { return Array.prototype.slice.call(document.querySelectorAll('#vf-codeboxes .codebox')); }
+  function vfCode() { return vfBoxes().map(function (b) { return b.value; }).join(''); }
+  function vfSetErr(m) { $('vf-err').textContent = m || ''; }
+  function vfApi(payload) {
+    return billingToken().then(function (tok) {
+      if (!tok) throw new Error('no_session');
+      return fetch('/api/phone-verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tok },
+        body: JSON.stringify(payload)
+      }).then(function (r) { return r.json().catch(function () { return { ok: false, error: 'generic' }; }); });
+    });
+  }
+  function vfCooldown() {
+    var btn = $('vf-resend'), left = 60;
+    btn.disabled = true;
+    btn.textContent = t('vfResend') + ' (' + left + ')';
+    if (vfResendTimer) clearInterval(vfResendTimer);
+    vfResendTimer = setInterval(function () {
+      left--;
+      if (left <= 0) { clearInterval(vfResendTimer); vfResendTimer = null; btn.disabled = false; btn.textContent = t('vfResend'); }
+      else btn.textContent = t('vfResend') + ' (' + left + ')';
+    }, 1000);
+  }
+  function vfSend() {
+    if (vfBusy) return;
+    vfBusy = true; vfSetErr('');
+    vfApi({ action: 'send', phone: signupPhone() }).then(function (j) {
+      vfBusy = false;
+      if (j && j.ok) { var b = vfBoxes(); if (b[0]) b[0].focus(); vfCooldown(); }
+      else vfSetErr(t(j && j.error === 'rate_limited' ? 'vfErrRate' : 'vfErrGeneric'));
+    }).catch(function () { vfBusy = false; vfSetErr(t('vfErrGeneric')); });
+  }
+  function openVerifyPhone() {
+    if (!signupPhone()) { toast(t('vfErrNoPhone')); return; }
+    $('vf-sub').textContent = t('vfSub').replace('{PHONE}', maskPhone(signupPhone()));
+    vfSetErr('');
+    vfBoxes().forEach(function (b) { b.value = ''; });
+    $('verify-overlay').classList.add('on'); lockScroll();
+    vfSend();
+  }
+  function closeVerifyPhone() {
+    $('verify-overlay').classList.remove('on'); unlockScroll();
+    if (vfResendTimer) { clearInterval(vfResendTimer); vfResendTimer = null; }
+  }
+  function vfConfirm() {
+    if (vfBusy) return;
+    if (vfCode().length !== 6) { vfSetErr(t('vfErrCode')); return; }
+    vfBusy = true; vfSetErr('');
+    vfApi({ action: 'check', phone: signupPhone(), code: vfCode() }).then(function (j) {
+      vfBusy = false;
+      if (j && j.ok && j.granted) {
+        if (window.__englixBilling) window.__englixBilling.welcome_claimed = true;
+        try { localStorage.setItem('lc_welcome_resolved_v1', '1'); } catch (e) {}
+        closeVerifyPhone(); renderWelcomeCard(); billingRefresh();
+        toast(t('vfGranted'));
+      } else if (j && j.ok) {
+        try { localStorage.setItem('lc_welcome_resolved_v1', '1'); } catch (e) {}
+        closeVerifyPhone(); renderWelcomeCard();
+        toast(t('vfErrUsed'));
+      } else {
+        vfSetErr(t(j && j.error === 'expired_code' ? 'vfErrExpired'
+          : (j && j.error === 'rate_limited' ? 'vfErrRate' : 'vfErrCode')));
+      }
+    }).catch(function () { vfBusy = false; vfSetErr(t('vfErrGeneric')); });
+  }
+  (function wireVfBoxes() {
+    var boxes = vfBoxes();
+    boxes.forEach(function (box, i) {
+      box.addEventListener('input', function () {
+        box.value = box.value.replace(/\D/g, '').slice(-1);
+        if (box.value && i < boxes.length - 1) boxes[i + 1].focus();
+        if (vfCode().length === 6) vfConfirm();
+      });
+      box.addEventListener('keydown', function (e) {
+        if (e.key === 'Backspace' && !box.value && i > 0) boxes[i - 1].focus();
+      });
+      box.addEventListener('paste', function (e) {
+        var txt = ((e.clipboardData || window.clipboardData).getData('text') || '').replace(/\D/g, '');
+        if (!txt) return;
+        e.preventDefault();
+        boxes.forEach(function (b, j) { b.value = txt.charAt(j) || ''; });
+        boxes[Math.min(txt.length, boxes.length - 1)].focus();
+        if (vfCode().length === 6) vfConfirm();
+      });
+    });
+  })();
+  $('wc-verify').addEventListener('click', function () { vibrate(8); openVerifyPhone(); });
+  $('wc-close').addEventListener('click', function () {
+    try { sessionStorage.setItem('lc_wc_dismissed_v1', '1'); } catch (e) {}
+    renderWelcomeCard();
+  });
+  $('vf-confirm').addEventListener('click', function () { vibrate(8); vfConfirm(); });
+  $('vf-resend').addEventListener('click', function () { if (!$('vf-resend').disabled) vfSend(); });
+  $('vf-cancel').addEventListener('click', function () { closeVerifyPhone(); });
+
   /* ---- Cableado de la autenticación ---- */
   document.querySelectorAll('[data-eye]').forEach(function (btn) {
     btn.addEventListener('click', function () {
@@ -6039,7 +6250,7 @@
     if (sb) sb.auth.signOut();
     if (typeof resyncNav === 'function') resyncNav();
   });
-  [['si-email', 'btn-si'], ['si-pass', 'btn-si'], ['su-name', 'btn-su'], ['su-email', 'btn-su'],
+  [['si-email', 'btn-si'], ['si-pass', 'btn-si'], ['su-name', 'btn-su'], ['su-email', 'btn-su'], ['su-phone', 'btn-su'],
    ['su-pass', 'btn-su'], ['su-pass2', 'btn-su'], ['fg-email', 'btn-fg'], ['rs-pass', 'btn-rs'], ['rs-pass2', 'btn-rs']
   ].forEach(function (pair) {
     var el = $(pair[0]);

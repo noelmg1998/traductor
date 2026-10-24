@@ -73,7 +73,7 @@ async function svc(path, options) {
 
 async function readEntitlements(userId) {
   const q = '/rest/v1/entitlements?user_id=eq.' + encodeURIComponent(userId) +
-    '&select=user_id,plan,plan_conv_seconds,plan_call_seconds,balance_cents,cycle_ends_at,stripe_customer_id&limit=1';
+    '&select=user_id,plan,plan_conv_seconds,plan_call_seconds,balance_cents,cycle_ends_at,welcome_claimed,stripe_customer_id&limit=1';
   const r = await svc(q);
   if (!r.ok) return null;
   const row = Array.isArray(r.json) && r.json.length ? r.json[0] : null;
