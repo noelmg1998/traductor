@@ -1269,7 +1269,7 @@
   </section>
 
   <footer data-i18n="footer">Traducción automática con IA · En vivo</footer>
-  <div class="verlabel">v51 · Englix</div>
+  <div class="verlabel">v52 · Englix</div>
 </div>
 
 <!-- ===== Barra inferior (v11 · Englix) ===== -->
@@ -1478,7 +1478,7 @@
     </div>
 
     <button class="btn-ghost" id="btn-signout" data-i18n="authSignOut">Cerrar sesión</button>
-    <div class="verlabel" style="margin-top:14px;">v51 · Englix</div>
+    <div class="verlabel" style="margin-top:14px;">v52 · Englix</div>
   </div>
 
   <!-- ===== Sub-vista: Editar perfil ===== -->
@@ -5129,7 +5129,7 @@
     if (!m) return s + ' s';
     return s ? m + ' min ' + s + ' s' : m + ' min';
   }
-  function fmtMin(sec) { return Math.floor(Math.max(0, sec || 0) / 60) + ' min'; }
+  function fmtMinFloor(sec) { return Math.floor(Math.max(0, sec || 0) / 60) + ' min'; }
   function fmtUSD(cents) { return '$' + ((cents || 0) / 100).toFixed(2); }
 
   function billingToken() {
@@ -5200,8 +5200,8 @@
   function renderPlans() {
     var b = window.__englixBilling || { plan: 'free', plan_conv_seconds: 0, plan_call_seconds: 0, balance_cents: 0 };
     $('plans-cur-plan').textContent = planNameOf(b.plan);
-    $('plans-cur-conv').textContent = fmtMin(b.plan_conv_seconds);
-    $('plans-cur-call').textContent = fmtMin(b.plan_call_seconds);
+    $('plans-cur-conv').textContent = fmtMinFloor(b.plan_conv_seconds);
+    $('plans-cur-call').textContent = fmtMinFloor(b.plan_call_seconds);
     $('plans-cur-bal').textContent = fmtUSD(b.balance_cents);
     ['basico', 'plus', 'premium'].forEach(function (p) {
       var isCur = b.plan === p;
