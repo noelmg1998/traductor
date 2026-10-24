@@ -1267,7 +1267,7 @@
   </section>
 
   <footer data-i18n="footer">Traducción automática con IA · En vivo</footer>
-  <div class="verlabel">v47 · Englix</div>
+  <div class="verlabel">v48 · Englix</div>
 </div>
 
 <!-- ===== Barra inferior (v11 · Englix) ===== -->
@@ -1471,7 +1471,7 @@
     </div>
 
     <button class="btn-ghost" id="btn-signout" data-i18n="authSignOut">Cerrar sesión</button>
-    <div class="verlabel" style="margin-top:14px;">v47 · Englix</div>
+    <div class="verlabel" style="margin-top:14px;">v48 · Englix</div>
   </div>
 
   <!-- ===== Sub-vista: Editar perfil ===== -->
@@ -1951,7 +1951,8 @@
       authErrPassMatch: 'Las contraseñas no coinciden.', authErrTerms: 'Debes aceptar los Términos y la Privacidad para continuar.',
       authForgotSent: 'Si existe una cuenta asociada a este correo, recibirás instrucciones para recuperar tu contraseña.',
       authWaitSec: 'Espera {S} segundos para intentarlo de nuevo.', authResentOk: 'Te enviamos otro correo de verificación.',
-      authResetDone: 'Tu contraseña se actualizó. Ya puedes iniciar sesión.', authGeneric: 'Algo salió mal. Inténtalo de nuevo.',
+      authResetDone: 'Tu contraseña se actualizó.', authGeneric: 'Algo salió mal. Inténtalo de nuevo.',
+      idleClosed: 'Tu sesión se cerró por inactividad.',
       authPlanFree: 'Free', authPlanPremium: 'Premium', authPlanOnly: 'Plan {PLAN}',
       authPlanBasico: 'Básico', authPlanPlus: 'Plus',
       plansTitle: 'Planes y saldo', plansTitleA: 'Planes y', plansTitleB: 'saldo', plansCurrent: 'Tu plan actual',
@@ -2150,7 +2151,8 @@
       authErrPassMatch: 'Passwords do not match.', authErrTerms: 'You must accept the Terms and Privacy Policy to continue.',
       authForgotSent: 'If an account exists for this email, you will receive instructions to recover your password.',
       authWaitSec: 'Wait {S} seconds and try again.', authResentOk: 'We sent you another verification email.',
-      authResetDone: 'Your password has been updated. You can sign in now.', authGeneric: 'Something went wrong. Please try again.',
+      authResetDone: 'Your password has been updated.', authGeneric: 'Something went wrong. Please try again.',
+      idleClosed: 'Your session was closed due to inactivity.',
       authPlanFree: 'Free', authPlanPremium: 'Premium', authPlanOnly: 'Plan {PLAN}',
       authPlanBasico: 'Basic', authPlanPlus: 'Plus',
       plansTitle: 'Plans & balance', plansTitleA: 'Plans &', plansTitleB: 'balance', plansCurrent: 'Your current plan',
@@ -2493,6 +2495,7 @@
     timerEl.textContent = fmt(e);
     meterFlush(false); // v40: envío periódico de voz (trozos de ≥20 s)
     if (typeof convLowTick === 'function') convLowTick(); // v47: aviso de tiempo bajo
+    if (inCall && typeof liveUsePing === 'function') liveUsePing(); // v48: sesión en vivo = actividad, su reloj de inactividad no vence a mitad de uso
   }
 
   /* ================= Tarjetas de conversación (§6) ================= */
@@ -2783,7 +2786,25 @@
     else if (name === 'done') navTab = 'home';
     syncNav();
     if (name === 'home') updateQuickDir();
+    // v48 (regla 3): la vista actual queda guardada; un refresco con
+    // sesión válida vuelve a ESTA vista, no siempre al Inicio.
+    try { localStorage.setItem('lc_last_view_v1', name); } catch (e) {}
   }
+
+  /* v48 (regla 3): a qué vista se vuelve cuando el arranque restaura
+     una sesión guardada. Inventario de vistas de showView: home,
+     call, done, saved, soon, plans. 'call' es una sesión en vivo que
+     ya no existe en frío y 'done' es el resumen de una sesión ya
+     terminada (sus datos viven en memoria): ambas caen al Inicio.
+     Las vistas de acceso NO pasan por showView (son el overlay de
+     auth), así que nunca se persisten ni se restauran. */
+  var RESTORE_VIEW = { home: 'home', plans: 'plans', saved: 'saved', soon: 'soon', done: 'home', call: 'home' };
+  function restoredView() {
+    var v = null;
+    try { v = localStorage.getItem('lc_last_view_v1'); } catch (e) {}
+    return RESTORE_VIEW[v] || 'home';
+  }
+  function clearPersistedView() { try { localStorage.removeItem('lc_last_view_v1'); } catch (e) {} }
 
   function handleEvent(sess, raw) {
     var ev;
@@ -4739,6 +4760,7 @@
     callLowCheck(); // v47: el tiempo de la llamada en curso también avisa al bajar de 5 min
     var pending = callStoreGet(CALL_PENDING_KEY);
     if (!pending || !pending.relayHost || !pending.callId) { stopCallPolling(); renderCallLast(); return; }
+    if (typeof liveUsePing === 'function') liveUsePing(); // v48: llamada telefónica en curso = actividad
     if (Date.now() - pending.at > 90 * 60 * 1000) { callStoreSet(CALL_PENDING_KEY, null); stopCallPolling(); renderCallLast(); return; }
     fetch('https://' + pending.relayHost + '/summary/' + pending.callId)
       .then(function (r) { return r.json(); })
@@ -5334,12 +5356,66 @@
     billingRefresh();
   }
 
-  function onSignedIn(user) {
+  /* ================= Sesión: inactividad (5 h) y vista al volver (v48) =================
+     Regla 1: entrar por acción del usuario (enviar el formulario de
+     acceso, guardar la nueva contraseña tras recuperar, aterrizar
+     desde el enlace de confirmación) termina en el Inicio.
+     Regla 2: sin interacción por 5 h se cierra la sesión y se
+     vuelve a Iniciar sesión, con aviso honesto (idleClosed).
+     Regla 3: restaurar una sesión guardada en el arranque (o volver
+     de Stripe) regresa a la última vista (restoredView). */
+  var IDLE_LIMIT_MS = 5 * 60 * 60 * 1000;
+  var ACTIVITY_KEY = 'lc_last_activity_v1';
+  var lastActWrite = 0, idleToastPending = false, explicitAuthPending = false, appEntered = false;
+
+  function activityNow() {
+    var v = 0;
+    try { v = parseInt(localStorage.getItem(ACTIVITY_KEY) || '0', 10) || 0; } catch (e) {}
+    return v;
+  }
+  function touchActivity(force) {
+    var now = Date.now();
+    if (!force && now - lastActWrite < 30000) return; // escritura a lo sumo 1 vez / 30 s
+    lastActWrite = now;
+    try { localStorage.setItem(ACTIVITY_KEY, String(now)); } catch (e) {}
+  }
+  ['pointerdown', 'keydown', 'touchstart'].forEach(function (evName) {
+    window.addEventListener(evName, function () { touchActivity(false); }, { passive: true });
+  });
+  /* Los ticks de uso en vivo llaman aquí (tickTimer de la
+     conversación en persona con inCall, y el sondeo de la llamada
+     telefónica): una sesión abierta ES uso — su reloj de
+     inactividad se refresca solo y nunca vence a mitad de uso. */
+  function liveUsePing() { touchActivity(false); }
+
+  function doIdleSignOut() {
+    idleToastPending = true;
+    clearPersistedView(); // regla 2: al cerrar por inactividad no se restaura vista
+    if (sb) sb.auth.signOut(); // SIGNED_OUT muestra Iniciar sesión y el aviso (idleToastPending)
+  }
+  function checkIdle() {
+    if (!sbUser) return;
+    var last = activityNow();
+    if (!last) { touchActivity(true); return; } // primera corrida de v48: se siembra el reloj, no se castiga
+    if (Date.now() - last > IDLE_LIMIT_MS) doIdleSignOut();
+  }
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) checkIdle(); });
+  setInterval(checkIdle, 60000);
+
+  function onSignedIn(user, via) {
     sbUser = user;
     if (recoveryMode) { showAuth(4); return; }
     hideAuth();
     renderAcct();
     loadAccount();
+    touchActivity(true); // entrar (o restaurar) cuenta como actividad
+    if (via === 'explicit') {
+      explicitAuthPending = false;
+      showView('home'); // regla 1
+    } else if (!appEntered) {
+      showView(restoredView()); // regla 3: solo la restauración del arranque mueve la vista
+    }
+    appEntered = true;
   }
 
   function initAuth() {
@@ -5356,6 +5432,12 @@
 
     // Enlace vencido/inválido en la URL: mostrar la salida con opción de pedir otro.
     var urlTxt = (window.location.hash || '') + (window.location.search || '');
+    /* v48: aterrizar desde un enlace del correo (confirmación) es
+       entrar por acción del usuario → Inicio (regla 1). Una sesión
+       que simplemente estaba guardada es restauración → última
+       vista (regla 3). El regreso de Stripe (?pago=) NO trae tokens
+       de auth: cae en restauración, como debe ser. */
+    var urlAuthLanding = /access_token=|type=(signup|recovery|magiclink|email)/.test(urlTxt);
     if (/otp_expired|access_denied|error=/.test(urlTxt)) {
       recoveryMode = false;
       $('rs-fields').style.display = 'none';
@@ -5373,9 +5455,25 @@
     } catch (e) {}
     if (!hasStored && !recoveryMode && $('rs-expired').style.display !== 'block') showAuth(0);
 
+    /* v48 (regla 2 en el arranque, ANTES de restaurar vistas): si la
+       sesión guardada lleva más de 5 h sin actividad, se descarta
+       en vez de restaurarla. Los aterrizajes por enlace del correo
+       quedan fuera: traen una sesión fresca del propio usuario. */
+    var bootIdleExpired = false;
+    if (hasStored && !urlAuthLanding) {
+      var lastAct0 = activityNow();
+      if (lastAct0 && (Date.now() - lastAct0 > IDLE_LIMIT_MS)) bootIdleExpired = true;
+    }
+    if (bootIdleExpired) {
+      idleToastPending = true;
+      clearPersistedView();
+      sb.auth.signOut();
+    }
+
     sb.auth.getSession().then(function (res) {
       var session = res && res.data ? res.data.session : null;
-      if (session && session.user) onSignedIn(session.user);
+      if (bootIdleExpired) return; // SIGNED_OUT muestra el acceso y el aviso de inactividad
+      if (session && session.user) onSignedIn(session.user, (urlAuthLanding || explicitAuthPending) ? 'explicit' : 'restore');
       else if (!recoveryMode) showAuth(0);
     }).catch(function () { if (!recoveryMode) showAuth(0); });
 
@@ -5386,11 +5484,14 @@
         $('rs-expired').style.display = 'none';
         showAuth(4);
       } else if (event === 'SIGNED_IN' && session && session.user) {
-        onSignedIn(session.user);
+        if (bootIdleExpired) return; // la sesión guardada venció: no restaurarla
+        onSignedIn(session.user, (urlAuthLanding || explicitAuthPending) ? 'explicit' : 'restore');
       } else if (event === 'SIGNED_OUT') {
         sbUser = null; window.__englixProfile = null; window.__englixEntitlements = null; window.__englixBilling = null;
+        appEntered = false;
         renderAcct();
         showAuth(0);
+        if (idleToastPending) { idleToastPending = false; toast(t('idleClosed')); }
       }
     });
   }
@@ -5413,17 +5514,20 @@
     if (!emailOk(email) || !pass) return;
     $('si-email').value = email;
     authBusy = true; authBtnLoad($('btn-si'), true);
+    explicitAuthPending = true; // v48: este SIGNED_IN es por acción del usuario → Inicio (regla 1)
     sb.auth.signInWithPassword({ email: email, password: pass }).then(function (res) {
       authBusy = false; authBtnLoad($('btn-si'), false);
       if (res.error) {
+        explicitAuthPending = false;
         if (/email not confirmed/i.test(res.error.message || '')) { $('si-confirm').style.display = 'block'; return; }
         authFormErr('e-si-form', mapAuthErr(res.error, 'signin'));
         return;
       }
       $('si-confirm').style.display = 'none';
-      if (res.data && res.data.user) onSignedIn(res.data.user);
+      if (res.data && res.data.user) onSignedIn(res.data.user, 'explicit');
     }).catch(function (err) {
       authBusy = false; authBtnLoad($('btn-si'), false);
+      explicitAuthPending = false;
       authFormErr('e-si-form', mapAuthErr(err, 'signin'));
     });
   }
@@ -5456,6 +5560,7 @@
     $('su-name').value = name; $('su-email').value = email;
     window.__englixLastEmail = email;
     authBusy = true; authBtnLoad($('btn-su'), true);
+    explicitAuthPending = true; // v48: si el registro entra directo, es acción del usuario → Inicio
     sb.auth.signUp({
       email: email, password: pass,
       options: {
@@ -5464,11 +5569,12 @@
       }
     }).then(function (res) {
       authBusy = false; authBtnLoad($('btn-su'), false);
-      if (res.error) { authFormErr('e-su-form', mapAuthErr(res.error, 'signup')); return; }
-      if (res.data && res.data.session && res.data.user) { onSignedIn(res.data.user); return; }
+      if (res.error) { explicitAuthPending = false; authFormErr('e-su-form', mapAuthErr(res.error, 'signup')); return; }
+      if (res.data && res.data.session && res.data.user) { onSignedIn(res.data.user, 'explicit'); return; }
       authGo(3); // confirmar correo (también si el correo ya existía: no revelamos cuál)
     }).catch(function (err) {
       authBusy = false; authBtnLoad($('btn-su'), false);
+      explicitAuthPending = false;
       authFormErr('e-su-form', mapAuthErr(err, 'signup'));
     });
   }
@@ -5518,8 +5624,16 @@
         return;
       }
       recoveryMode = false;
-      var ok = $('si-ok'); ok.textContent = t('authResetDone'); ok.classList.add('on');
-      sb.auth.signOut().then(function () { showAuth(0); });
+      toast(t('authResetDone'));
+      /* v48 (regla 1): la sesión del enlace de recuperación sigue
+         válida tras guardar la contraseña — se entra directo al
+         Inicio, sin cerrar la sesión y volver a pedirla. */
+      explicitAuthPending = true;
+      if (sbUser) onSignedIn(sbUser, 'explicit');
+      else sb.auth.getSession().then(function (r) {
+        var u = r && r.data && r.data.session ? r.data.session.user : null;
+        if (u) onSignedIn(u, 'explicit'); else { explicitAuthPending = false; showAuth(0); }
+      });
     }).catch(function (err) {
       authBusy = false; authBtnLoad($('btn-rs'), false);
       authFormErr('e-rs-form', mapAuthErr(err, 'reset'));
