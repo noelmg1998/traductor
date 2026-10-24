@@ -438,3 +438,5 @@ No reemplazar esta interfaz por un chat tradicional.
 La aplicación debe funcionar en web, iOS y Android, utilizando implementaciones específicas cuando las capacidades de audio sean diferentes entre plataformas.
 
 <!-- redeploy 2026-10-23: STRIPE_SECRET_KEY agregada en Vercel -->
+
+<!-- redeploy 2026-10-23: STRIPE_WEBHOOK_SECRET agregada en Vercel -->
