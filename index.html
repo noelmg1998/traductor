@@ -1235,9 +1235,6 @@
   <!-- ===== Sala de reunión + conversaciones guardadas ===== -->
   <section id="view-saved">
     <div class="savedhead">
-      <button class="iconbtn" id="btn-saved-back" aria-label="Back">
-        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-      </button>
       <h2 data-i18n="salaTitle">Sala de reunión</h2>
     </div>
 
@@ -1365,9 +1362,6 @@
   <section id="view-profile">
   <div id="profile-main">
     <div class="phead">
-      <button class="iconbtn" id="btn-panel-close" aria-label="Back">
-        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-      </button>
       <h3 data-i18n="settings">Perfil</h3>
     </div>
 
@@ -4737,7 +4731,7 @@
   function closePanel() { profileGo(null); panel.classList.remove('on'); panelOverlay.classList.remove('on'); unlockScroll(); }
   $('btn-gear-home').addEventListener('click', openPanel);
   $('btn-gear-call').addEventListener('click', openPanel);
-  $('btn-panel-close').addEventListener('click', function () { showView('home'); });
+  var bpc = $('btn-panel-close'); if (bpc) bpc.addEventListener('click', function () { showView('home'); });
   panelOverlay.addEventListener('click', closePanel);
   /* v14: con Ajustes abierto, arrastrar sobre el fondo oscuro no mueve la
      página; el panel se desplaza por sí mismo (overscroll contenido). */
@@ -5078,7 +5072,7 @@
     showView('saved');
   }
   $('btn-saved-return').addEventListener('click', openSavedList);
-  $('btn-saved-back').addEventListener('click', function () {
+  var bsb = $('btn-saved-back'); if (bsb) bsb.addEventListener('click', function () {
     if (savedDetailIdx >= 0) openSavedList();
     else showView('home');
   });
@@ -6221,7 +6215,7 @@
   $('tab-learn').addEventListener('click', function () { openLearn(); });
   $('tab-history').addEventListener('click', function () { openSalaView(); });
   $('tab-profile').addEventListener('click', function () { navTab = 'profile'; syncNav(); openPanel(); });
-  $('btn-panel-close').addEventListener('click', resyncNav);
+  var bpc2 = $('btn-panel-close'); if (bpc2) bpc2.addEventListener('click', resyncNav);
   panelOverlay.addEventListener('click', resyncNav);
   document.addEventListener('visibilitychange', function () {
     var g = $('globe');
