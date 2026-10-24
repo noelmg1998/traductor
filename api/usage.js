@@ -73,11 +73,17 @@ async function svc(path, options) {
 
 async function readEntitlements(userId) {
   const q = '/rest/v1/entitlements?user_id=eq.' + encodeURIComponent(userId) +
-    '&select=user_id,plan,plan_conv_seconds,plan_call_seconds,balance_cents,cycle_ends_at&limit=1';
+    '&select=user_id,plan,plan_conv_seconds,plan_call_seconds,balance_cents,cycle_ends_at,stripe_customer_id&limit=1';
   const r = await svc(q);
   if (!r.ok) return null;
   const row = Array.isArray(r.json) && r.json.length ? r.json[0] : null;
-  return row || zeroEntitlements(userId);
+  const ent = row || zeroEntitlements(userId);
+  // El id de cliente de Stripe NUNCA sale crudo al cliente: la app
+  // solo necesita saber SI el usuario ya tiene uno (pa' mostrar el
+  // acceso al portal de pagos); el id en sí se queda en el servidor.
+  ent.has_stripe_customer = !!ent.stripe_customer_id;
+  delete ent.stripe_customer_id;
+  return ent;
 }
 
 module.exports = async (req, res) => {

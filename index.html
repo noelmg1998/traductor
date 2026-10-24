@@ -1268,7 +1268,7 @@
   </section>
 
   <footer data-i18n="footer">Traducción automática con IA · En vivo</footer>
-  <div class="verlabel">v49 · Englix</div>
+  <div class="verlabel">v50 · Englix</div>
 </div>
 
 <!-- ===== Barra inferior (v11 · Englix) ===== -->
@@ -1454,6 +1454,11 @@
         <span class="pnavtx"><b data-i18n="profMyPlan">Mi plan</b><small data-i18n="profMyPlanSub">Suscripción y minutos disponibles</small></span>
         <span class="pchev">›</span>
       </button>
+      <button class="pnav" id="nav-pay">
+        <span class="picon"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></span>
+        <span class="pnavtx"><b data-i18n="profPay">Método de pago</b><small data-i18n="profPaySub">Tarjeta y cobros de tu cuenta</small></span>
+        <span class="pchev">›</span>
+      </button>
       <button class="pnav" id="nav-lang">
         <span class="picon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.6 3.9 5.7 3.9 9s-1.4 6.4-3.9 9c-2.5-2.6-3.9-5.7-3.9-9S9.5 5.6 12 3z"/></svg></span>
         <span class="pnavtx"><b data-i18n="profLang">Idioma</b><small data-i18n="profLangSub">Idioma de la aplicación</small></span>
@@ -1472,7 +1477,7 @@
     </div>
 
     <button class="btn-ghost" id="btn-signout" data-i18n="authSignOut">Cerrar sesión</button>
-    <div class="verlabel" style="margin-top:14px;">v49 · Englix</div>
+    <div class="verlabel" style="margin-top:14px;">v50 · Englix</div>
   </div>
 
   <!-- ===== Sub-vista: Editar perfil ===== -->
@@ -1493,6 +1498,18 @@
     </div>
     <p class="pfeed" id="prof-feed"></p>
     <button class="pbtn" id="btn-prof-save" data-i18n="profSave">Guardar cambios</button>
+  </div>
+
+  <!-- ===== Sub-vista: Método de pago ===== -->
+  <div class="psub" id="psub-pay">
+    <div class="psubhead">
+      <button class="iconbtn pback" data-psub-back aria-label="Back"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <h3 data-i18n="profPay">Método de pago</h3>
+    </div>
+    <div class="setcard">
+      <p class="pdelnote" id="pay-state"></p>
+      <button class="pbtn" id="btn-pay-action"></button>
+    </div>
   </div>
 
   <!-- ===== Sub-vista: Idioma ===== -->
@@ -1977,6 +1994,11 @@
       profMinsAvail: '{N} minutos disponibles',
       profEdit: 'Editar perfil', profEditSub: 'Nombre, correo y datos de cuenta',
       profMyPlan: 'Mi plan', profMyPlanSub: 'Suscripción y minutos disponibles',
+      profPay: 'Método de pago', profPaySub: 'Tarjeta y cobros de tu cuenta',
+      profPayHas: 'Tus cobros se hacen con la tarjeta que tienes guardada en Stripe, nuestro procesador de pagos seguro.',
+      profPayNone: 'Todavía no tienes un método de pago guardado. Cuando compres un plan o una recarga, tu tarjeta quedará guardada de forma segura en Stripe.',
+      profPayChange: 'Cambiar método de pago', profPaySeePlans: 'Ver planes',
+      profPayErr: 'No se pudo abrir el portal de pagos. Inténtalo de nuevo.',
       profLang: 'Idioma', profLangSub: 'Idioma de la aplicación',
       profPriv: 'Privacidad y seguridad', profPrivSub: 'Contraseña, datos y permisos',
       profHelp: 'Ayuda', profHelpSub: 'Soporte y preguntas frecuentes',
@@ -2177,6 +2199,11 @@
       profMinsAvail: '{N} minutes available',
       profEdit: 'Edit profile', profEditSub: 'Name, email and account details',
       profMyPlan: 'My plan', profMyPlanSub: 'Subscription and available minutes',
+      profPay: 'Payment method', profPaySub: 'Card and billing for your account',
+      profPayHas: 'Your payments are charged to the card you have saved with Stripe, our secure payment processor.',
+      profPayNone: 'You don\'t have a saved payment method yet. When you buy a plan or a top-up, your card will be stored securely with Stripe.',
+      profPayChange: 'Change payment method', profPaySeePlans: 'See plans',
+      profPayErr: 'Couldn\'t open the payment portal. Please try again.',
       profLang: 'Language', profLangSub: 'App language',
       profPriv: 'Privacy and security', profPrivSub: 'Password, data and permissions',
       profHelp: 'Help', profHelpSub: 'Support and frequently asked questions',
@@ -4291,6 +4318,7 @@
     settings.uiLang = this.value;
     saveSettings();
     applyI18n();
+    renderPayMethod();
     renderLangList(langSearch.value);
   });
   $('set-engine').addEventListener('change', function () {
@@ -4315,7 +4343,7 @@
   /* ================= Perfil v44: sub-vistas y acciones ================= */
   function profileGo(name) {
     $('profile-main').style.display = name ? 'none' : '';
-    ['edit', 'lang', 'privacy', 'help'].forEach(function (k) {
+    ['edit', 'pay', 'lang', 'privacy', 'help'].forEach(function (k) {
       $('psub-' + k).classList.toggle('on', k === name);
     });
     panel.scrollTop = 0;
@@ -4329,8 +4357,39 @@
     b.addEventListener('click', function () { vibrate(8); profileGo(null); });
   });
   function openPlansFromProfile() { closePanel(); openPlans(); }
+  /* Método de pago (v50): la tarjeta vive en Stripe, nunca en la
+     app. Con plan pago o cliente de Stripe, el botón abre el portal
+     de Stripe (api/portal.js) pa' cambiarla; sin nada guardado,
+     el botón lleva a Planes. */
+  var payHasMethod = false;
+  function renderPayMethod() {
+    var bill = window.__englixBilling || {};
+    var paidPlan = bill.plan === 'basico' || bill.plan === 'plus' || bill.plan === 'premium';
+    payHasMethod = paidPlan || bill.has_stripe_customer === true;
+    $('pay-state').textContent = t(payHasMethod ? 'profPayHas' : 'profPayNone');
+    $('btn-pay-action').textContent = t(payHasMethod ? 'profPayChange' : 'profPaySeePlans');
+  }
+  $('btn-pay-action').addEventListener('click', function () {
+    vibrate(8);
+    if (!payHasMethod) { openPlansFromProfile(); return; }
+    var btn = this; btn.disabled = true;
+    billingToken().then(function (tok) {
+      if (!tok) { btn.disabled = false; toast(t('profPayErr')); return null; }
+      return fetch('/api/portal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok },
+        body: '{}'
+      }).then(function (r) { return r.json().catch(function () { return null; }); })
+        .then(function (j) {
+          if (j && j.ok && j.url) { window.location.href = j.url; return; }
+          btn.disabled = false; toast(t('profPayErr'));
+        })
+        .catch(function () { btn.disabled = false; toast(t('profPayErr')); });
+    }).catch(function () { btn.disabled = false; toast(t('profPayErr')); });
+  });
   $('btn-upgrade').addEventListener('click', function () { vibrate(8); openPlansFromProfile(); });
   $('nav-myplan').addEventListener('click', function () { vibrate(8); openPlansFromProfile(); });
+  $('nav-pay').addEventListener('click', function () { vibrate(8); renderPayMethod(); profileGo('pay'); });
   $('nav-lang').addEventListener('click', function () { vibrate(8); profileGo('lang'); });
   $('nav-privacy').addEventListener('click', function () { vibrate(8); profileGo('privacy'); });
   $('nav-help').addEventListener('click', function () { vibrate(8); profileGo('help'); });
@@ -5345,6 +5404,7 @@
         : (typeof ent.minutes_balance === 'number')
           ? t('profMinsAvail').replace('{N}', String(ent.minutes_balance)) : '';
     } else { $('acct-plan').textContent = ''; $('acct-mins').textContent = ''; }
+    renderPayMethod();
   }
 
   function loadAccount() {
