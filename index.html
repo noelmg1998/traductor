@@ -6098,11 +6098,12 @@
     var d = (p || '').replace(/\D/g, '');
     return d.length >= 4 ? '\u2022\u2022\u2022 \u2022\u2022\u2022 ' + d.slice(-4) : (p || '');
   }
+  function wcResolvedKey() { return 'lc_welcome_resolved_v2_' + (sbUser && sbUser.id ? sbUser.id : 'anon'); }
   function renderWelcomeCard() {
     var card = $('welcome-card');
     if (!card) return;
     var resolved = false, dismissed = false;
-    try { resolved = !!localStorage.getItem('lc_welcome_resolved_v1'); } catch (e) {}
+    try { resolved = !!localStorage.getItem(wcResolvedKey()); } catch (e) {}
     try { dismissed = !!sessionStorage.getItem('lc_wc_dismissed_v1'); } catch (e) {}
     var show = !!sbUser && claimedState() === false && !resolved && !dismissed && !!signupPhone();
     card.hidden = !show;
@@ -6161,11 +6162,11 @@
       vfBusy = false;
       if (j && j.ok && j.granted) {
         if (window.__englixBilling) window.__englixBilling.welcome_claimed = true;
-        try { localStorage.setItem('lc_welcome_resolved_v1', '1'); } catch (e) {}
+        try { localStorage.setItem(wcResolvedKey(), '1'); } catch (e) {}
         closeVerifyPhone(); renderWelcomeCard(); billingRefresh();
         toast(t('vfGranted'));
       } else if (j && j.ok) {
-        try { localStorage.setItem('lc_welcome_resolved_v1', '1'); } catch (e) {}
+        try { localStorage.setItem(wcResolvedKey(), '1'); } catch (e) {}
         closeVerifyPhone(); renderWelcomeCard();
         toast(t('vfErrUsed'));
       } else {
