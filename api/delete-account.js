@@ -59,6 +59,54 @@ module.exports = async (req, res) => {
     const user = await userFromToken(token).catch(() => null);
     if (!user) return fail('unauthorized', 401);
 
+    // ANTES de borrar: cancelar la suscripción de Stripe si la
+    // hay (auditoría H-2). Sin esto, el usuario borrado seguía
+    // pagando cada mes y las renovaciones reventaban contra un
+    // usuario inexistente. Se lee su fila de entitlements con la
+    // llave de servicio; si trae stripe_subscription_id se
+    // cancela de inmediato en Stripe (DELETE
+    // /v1/subscriptions/{id}). Un 404 de Stripe (ya no existe)
+    // está bien. Cualquier otro fallo — o la falta de
+    // STRIPE_SECRET_KEY — NO bloquea el borrado: el derecho del
+    // usuario a eliminar su cuenta manda, y la suscripción
+    // queda registrada en el log pa' seguimiento manual.
+    try {
+      const er = await fetch(
+        SUPABASE_URL + '/rest/v1/entitlements?user_id=eq.' +
+          encodeURIComponent(user.id) +
+          '&select=stripe_customer_id,stripe_subscription_id&limit=1',
+        {
+          headers: {
+            apikey: svcKey,
+            ['Authori' + 'zation']: 'Bearer ' + svcKey
+          }
+        });
+      const rows = er.ok ? await er.json().catch(() => null) : null;
+      const ent = Array.isArray(rows) && rows.length ? rows[0] : null;
+      const subId = ent && ent.stripe_subscription_id;
+      if (subId) {
+        const stripeKey = process.env.STRIPE_SECRET_KEY;
+        if (!stripeKey) {
+          console.error('delete-account: STRIPE_SECRET_KEY missing; subscription not cancelled:', subId);
+        } else {
+          const sr = await fetch(
+            'https://api.stripe.com/v1/subscriptions/' + encodeURIComponent(subId),
+            {
+              method: 'DELETE',
+              headers: { ['Authori' + 'zation']: 'Bearer ' + stripeKey }
+            }).catch(() => null);
+          if (!sr) {
+            console.error('delete-account: Stripe cancel request failed; subscription may still be active:', subId);
+          } else if (!sr.ok && sr.status !== 404) {
+            console.error('delete-account: Stripe cancel failed with status', sr.status, 'for subscription:', subId);
+          }
+        }
+      }
+    } catch (e) {
+      // La lectura/cancelación nunca bloquea el borrado.
+      console.error('delete-account: subscription pre-check failed:', e && e.message);
+    }
+
     const r = await fetch(SUPABASE_URL + '/auth/v1/admin/users/' + encodeURIComponent(user.id), {
       method: 'DELETE',
       headers: {

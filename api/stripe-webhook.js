@@ -46,6 +46,12 @@ const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY ||
 const PLANS = { basico: true, plus: true, premium: true };
 // Lo que se ACREDITA por recarga (con bonos) — no lo que se paga.
 const TOPUP_CREDIT = { t10: 1000, t20: 2200, t50: 5750 };
+// Lo que el usuario PAGA según el catálogo del servidor (el
+// mismo de api/checkout.js). El webhook lo exige contra
+// amount_total de la sesión antes de acreditar nada (H-4): la
+// metadata sola NO basta pa' mover dinero.
+const PLAN_CHARGE = { basico: 999, plus: 1999, premium: 2999 };
+const TOPUP_CHARGE = { t10: 1000, t20: 2000, t50: 5000 };
 
 // Cuerpo crudo: con bodyParser apagado, req es un stream. Si el
 // runtime ya lo trajo como Buffer o texto, se usa tal cual.
@@ -162,6 +168,32 @@ async function entitlementBySub(subId) {
   return r.json[0];
 }
 
+// Busca la fila de derechos de un cliente de Stripe (así se
+// resuelve el usuario de un reembolso o una disputa, cuyos
+// eventos solo traen el cliente, no la suscripción).
+async function entitlementByCustomer(customerId) {
+  const q = '/rest/v1/entitlements?stripe_customer_id=eq.' +
+    encodeURIComponent(customerId) +
+    '&select=user_id,plan,stripe_customer_id,stripe_subscription_id&limit=1';
+  const r = await svc(q);
+  if (!r.ok || !Array.isArray(r.json) || !r.json.length) return null;
+  return r.json[0];
+}
+
+// DELETE contra la API de Stripe (cancelar una suscripción).
+// Devuelve { ok, status } o null si ni siquiera salió la
+// llamada; el llamador decide si el fallo importa.
+async function stripeDelete(path) {
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key) return null;
+  const r = await fetch('https://api.stripe.com' + path, {
+    method: 'DELETE',
+    headers: { ['Authori' + 'zation']: 'Bearer ' + key }
+  }).catch(() => null);
+  if (!r) return null;
+  return { ok: r.ok, status: r.status };
+}
+
 const handler = async (req, res) => {
   const fail = (error, status) => {
     res.status(status || 200).json({ ok: false, error });
@@ -221,7 +253,24 @@ const handler = async (req, res) => {
       const md = obj.metadata || {};
       const userId = md.user_id, kind = md.kind, item = md.item;
 
-      if (userId && kind === 'topup' && TOPUP_CREDIT[item]) {
+      // Verificación de cobro (H-4): antes de acreditar NADA se
+      // exige que la sesión esté PAGADA, en dólares y por el
+      // monto EXACTO del catálogo del servidor pa' ese item.
+      // La metadata la puede falsificar cualquiera que arme una
+      // sesión; el monto cobrado, no. Si algo no cuadra: se
+      // registra en el log, se acusa recibo (200, pa' que
+      // Stripe no reintente en vano) y no se acredita nada.
+      const expectedCharge = kind === 'topup' ? TOPUP_CHARGE[item]
+        : kind === 'plan' ? PLAN_CHARGE[item] : undefined;
+      if (userId && expectedCharge !== undefined &&
+          (obj.payment_status !== 'paid' || obj.currency !== 'usd' ||
+           obj.amount_total !== expectedCharge)) {
+        console.error('checkout.session.completed REJECTED for event',
+          event.id, '| item:', item, '| payment_status:',
+          obj.payment_status, '| currency:', obj.currency,
+          '| amount_total:', obj.amount_total,
+          '| expected:', expectedCharge);
+      } else if (userId && kind === 'topup' && TOPUP_CREDIT[item]) {
         // La idempotencia ya quedó resuelta al inicio del
         // handler con el reclamo en stripe_events: esta entrega
         // es la única que procesa el evento, así que el crédito
@@ -251,6 +300,18 @@ const handler = async (req, res) => {
       if (obj.subscription && obj.billing_reason === 'subscription_cycle') {
         const sub = await stripeGet('/v1/subscriptions/' + obj.subscription);
         if (!sub) return failRetry('stripe_error', 500);
+        // Estado de la suscripción (M-1): un invoice.paid que
+        // llega DESPUÉS de la baja NO resucita el plan. Solo se
+        // renueva si la suscripción sigue activa o en prueba;
+        // cualquier otro estado se registra y se salta el
+        // crédito (acuse 200, sin reintento).
+        if (sub.status !== 'active' && sub.status !== 'trialing') {
+          console.error('invoice.paid SKIPPED for event', event.id,
+            '| subscription:', obj.subscription,
+            '| status:', sub.status);
+          res.status(200).json({ received: true });
+          return;
+        }
         const ent = await entitlementBySub(obj.subscription);
         if (ent) {
           // El plan sale de la metadata de la suscripción si
@@ -283,6 +344,91 @@ const handler = async (req, res) => {
           p_stripe_sub: obj.id
         });
         if (!r.ok) return failRetry('db_error', 500);
+      }
+    } else if (event.type === 'invoice.payment_failed') {
+      // Pago de renovación fallido (M-1): solo se registra.
+      // Stripe reintenta por su cuenta (dunning) y, si al final
+      // cancela la suscripción, llega
+      // customer.subscription.deleted y ESE evento hace la
+      // baja. Aquí no se toca ningún estado.
+      console.error('invoice.payment_failed for event', event.id,
+        '| subscription:', obj.subscription || null,
+        '| amount_due:', obj.amount_due);
+    } else if (event.type === 'charge.refunded' ||
+               event.type === 'charge.dispute.created') {
+      // Reembolso TOTAL o disputa (M-1): el usuario pierde el
+      // plan y queda en free. Reembolso PARCIAL: solo registro.
+      // Esta rama NUNCA lanza ni pide reintento: cualquier
+      // fallo interno se registra y se acusa recibo (200), pa'
+      // que un evento envenenado no entre en ciclo de
+      // reintentos (el reclamo en stripe_events ya quedó hecho
+      // al inicio del handler, como en todas las ramas).
+      try {
+        let customerId = obj.customer || null;
+        let refundedInFull = false;
+        if (event.type === 'charge.refunded') {
+          refundedInFull = typeof obj.amount === 'number' &&
+            typeof obj.amount_refunded === 'number' &&
+            obj.amount > 0 && obj.amount_refunded >= obj.amount;
+          if (!refundedInFull) {
+            console.error('charge.refunded PARTIAL for event',
+              event.id, '| charge:', obj.id, '| refunded:',
+              obj.amount_refunded, 'of', obj.amount,
+              '— no state change');
+          }
+        } else {
+          // La disputa trae el cargo, no el cliente: se busca
+          // el cargo en Stripe pa' resolver el cliente.
+          const charge = obj.charge
+            ? await stripeGet('/v1/charges/' + obj.charge) : null;
+          customerId = (charge && charge.customer) || null;
+        }
+        if ((event.type === 'charge.dispute.created' || refundedInFull) &&
+            customerId) {
+          const ent = await entitlementByCustomer(customerId);
+          if (ent) {
+            const r = await svc(
+              '/rest/v1/entitlements?user_id=eq.' +
+                encodeURIComponent(ent.user_id),
+              {
+                method: 'PATCH',
+                headers: { Prefer: 'return=minimal' },
+                body: JSON.stringify({
+                  plan: 'free',
+                  plan_conv_seconds: 0,
+                  plan_call_seconds: 0,
+                  stripe_subscription_id: null
+                })
+              });
+            if (!r.ok) {
+              console.error('refund/dispute downgrade FAILED for event',
+                event.id, '| user:', ent.user_id, '| status:', r.status);
+            } else {
+              console.error('refund/dispute downgrade applied for event',
+                event.id, '| user:', ent.user_id);
+            }
+            // Si la suscripción seguía registrada, se cancela
+            // también en Stripe (mejor esfuerzo: un fallo aquí
+            // no deshace la baja local ya aplicada).
+            if (ent.stripe_subscription_id) {
+              const d = await stripeDelete('/v1/subscriptions/' +
+                encodeURIComponent(ent.stripe_subscription_id));
+              if (!d || (!d.ok && d.status !== 404)) {
+                console.error('refund/dispute: Stripe subscription cancel failed for event',
+                  event.id, '| subscription:', ent.stripe_subscription_id);
+              }
+            }
+          } else {
+            console.error('refund/dispute: no entitlements row for customer',
+              customerId, '| event:', event.id);
+          }
+        } else if (event.type === 'charge.dispute.created') {
+          console.error('charge.dispute.created: could not resolve customer for event',
+            event.id, '| charge:', obj.charge || null);
+        }
+      } catch (e) {
+        console.error('refund/dispute handling error for event',
+          event.id, ':', e && e.message);
       }
     }
     // Cualquier otro evento: se acusa recibo y nada más.
