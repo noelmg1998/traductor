@@ -1269,7 +1269,7 @@
   </section>
 
   <footer data-i18n="footer">Traducción automática con IA · En vivo</footer>
-  <div class="verlabel">v52 · Englix</div>
+  <div class="verlabel">Englix</div>
 </div>
 
 <!-- ===== Barra inferior (v11 · Englix) ===== -->
@@ -1478,7 +1478,7 @@
     </div>
 
     <button class="btn-ghost" id="btn-signout" data-i18n="authSignOut">Cerrar sesión</button>
-    <div class="verlabel" style="margin-top:14px;">v52 · Englix</div>
+    <div class="verlabel" style="margin-top:14px;">Englix</div>
   </div>
 
   <!-- ===== Sub-vista: Editar perfil ===== -->
@@ -4270,6 +4270,7 @@
     if (settings.saveHist && lastSummary.cards.length) {
       var sl = loadList(LS_SAVED_CONVS);
       sl.push({ date: new Date().toISOString(), durationMs: lastSummary.durationMs, minutesMs: emm.shown, pairA: lastSummary.pairA, pairB: lastSummary.pairB, cards: lastSummary.cards });
+      if (sl.length > 30) sl = sl.slice(-30); // el historial guarda solo las últimas 30 (orden de Noel)
       saveList(LS_SAVED_CONVS, sl);
       lastSummary._saved = true;
     }
@@ -4288,6 +4289,7 @@
     if (!lastSummary._saved) {
       var list = loadList(LS_SAVED_CONVS);
       list.push({ date: new Date().toISOString(), durationMs: lastSummary.durationMs, pairA: lastSummary.pairA, pairB: lastSummary.pairB, cards: lastSummary.cards });
+      if (list.length > 30) list = list.slice(-30); // el historial guarda solo las últimas 30 (orden de Noel)
       saveList(LS_SAVED_CONVS, list);
       lastSummary._saved = true;
     }
