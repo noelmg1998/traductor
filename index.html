@@ -875,6 +875,8 @@
   .plsechead{display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin:19px 2px 9px;}
   .plsechead h3{font-size:20px; font-weight:800; margin:0; color:#fff;}
   .plsechead span{font-size:12px; color:var(--dim); text-align:right;}
+  .plbalamt{display:flex; justify-content:flex-end; align-items:baseline; gap:6px; margin:-3px 2px 8px; font-size:12px; color:var(--dim);}
+  .plbalamt b{color:var(--gold1); font-size:15px;}
   .pltopups{display:flex; gap:9px;}
   .pltopup{flex:1; min-width:0; display:flex; align-items:center; gap:9px; padding:11px 10px; border-radius:15px;
     border:1px solid var(--line); background:linear-gradient(170deg, rgba(255,255,255,.05), rgba(255,255,255,.015));
@@ -1191,10 +1193,6 @@
           <span class="plico sm"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
           <span class="plsum-ct"><small data-i18n="plansCallShort">Llamadas</small><b id="plans-cur-call">0 min</b></span>
         </div>
-        <div class="plsum-col">
-          <span class="plico sm"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5.5" rx="8" ry="2.8"/><path d="M4 5.5V12c0 1.55 3.58 2.8 8 2.8s8-1.25 8-2.8V5.5"/><path d="M4 12v6.5c0 1.55 3.58 2.8 8 2.8s8-1.25 8-2.8V12"/></svg></span>
-          <span class="plsum-ct"><small data-i18n="plansBalance">Saldo</small><b id="plans-cur-bal">$0.00</b></span>
-        </div>
       </div>
     </div>
 
@@ -1241,6 +1239,7 @@
       <h3 data-i18n="plansSecBalance">Saldo sin vencimiento</h3>
       <span data-i18n="plansSecBalanceSub">Agrega saldo y úsalo cuando quieras.</span>
     </div>
+    <div class="plbalamt"><span data-i18n="plansYourBalance">Tu saldo</span><b id="plans-cur-bal">$0.00</b></div>
     <div class="pltopups">
       <button class="pltopup" id="btn-topup-10"><span class="plico sm"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5.5" rx="8" ry="2.8"/><path d="M4 5.5V12c0 1.55 3.58 2.8 8 2.8s8-1.25 8-2.8V5.5"/><path d="M4 12v6.5c0 1.55 3.58 2.8 8 2.8s8-1.25 8-2.8V12"/></svg></span><span class="plt-txt"><b>$10</b><small data-i18n="plansTopupPlain">de saldo</small></span></button>
       <button class="pltopup" id="btn-topup-20"><span class="plico sm"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5.5" rx="8" ry="2.8"/><path d="M4 5.5V12c0 1.55 3.58 2.8 8 2.8s8-1.25 8-2.8V5.5"/><path d="M4 12v6.5c0 1.55 3.58 2.8 8 2.8s8-1.25 8-2.8V12"/></svg></span><span class="plt-txt"><b>$20</b><small id="topup-20-get">Recibes $22</small></span></button>
@@ -1258,7 +1257,7 @@
   </section>
 
   <footer data-i18n="footer">Traducción automática con IA · En vivo</footer>
-  <div class="verlabel">v45 · Englix</div>
+  <div class="verlabel">v46 · Englix</div>
 </div>
 
 <!-- ===== Barra inferior (v11 · Englix) ===== -->
@@ -1461,7 +1460,7 @@
     </div>
 
     <button class="btn-ghost" id="btn-signout" data-i18n="authSignOut">Cerrar sesión</button>
-    <div class="verlabel" style="margin-top:14px;">v45 · Englix</div>
+    <div class="verlabel" style="margin-top:14px;">v46 · Englix</div>
   </div>
 
   <!-- ===== Sub-vista: Editar perfil ===== -->
@@ -1946,7 +1945,7 @@
       authPlanBasico: 'Básico', authPlanPlus: 'Plus',
       plansTitle: 'Planes y saldo', plansTitleA: 'Planes y', plansTitleB: 'saldo', plansCurrent: 'Tu plan actual',
       plansConvShort: 'Conversación', plansCallShort: 'Llamadas', plansPopular: 'MÁS POPULAR',
-      plansConvLeft: 'Conversación disponible', plansCallLeft: 'Llamadas disponibles', plansBalance: 'Saldo',
+      plansConvLeft: 'Conversación disponible', plansCallLeft: 'Llamadas disponibles', plansBalance: 'Saldo', plansYourBalance: 'Tu saldo',
       plansSecPlans: 'Planes mensuales', plansPerMonth: '/mes', plansChoose: 'Elegir plan', plansCurrentBtn: 'Tu plan actual',
       plansBasicoIncl: '110 min de conversación · 55 min de llamadas',
       plansPlusIncl: '220 min de conversación · 110 min de llamadas',
@@ -2142,7 +2141,7 @@
       authPlanBasico: 'Basic', authPlanPlus: 'Plus',
       plansTitle: 'Plans & balance', plansTitleA: 'Plans &', plansTitleB: 'balance', plansCurrent: 'Your current plan',
       plansConvShort: 'Conversation', plansCallShort: 'Calls', plansPopular: 'MOST POPULAR',
-      plansConvLeft: 'Conversation available', plansCallLeft: 'Calls available', plansBalance: 'Balance',
+      plansConvLeft: 'Conversation available', plansCallLeft: 'Calls available', plansBalance: 'Balance', plansYourBalance: 'Your balance',
       plansSecPlans: 'Monthly plans', plansPerMonth: '/month', plansChoose: 'Choose plan', plansCurrentBtn: 'Your current plan',
       plansBasicoIncl: '110 min of conversation · 55 min of calls',
       plansPlusIncl: '220 min of conversation · 110 min of calls',
@@ -4927,6 +4926,7 @@
     if (!m) return s + ' s';
     return s ? m + ' min ' + s + ' s' : m + ' min';
   }
+  function fmtMin(sec) { return Math.floor(Math.max(0, sec || 0) / 60) + ' min'; }
   function fmtUSD(cents) { return '$' + ((cents || 0) / 100).toFixed(2); }
 
   function billingToken() {
@@ -4997,8 +4997,8 @@
   function renderPlans() {
     var b = window.__englixBilling || { plan: 'free', plan_conv_seconds: 0, plan_call_seconds: 0, balance_cents: 0 };
     $('plans-cur-plan').textContent = planNameOf(b.plan);
-    $('plans-cur-conv').textContent = fmtMinSec(b.plan_conv_seconds);
-    $('plans-cur-call').textContent = fmtMinSec(b.plan_call_seconds);
+    $('plans-cur-conv').textContent = fmtMin(b.plan_conv_seconds);
+    $('plans-cur-call').textContent = fmtMin(b.plan_call_seconds);
     $('plans-cur-bal').textContent = fmtUSD(b.balance_cents);
     ['basico', 'plus', 'premium'].forEach(function (p) {
       var isCur = b.plan === p;
