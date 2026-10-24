@@ -498,8 +498,12 @@
   .pnav .pnavtx small{display:block; font-size:13px; color:var(--muted); margin-top:2px;}
   .pnav .pchev{color:var(--gold1); font-size:25px; line-height:1; flex:0 0 auto;}
   #settings-panel #btn-signout{display:flex; width:100%; justify-content:center; align-items:center; margin:14px 0 0; margin-left:0; padding:14px; border-radius:16px; font-size:15px;}
-  .plabel{display:block; font-size:13px; color:var(--dim); margin:16px 2px -4px;}
-  .pseclab{font-size:14.5px; font-weight:700; margin:10px 2px 2px;}
+  .plabel{display:block; font-size:13px; color:var(--dim); margin:20px 2px -5px;}
+  .pseclab{font-size:19px; font-weight:800; letter-spacing:-.2px; margin:30px 2px 2px;}
+  .codeboxes{display:flex; gap:8px; margin-top:14px;}
+  .codebox{flex:1; min-width:0; height:58px; text-align:center; font-family:var(--sans); font-size:24px; font-weight:700; color:#fff; background:rgba(11,20,38,.88); border:1px solid rgba(255,255,255,.14); border-radius:14px; outline:none; caret-color:var(--gold1);}
+  .codebox:focus{border-color:var(--gold2); box-shadow:0 0 0 3px rgba(212,167,92,.18);}
+  .plinkbtn{display:block; margin:14px auto 0; background:none; border:none; color:var(--muted); font-family:var(--sans); font-size:14px; font-weight:600; cursor:pointer; padding:6px 12px;}
   .pbtn{width:100%; padding:14px; border-radius:14px; border:1px solid rgba(212,167,92,.6); background:linear-gradient(180deg,#e9c979,#c99b45); color:#241a05; font-family:var(--sans); font-size:15px; font-weight:800; cursor:pointer; margin-top:16px;}
   .pbtn:disabled{opacity:.55; cursor:default;}
   .pfeed{display:none; font-size:13px; line-height:1.45; margin:10px 2px 0;}
@@ -1497,7 +1501,7 @@
       <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><polyline points="3 7 12 13 21 7"/></svg>
       <input id="prof-email" type="email" readonly>
     </div>
-    <p class="pseclab" style="margin-top:24px;" data-i18n="profChangeEmail">Cambiar correo</p>
+    <p class="pseclab" data-i18n="profChangeEmail">Cambiar correo</p>
     <div id="edit-mail-form">
       <p class="pdelnote" data-i18n="profEmailNote">Escribe tu correo nuevo. Te enviamos un enlace de confirmación y tu correo no cambia hasta que lo confirmes.</p>
       <label class="plabel" for="prof-newemail" data-i18n="profNewEmail">Correo nuevo</label>
@@ -1513,6 +1517,49 @@
       <h3 class="mailtitle" data-i18n="authCheckTitle">Revisa tu correo</h3>
       <p class="authsub" style="text-align:center;" id="edit-mail-msg"></p>
       <button class="authghost" id="btn-email-resend" data-i18n="authResendLink">Reenviar enlace</button>
+    </div>
+    <p class="pseclab" id="ep-pass-anchor" data-i18n="profChangePass">Cambiar contraseña</p>
+    <div id="edit-pass-form">
+      <p class="pdelnote" data-i18n="profPassNote2">Escribe tu contraseña nueva. Te enviamos un código de 6 dígitos a tu correo y lo escribes aquí para confirmar el cambio.</p>
+      <label class="plabel" for="prof-newpass" data-i18n="profNewPass">Contraseña nueva</label>
+      <div class="afield">
+        <svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        <input id="prof-newpass" type="password" autocomplete="new-password" data-i18n-ph="profNewPass" placeholder="Contraseña nueva">
+        <button class="aeye" data-eye="prof-newpass" aria-label="Show password"><svg class="eyeon" viewBox="0 0 24 24"><path d="M1 12s4-7.5 11-7.5S23 12 23 12s-4 7.5-11 7.5S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eyeoff" viewBox="0 0 24 24"><path d="M17.94 17.94A10.6 10.6 0 0 1 12 19.5c-7 0-11-7.5-11-7.5a20.3 20.3 0 0 1 5.06-5.94M9.9 4.24A9.5 9.5 0 0 1 12 4.5c7 0 11 7.5 11 7.5a20.4 20.4 0 0 1-2.16 3.19M14.12 14.12A3 3 0 1 1 9.88 9.88"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button>
+      </div>
+      <div class="apwrules" id="ep-rules">
+        <p class="apwhead" data-i18n="authPassRules">Tu contraseña debe tener:</p>
+        <ul>
+          <li data-rule="len"><span class="arbox"></span><span data-i18n="authPwLen">Al menos 8 caracteres</span></li>
+          <li data-rule="upper"><span class="arbox"></span><span data-i18n="authPwUpper">Una mayúscula</span></li>
+          <li data-rule="lower"><span class="arbox"></span><span data-i18n="authPwLower">Una minúscula</span></li>
+          <li data-rule="num"><span class="arbox"></span><span data-i18n="authPwNum">Un número</span></li>
+          <li data-rule="sym"><span class="arbox"></span><span data-i18n="authPwSym">Un símbolo especial (!@#$%)</span></li>
+        </ul>
+      </div>
+      <label class="plabel" for="prof-newpass2" data-i18n="profConfirmPass">Confirmar contraseña</label>
+      <div class="afield">
+        <svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        <input id="prof-newpass2" type="password" autocomplete="new-password" data-i18n-ph="profConfirmPass" placeholder="Confirmar contraseña">
+        <button class="aeye" data-eye="prof-newpass2" aria-label="Show password"><svg class="eyeon" viewBox="0 0 24 24"><path d="M1 12s4-7.5 11-7.5S23 12 23 12s-4 7.5-11 7.5S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eyeoff" viewBox="0 0 24 24"><path d="M17.94 17.94A10.6 10.6 0 0 1 12 19.5c-7 0-11-7.5-11-7.5a20.3 20.3 0 0 1 5.06-5.94M9.9 4.24A9.5 9.5 0 0 1 12 4.5c7 0 11 7.5 11 7.5a20.4 20.4 0 0 1-2.16 3.19M14.12 14.12A3 3 0 1 1 9.88 9.88"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button>
+      </div>
+      <p class="pfeed" id="pass-feed"></p>
+      <button class="pbtn" id="btn-pass-send" data-i18n="profSendCode">Enviar código a mi correo</button>
+    </div>
+    <div id="edit-pass-code" style="display:none;">
+      <p class="pdelnote" id="ep-code-msg"></p>
+      <div class="codeboxes" id="ep-codeboxes">
+        <input class="codebox" type="text" inputmode="numeric" autocomplete="one-time-code" aria-label="1">
+        <input class="codebox" type="text" inputmode="numeric" aria-label="2">
+        <input class="codebox" type="text" inputmode="numeric" aria-label="3">
+        <input class="codebox" type="text" inputmode="numeric" aria-label="4">
+        <input class="codebox" type="text" inputmode="numeric" aria-label="5">
+        <input class="codebox" type="text" inputmode="numeric" aria-label="6">
+      </div>
+      <p class="pfeed" id="code-feed"></p>
+      <button class="pbtn" id="btn-pass-confirm" data-i18n="profConfirmChange">Confirmar cambio</button>
+      <button class="authghost" id="btn-pass-resend" data-i18n="profResendCode">Reenviar código</button>
+      <button class="plinkbtn" id="btn-pass-cancel" data-i18n="profCancel">Cancelar</button>
     </div>
   </div>
 
@@ -1555,14 +1602,8 @@
     <div class="setcard">
       <p class="pseclab" data-i18n="profChangePass">Cambiar contraseña</p>
       <div id="priv-pass-form">
-        <p class="pdelnote" data-i18n="profPassMailNote">Por seguridad, el cambio de contraseña se hace por correo: te enviamos un enlace y desde ahí creas tu contraseña nueva.</p>
-        <button class="pbtn" id="btn-priv-send" data-i18n="profSendLink">Enviar enlace a mi correo</button>
-      </div>
-      <div id="priv-mail" style="display:none;">
-        <div class="amedal"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><polyline points="3 7 12 13 21 7"/></svg></div>
-        <h3 class="mailtitle" data-i18n="authCheckTitle">Revisa tu correo</h3>
-        <p class="authsub" style="text-align:center;" id="priv-mail-msg"></p>
-        <button class="authghost" id="btn-priv-resend" data-i18n="authResendLink">Reenviar enlace</button>
+        <p class="pdelnote" data-i18n="profPrivPassNote">Tu contraseña se cambia en Editar perfil: escribes la nueva y la confirmas con un código que llega a tu correo.</p>
+        <button class="pbtn" id="btn-priv-gopass" data-i18n="profChangePass">Cambiar contraseña</button>
       </div>
     </div>
     <div class="setcard">
@@ -2014,6 +2055,15 @@
       profPassMailNote: 'Por seguridad, el cambio de contraseña se hace por correo: te enviamos un enlace y desde ahí creas tu contraseña nueva.',
       profPassSent: 'Te enviamos un enlace a {EMAIL}. Tócalo y se abrirá la pantalla para crear tu contraseña nueva.',
       profChangeEmail: 'Cambiar correo', profNewEmail: 'Correo nuevo',
+      profPassNote2: 'Escribe tu contraseña nueva. Te enviamos un código de 6 dígitos a tu correo y lo escribes aquí para confirmar el cambio.',
+      profNewPass: 'Contraseña nueva', profConfirmPass: 'Confirmar contraseña',
+      profSendCode: 'Enviar código a mi correo', profConfirmChange: 'Confirmar cambio',
+      profResendCode: 'Reenviar código', profCancel: 'Cancelar',
+      profCodeSentTo: 'Te enviamos un código de 6 dígitos a {EMAIL}. Escríbelo aquí:',
+      profCodeIncomplete: 'Escribe el código completo de 6 dígitos.',
+      profCodeWrong: 'El código no es correcto o ya venció. Revisa tu correo o pide uno nuevo.',
+      profPassChanged: 'Tu contraseña se actualizó.',
+      profPrivPassNote: 'Tu contraseña se cambia en Editar perfil: escribes la nueva y la confirmas con un código que llega a tu correo.',
       profEmailNote: 'Escribe tu correo nuevo. Te enviamos un enlace de confirmación y tu correo no cambia hasta que lo confirmes.',
       profSendConfirm: 'Enviar enlace de confirmación',
       profEmailSent: 'Te enviamos un enlace de confirmación a {EMAIL}. Tu correo no cambia hasta que lo confirmes desde ese enlace.',
@@ -2228,6 +2278,15 @@
       profPassMailNote: 'For security, password changes happen by email: we send you a link and you create your new password from there.',
       profPassSent: 'We sent a link to {EMAIL}. Tap it and the screen to create your new password will open.',
       profChangeEmail: 'Change email', profNewEmail: 'New email',
+      profPassNote2: 'Type your new password. We email you a 6-digit code and you enter it here to confirm the change.',
+      profNewPass: 'New password', profConfirmPass: 'Confirm password',
+      profSendCode: 'Email me the code', profConfirmChange: 'Confirm change',
+      profResendCode: 'Resend code', profCancel: 'Cancel',
+      profCodeSentTo: 'We sent a 6-digit code to {EMAIL}. Enter it here:',
+      profCodeIncomplete: 'Enter the full 6-digit code.',
+      profCodeWrong: 'That code is incorrect or has expired. Check your email or request a new one.',
+      profPassChanged: 'Your password has been updated.',
+      profPrivPassNote: 'Your password is changed in Edit profile: you type the new one and confirm it with a code sent to your email.',
       profEmailNote: 'Type your new email. We send you a confirmation link and your email does not change until you confirm it.',
       profSendConfirm: 'Send confirmation link',
       profEmailSent: 'We sent a confirmation link to {EMAIL}. Your email does not change until you confirm it from that link.',
@@ -4415,7 +4474,7 @@
   $('nav-myplan').addEventListener('click', function () { vibrate(8); openPlansFromProfile(); });
   $('nav-pay').addEventListener('click', function () { vibrate(8); renderPayMethod(); profileGo('pay'); });
   $('nav-lang').addEventListener('click', function () { vibrate(8); profileGo('lang'); });
-  $('nav-privacy').addEventListener('click', function () { vibrate(8); privShowMail(false); profileGo('privacy'); });
+  $('nav-privacy').addEventListener('click', function () { vibrate(8); profileGo('privacy'); });
   $('nav-help').addEventListener('click', function () { vibrate(8); profileGo('help'); });
   $('nav-edit').addEventListener('click', function () {
     vibrate(8);
@@ -4429,35 +4488,97 @@
   });
   /* El nombre NO se edita (orden de Noel): se muestra en solo
      lectura; lo editable es el correo (con enlace de confirmación)
-     y la contraseña (con enlace al correo, en Privacidad). */
-  /* Cambiar contraseña (v51): SOLO por enlace de correo, como pidió
-     Noel — la autorización llega al correo y el cambio ocurre en la
-     pantalla de Nueva contraseña de siempre (PASSWORD_RECOVERY, con
-     su checklist fuerte). Aquí ya no se escribe ninguna contraseña:
-     se manda el mismo resetPasswordForEmail de «¿Olvidaste tu
-     contraseña?» y la sub-vista cambia al diseño «Revisa tu correo». */
-  function privShowMail(sent) {
-    $('priv-pass-form').style.display = sent ? 'none' : '';
-    $('priv-mail').style.display = sent ? '' : 'none';
-    if (sent && sbUser) $('priv-mail-msg').textContent = t('profPassSent').replace('{EMAIL}', sbUser.email || '');
+     y la contraseña (con código al correo, en Editar perfil). */
+  /* Cambiar contraseña CON CÓDIGO (pedido de Noel): en Editar perfil
+     el usuario escribe su contraseña nueva (con la checklist fuerte)
+     y Supabase le manda un código de 6 dígitos a su correo
+     (reauthenticate); el cambio SOLO se aplica al escribir el código
+     correcto (updateUser con nonce). Desde Privacidad el botón lleva
+     a esa misma sección — un solo camino. El enlace de «¿Olvidaste
+     tu contraseña?» (sin sesión) sigue existiendo aparte. */
+  $('btn-priv-gopass').addEventListener('click', function () {
+    vibrate(8);
+    profileGo('edit');
+    setTimeout(function () {
+      var a = $('ep-pass-anchor');
+      if (a && a.scrollIntoView) a.scrollIntoView({ block: 'start' });
+    }, 60);
+  });
+  function passShowCode(show) {
+    $('edit-pass-form').style.display = show ? 'none' : '';
+    $('edit-pass-code').style.display = show ? '' : 'none';
+    if (show && sbUser) $('ep-code-msg').textContent = t('profCodeSentTo').replace('{EMAIL}', sbUser.email || '');
   }
-  function sendPassLink() {
-    if (!sb || !sbUser || !sbUser.email) { toast(t('authGeneric')); return; }
-    var left = coolLeft('privreset');
+  var epBoxes = Array.prototype.slice.call(document.querySelectorAll('#ep-codeboxes .codebox'));
+  function epCode() { return epBoxes.map(function (b) { return b.value; }).join(''); }
+  function epClearCode() { epBoxes.forEach(function (b) { b.value = ''; }); }
+  epBoxes.forEach(function (box, i) {
+    box.addEventListener('input', function () {
+      box.value = box.value.replace(/\D/g, '').slice(0, 1);
+      pfeed('code-feed', '');
+      if (box.value && i < epBoxes.length - 1) epBoxes[i + 1].focus();
+    });
+    box.addEventListener('keydown', function (e) {
+      if (e.key === 'Backspace' && !box.value && i > 0) epBoxes[i - 1].focus();
+    });
+    box.addEventListener('paste', function (e) {
+      e.preventDefault();
+      var txt = ((e.clipboardData || window.clipboardData).getData('text') || '').replace(/\D/g, '').slice(0, 6);
+      txt.split('').forEach(function (ch, j) { if (epBoxes[j]) epBoxes[j].value = ch; });
+      var nxt = Math.min(txt.length, epBoxes.length - 1);
+      if (epBoxes[nxt]) epBoxes[nxt].focus();
+    });
+  });
+  $('prof-newpass').addEventListener('input', function () { paintPwRules('ep-rules', $('prof-newpass').value); pfeed('pass-feed', ''); });
+  $('prof-newpass2').addEventListener('input', function () { pfeed('pass-feed', ''); });
+  function sendPassCode() {
+    if (!sb || !sbUser) { toast(t('profSaveErr')); return; }
+    var left = coolLeft('reauth');
     if (left > 0) { toast(t('authWaitSec').replace('{S}', left)); return; }
-    coolStart('privreset', 60);
-    sb.auth.resetPasswordForEmail(sbUser.email, { redirectTo: authOrigin() + '/' }).then(function (res) {
+    coolStart('reauth', 60);
+    sb.auth.reauthenticate().then(function (res) {
       if (res && res.error) {
         var m = res.error.message || '';
         if (/rate limit/i.test(m)) { toast(t('authWaitSec').replace('{S}', 60)); return; }
         if (/failed to fetch|network|load failed/i.test(m)) { toast(t('authErrConn')); return; }
         toast(mapAuthErr(res.error, 'reset')); return;
       }
-      privShowMail(true);
+      epClearCode(); pfeed('code-feed', '');
+      passShowCode(true);
+      if (epBoxes[0]) epBoxes[0].focus();
     }).catch(function () { toast(t('authErrConn')); });
   }
-  $('btn-priv-send').addEventListener('click', function () { vibrate(8); sendPassLink(); });
-  $('btn-priv-resend').addEventListener('click', function () { vibrate(8); sendPassLink(); });
+  $('btn-pass-send').addEventListener('click', function () {
+    vibrate(8);
+    var pw = $('prof-newpass').value, pw2 = $('prof-newpass2').value;
+    if (!pwAllOk(pw)) { pfeed('pass-feed', t('authErrPassShort')); return; }
+    if (pw !== pw2) { pfeed('pass-feed', t('authErrPassMatch')); return; }
+    pfeed('pass-feed', '');
+    sendPassCode();
+  });
+  $('btn-pass-resend').addEventListener('click', function () { vibrate(8); sendPassCode(); });
+  $('btn-pass-cancel').addEventListener('click', function () { vibrate(8); passShowCode(false); });
+  $('btn-pass-confirm').addEventListener('click', function () {
+    vibrate(8);
+    var code = epCode(), pw = $('prof-newpass').value;
+    if (code.length < 6) { pfeed('code-feed', t('profCodeIncomplete')); return; }
+    if (!pwAllOk(pw)) { passShowCode(false); pfeed('pass-feed', t('authErrPassShort')); return; }
+    if (!sb || !sbUser) { pfeed('code-feed', t('profSaveErr')); return; }
+    var btn = this; btn.disabled = true;
+    sb.auth.updateUser({ password: pw, nonce: code }).then(function (res) {
+      btn.disabled = false;
+      if (res && res.error) {
+        var m = (res.error.message || '').toLowerCase();
+        if (m.indexOf('nonce') >= 0 || m.indexOf('otp') >= 0 || m.indexOf('invalid') >= 0 || m.indexOf('expired') >= 0 || m.indexOf('code') >= 0) { pfeed('code-feed', t('profCodeWrong')); return; }
+        pfeed('code-feed', mapAuthErr(res.error, 'reset')); return;
+      }
+      passShowCode(false);
+      $('prof-newpass').value = ''; $('prof-newpass2').value = '';
+      paintPwRules('ep-rules', '');
+      pfeed('pass-feed', t('profPassChanged'), true);
+      toast(t('profPassChanged'));
+    }).catch(function () { btn.disabled = false; pfeed('code-feed', t('authErrConn')); });
+  });
   /* Cambiar correo (v51): updateUser({ email }) envía el enlace de
      confirmación; el correo NO cambia hasta confirmarlo (con la
      confirmación segura de Supabase el enlace llega al correo
