@@ -927,8 +927,7 @@
 
   #tabbar{position:fixed; left:0; right:0; bottom:0; z-index:50; display:none;
     background:rgba(9,11,19,.88); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
-    border-top:2px solid rgba(201,162,77,.8); box-shadow:0 -2px 16px rgba(212,167,92,.16);
-    padding:8px 10px calc(8px + env(safe-area-inset-bottom));}
+    border-top:1px solid var(--line-soft); padding:8px 10px calc(8px + env(safe-area-inset-bottom));}
   body.has-nav #tabbar{display:flex;}
   #tabbar .tab{flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;
     padding:5px 0 2px; color:#8f887a; font-size:11.5px; font-weight:500; transition:color .25s ease;}
@@ -936,31 +935,21 @@
   #tabbar .tab.on{color:var(--gold1);}
   #tabbar .tab i{display:block; width:26px; height:3px; border-radius:2px; background:transparent; margin-top:2px;
     transition:background .25s ease, box-shadow .25s ease;}
-  /* Barra «burbuja sobre riel dorado» (diseño final de Noel,
-     2026-10-24): el icono activo sube en un círculo dorado que se
-     desliza POR la línea amarilla de arriba de la barra; el círculo
-     va SIN borde negro — solo el dorado, con las alas laterales que
-     curvan la barra a su alrededor. El <i> de cada pestaña no se usa. */
+  /* Barra con línea dorada y HUECO que se desliza (diseño final de
+     Noel, 2026-10-24): la línea de arriba de la barra es dorada de
+     lado a lado (un SVG); al elegir una pestaña, la línea se hunde
+     en un huequito suave sobre esa pestaña — el hueco viaja con un
+     movimiento elástico — y el icono de la pestaña sube un poquito
+     y se pone dorado; los demás quedan en gris. Sin círculos
+     flotantes. El <i> de cada pestaña no se usa. */
   #tabbar .tab i{display:none;}
-  #tabbar .tab svg{transition:opacity .22s ease, transform .3s ease;}
-  #tabbar .tab.on svg{opacity:0; transform:translateY(-6px) scale(.8);}
+  #tabbar .tab svg{transition:transform .35s cubic-bezier(.3,1.3,.4,1);}
+  #tabbar .tab.on svg{transform:translateY(-5px);}
   #tabbar .tab.on{font-weight:700;}
-  #tab-bubble{position:absolute; left:0; top:-26px; width:54px; height:54px; border-radius:50%;
-    background:var(--gold-grad);
-    box-shadow:0 10px 24px rgba(0,0,0,.5), 0 0 18px rgba(212,167,92,.35);
-    opacity:0; transform:translateX(-120px); pointer-events:none; z-index:2;
-    transition:transform .42s cubic-bezier(.30,1.2,.36,1), opacity .25s ease;}
-  #tab-bubble::before, #tab-bubble::after{content:''; position:absolute; top:50%; width:20px; height:20px; background:transparent;}
-  #tab-bubble::before{left:-22px; border-top-right-radius:20px; box-shadow:1px -10px 0 0 #07090F;}
-  #tab-bubble::after{right:-22px; border-top-left-radius:20px; box-shadow:-1px -10px 0 0 #07090F;}
-  #tab-bubble .bic{position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-    opacity:0; transform:scale(.5) rotate(-16deg); transition:opacity .22s ease, transform .32s cubic-bezier(.3,1.4,.4,1);}
-  #tab-bubble .bic svg{width:25px; height:25px; stroke:#241A05; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
-  #tab-bubble[data-tab="home"] .bic-home, #tab-bubble[data-tab="learn"] .bic-learn,
-  #tab-bubble[data-tab="history"] .bic-history, #tab-bubble[data-tab="profile"] .bic-profile{opacity:1; transform:scale(1) rotate(0deg);}
+  #tab-line{position:absolute; left:0; top:-1px; width:100%; height:22px; overflow:visible; pointer-events:none; z-index:2;}
   @media (prefers-reduced-motion: reduce){
     .globe .spin, .globe .spin2, .globe .arc, .gchip, .rise{animation:none !important;}
-    #tab-bubble, #tab-bubble .bic{transition:none !important;}
+    #tabbar .tab svg{transition:none !important;}
   }
   @media (min-width:640px){
     .orb{width:180px; height:180px;}
@@ -1323,12 +1312,15 @@
 
 <!-- ===== Barra inferior (v11 · Englix) ===== -->
 <nav id="tabbar">
-  <span id="tab-bubble" data-tab="home">
-    <span class="bic bic-home"><svg viewBox="0 0 24 24"><path d="M3 10.8L12 3l9 7.8"/><path d="M5.5 9.3V21h13V9.3"/></svg></span>
-    <span class="bic bic-learn"><svg viewBox="0 0 24 24"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/></svg></span>
-    <span class="bic bic-history"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg></span>
-    <span class="bic bic-profile"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
-  </span>
+  <svg id="tab-line" aria-hidden="true">
+    <defs>
+      <linearGradient id="tab-gold" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#D4A75C"/><stop offset=".5" stop-color="#F2D287"/><stop offset="1" stop-color="#D4A75C"/>
+      </linearGradient>
+    </defs>
+    <path id="tab-line-glow" fill="none" stroke="#D4A75C" stroke-width="7" stroke-linecap="round" opacity=".15" d=""/>
+    <path id="tab-line-main" fill="none" stroke="url(#tab-gold)" stroke-width="2.5" stroke-linecap="round" d=""/>
+  </svg>
   <button class="tab on" data-tab="home" id="tab-home">
     <svg viewBox="0 0 24 24"><path d="M3 10.8L12 3l9 7.8"/><path d="M5.5 9.3V21h13V9.3"/></svg>
     <span data-i18n="navHome">Inicio</span><i></i>
@@ -4873,29 +4865,59 @@
     document.querySelectorAll('#tabbar .tab').forEach(function (b) {
       b.classList.toggle('on', b.getAttribute('data-tab') === navTab);
     });
-    var bub = $('tab-bubble');
-    if (bub) bub.setAttribute('data-tab', navTab);
-    moveBubble(bubblePrimed);
+    moveDip(dipPrimed);
   }
-  /* La burbuja dorada viaja por la línea amarilla al centro de la
-     pestaña activa, con el icono de esa pestaña adentro. La primera
-     colocación (barra recién visible) va sin animación; los cambios
-     se deslizan. Al girar la pantalla se recoloca al instante. */
-  var bubblePrimed = false;
-  function moveBubble(animate) {
-    var g = $('tab-bubble');
-    if (!g) return;
-    if (!document.body.classList.contains('has-nav')) { g.style.opacity = '0'; return; }
+  /* El hueco de la línea dorada viaja hasta la pestaña activa: la
+     línea (un SVG de todo el ancho) se redibuja con la curva hundida
+     en el centro de la pestaña, y el centro se anima con un elástico
+     suave. La primera vez (barra recién visible) se dibuja sin
+     animación; al girar la pantalla se recoloca al instante. */
+  var dipX = null, dipAnim = null, dipPrimed = false;
+  function dipPath(W, cx) {
+    var hw = 54, y0 = 3, y1 = 17;
+    var x0 = Math.max(0, cx - hw), x1 = Math.min(W, cx + hw);
+    var d = 'M0 ' + y0 + ' H ' + x0.toFixed(1);
+    d += ' C ' + (cx - hw * 0.45).toFixed(1) + ' ' + y0 + ', ' + (cx - hw * 0.42).toFixed(1) + ' ' + y1 + ', ' + cx.toFixed(1) + ' ' + y1;
+    d += ' C ' + (cx + hw * 0.42).toFixed(1) + ' ' + y1 + ', ' + (cx + hw * 0.45).toFixed(1) + ' ' + y0 + ', ' + x1.toFixed(1) + ' ' + y0;
+    d += ' H ' + W;
+    return d;
+  }
+  function drawDip() {
+    var svg = $('tab-line'), bar = $('tabbar');
+    if (!svg || !bar || dipX === null) return;
+    var W = bar.clientWidth;
+    if (!W) return;
+    svg.setAttribute('viewBox', '0 0 ' + W + ' 22');
+    var d = dipPath(W, dipX);
+    $('tab-line-main').setAttribute('d', d);
+    $('tab-line-glow').setAttribute('d', d);
+  }
+  function moveDip(animate) {
+    var bar = $('tabbar');
+    if (!bar || !document.body.classList.contains('has-nav')) return;
     var btn = document.querySelector('#tabbar .tab[data-tab="' + navTab + '"]');
     if (!btn || !btn.offsetWidth) return;
-    var x = btn.offsetLeft + (btn.offsetWidth / 2) - 27;
-    if (!animate) g.style.transition = 'none';
-    g.style.transform = 'translateX(' + x + 'px)';
-    g.style.opacity = '1';
-    if (!animate) { void g.offsetWidth; g.style.transition = ''; }
-    bubblePrimed = true;
+    var target = btn.offsetLeft + (btn.offsetWidth / 2);
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) animate = false;
+    if (dipX === null || !animate) {
+      if (dipAnim) cancelAnimationFrame(dipAnim);
+      dipX = target; dipPrimed = true; drawDip(); return;
+    }
+    if (dipAnim) cancelAnimationFrame(dipAnim);
+    var from = dipX, t0 = performance.now(), dur = 380;
+    var step = function (now) {
+      var p = Math.min(1, (now - t0) / dur);
+      var c = 1.15, q = p - 1;
+      var e = 1 + (c + 1) * q * q * q + c * q * q;
+      dipX = from + (target - from) * e;
+      drawDip();
+      if (p < 1) { dipAnim = requestAnimationFrame(step); }
+      else { dipX = target; drawDip(); dipAnim = null; }
+    };
+    dipAnim = requestAnimationFrame(step);
+    dipPrimed = true;
   }
-  window.addEventListener('resize', function () { moveBubble(false); });
+  window.addEventListener('resize', function () { moveDip(false); });
   function openSoon(kind) {
     soonKind = kind;
     $('soon-icon').textContent = kind === 'premium' ? '👑' : '📖';
