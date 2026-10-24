@@ -1490,15 +1490,13 @@
     <label class="plabel" for="prof-name" data-i18n="authNamePh">Nombre completo</label>
     <div class="afield">
       <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      <input id="prof-name" type="text" autocomplete="name">
+      <input id="prof-name" type="text" autocomplete="name" readonly>
     </div>
     <label class="plabel" for="prof-email" data-i18n="authEmailPh">Correo electrónico</label>
     <div class="afield">
       <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><polyline points="3 7 12 13 21 7"/></svg>
       <input id="prof-email" type="email" readonly>
     </div>
-    <p class="pfeed" id="prof-feed"></p>
-    <button class="pbtn" id="btn-prof-save" data-i18n="profSave">Guardar cambios</button>
     <p class="pseclab" style="margin-top:24px;" data-i18n="profChangeEmail">Cambiar correo</p>
     <div id="edit-mail-form">
       <p class="pdelnote" data-i18n="profEmailNote">Escribe tu correo nuevo. Te enviamos un enlace de confirmación y tu correo no cambia hasta que lo confirmes.</p>
@@ -4424,27 +4422,14 @@
     var meta = (sbUser && sbUser.user_metadata) || {};
     $('prof-name').value = (window.__englixProfile && window.__englixProfile.full_name) || meta.full_name || '';
     $('prof-email').value = sbUser ? (sbUser.email || '') : '';
-    pfeed('prof-feed', '');
     $('prof-newemail').value = '';
     pfeed('email-feed', '');
     editShowMail(false);
     profileGo('edit');
   });
-  $('btn-prof-save').addEventListener('click', function () {
-    var name = $('prof-name').value.trim();
-    if (!name) { pfeed('prof-feed', t('authErrName')); return; }
-    if (!sb || !sbUser) { pfeed('prof-feed', t('profSaveErr')); return; }
-    var btn = this; btn.disabled = true;
-    sb.from('profiles').update({ full_name: name }).eq('id', sbUser.id).then(function (res) {
-      btn.disabled = false;
-      if (res && res.error) { pfeed('prof-feed', t('profSaveErr')); return; }
-      var p = window.__englixProfile || {}; p.full_name = name; window.__englixProfile = p;
-      if (sbUser.user_metadata) sbUser.user_metadata.full_name = name;
-      renderAcct();
-      pfeed('prof-feed', t('profSaved'), true);
-      try { sb.auth.updateUser({ data: { full_name: name } }).catch(function () {}); } catch (e) {}
-    }).catch(function () { btn.disabled = false; pfeed('prof-feed', t('profSaveErr')); });
-  });
+  /* El nombre NO se edita (orden de Noel): se muestra en solo
+     lectura; lo editable es el correo (con enlace de confirmación)
+     y la contraseña (con enlace al correo, en Privacidad). */
   /* Cambiar contraseña (v51): SOLO por enlace de correo, como pidió
      Noel — la autorización llega al correo y el cambio ocurre en la
      pantalla de Nueva contraseña de siempre (PASSWORD_RECOVERY, con
