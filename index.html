@@ -945,6 +945,12 @@
   #tabbar .tab i{display:none;}
   #tabbar .tab svg{transition:transform .35s cubic-bezier(.3,1.3,.4,1);}
   #tabbar .tab.on svg{transform:translateY(-5px);}
+  /* La pestaña activa NO muestra su nombre (último detalle de Noel,
+     2026-10-24): la línea le pasaba por encima al texto; activa solo
+     se ve su icono dorado dentro del hueco. El espacio del nombre se
+     conserva (opacidad) pa' que la barra no brinque. */
+  #tabbar .tab span{transition:opacity .25s ease;}
+  #tabbar .tab.on span{opacity:0;}
   #tabbar .tab.on{font-weight:700;}
   #tab-line{position:absolute; left:0; top:-1px; width:100%; height:72px; overflow:visible; pointer-events:none; z-index:2;}
   @media (prefers-reduced-motion: reduce){
