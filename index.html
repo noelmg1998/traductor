@@ -512,6 +512,9 @@
   #verify-overlay .codeboxes{justify-content:center;margin:16px 0 4px;}
   #vf-err{min-height:18px;text-align:center;}
   #verify-overlay .wc-btn{margin-top:10px;}
+  #welcome-overlay{align-items:center; padding:22px;}
+  #welcome-overlay .welcomecard{margin:0; width:100%; max-width:400px; box-shadow:0 24px 60px rgba(0,0,0,.6);}
+  #welcome-overlay .plinkbtn{color:#cbbd93;}
   .codebox{flex:1; min-width:0; height:58px; text-align:center; font-family:var(--sans); font-size:24px; font-weight:700; color:#fff; background:rgba(11,20,38,.88); border:1px solid rgba(255,255,255,.14); border-radius:14px; outline:none; caret-color:var(--gold1);}
   .codebox:focus{border-color:var(--gold2); box-shadow:0 0 0 3px rgba(212,167,92,.18);}
   .plinkbtn{display:block; margin:14px auto 0; background:none; border:none; color:var(--muted); font-family:var(--sans); font-size:14px; font-weight:600; cursor:pointer; padding:6px 12px;}
@@ -1837,6 +1840,15 @@
 </div>
 
 <!-- ===== Términos / Privacidad ===== -->
+<div class="overlay" id="welcome-overlay">
+  <div class="welcomecard">
+    <p class="wc-title" data-i18n="wcTitle">¡Tienes minutos GRATIS!</p>
+    <p class="wc-sub" id="wc-sub-m"></p>
+    <button class="wc-btn" id="wc-verify-m" data-i18n="wcBtn">Verificar mi n&uacute;mero</button>
+    <button class="plinkbtn" id="wc-later" data-i18n="wcLater">Ahora no</button>
+  </div>
+</div>
+
 <div class="overlay" id="verify-overlay">
   <div class="sheet">
     <h3 data-i18n="vfTitle">Verifica tu n&uacute;mero</h3>
@@ -2161,6 +2173,7 @@
       authPhonePh: '239 555 0134',
       authErrPhone: 'Escribe tu número de teléfono de 10 dígitos.',
       wcTitle: '¡Tienes minutos GRATIS!',
+      wcLater: 'Ahora no',
       wcSub: '10 min de llamadas y 10 min de traducción, sin pagar nada. Verifica tu número {PHONE} y se activan al instante.',
       wcBtn: 'Verificar mi número',
       vfTitle: 'Verifica tu número',
@@ -2402,6 +2415,7 @@
       authPhonePh: '239 555 0134',
       authErrPhone: 'Enter your 10-digit phone number.',
       wcTitle: 'You have FREE minutes!',
+      wcLater: 'Not now',
       wcSub: '10 min of calls and 10 min of translation, free. Verify your number {PHONE} and they activate instantly.',
       wcBtn: 'Verify my number',
       vfTitle: 'Verify your number',
@@ -6099,15 +6113,38 @@
     return d.length >= 4 ? '\u2022\u2022\u2022 \u2022\u2022\u2022 ' + d.slice(-4) : (p || '');
   }
   function wcResolvedKey() { return 'lc_welcome_resolved_v2_' + (sbUser && sbUser.id ? sbUser.id : 'anon'); }
+  var wcAutoShown = false, wcLastUser = null;
+  function wcShowModal() {
+    var wov = $('welcome-overlay');
+    if (wov && !wov.classList.contains('on')) { wov.classList.add('on'); lockScroll(); }
+  }
+  function wcHideModal() {
+    var wov = $('welcome-overlay');
+    if (wov && wov.classList.contains('on')) { wov.classList.remove('on'); unlockScroll(); }
+  }
   function renderWelcomeCard() {
     var card = $('welcome-card');
     if (!card) return;
+    var uid = sbUser && sbUser.id ? sbUser.id : null;
+    if (uid !== wcLastUser) { wcLastUser = uid; wcAutoShown = false; }
     var resolved = false, dismissed = false;
     try { resolved = !!localStorage.getItem(wcResolvedKey()); } catch (e) {}
     try { dismissed = !!sessionStorage.getItem('lc_wc_dismissed_v1'); } catch (e) {}
     var show = !!sbUser && claimedState() === false && !resolved && !dismissed && !!signupPhone();
     card.hidden = !show;
-    if (show) $('wc-sub').textContent = t('wcSub').replace('{PHONE}', maskPhone(signupPhone()));
+    if (show) {
+      var subtxt = t('wcSub').replace('{PHONE}', maskPhone(signupPhone()));
+      $('wc-sub').textContent = subtxt;
+      var sm = $('wc-sub-m'); if (sm) sm.textContent = subtxt;
+    }
+    if (!show) { wcHideModal(); return; }
+    // Aviso emergente al abrir la app / iniciar sesión (pedido de Noel,
+    // 2026-10-24): salta UNA vez por sesión, solo estando en Inicio y
+    // sin tapar otra ventana que ya esté abierta.
+    if (!wcAutoShown && typeof viewHome !== 'undefined' && viewHome && viewHome.style.display !== 'none' && !document.querySelector('.overlay.on')) {
+      wcAutoShown = true;
+      wcShowModal();
+    }
   }
   function vfBoxes() { return Array.prototype.slice.call(document.querySelectorAll('#vf-codeboxes .codebox')); }
   function vfCode() { return vfBoxes().map(function (b) { return b.value; }).join(''); }
@@ -6200,6 +6237,11 @@
   $('wc-close').addEventListener('click', function () {
     try { sessionStorage.setItem('lc_wc_dismissed_v1', '1'); } catch (e) {}
     renderWelcomeCard();
+  });
+  $('wc-verify-m').addEventListener('click', function () { vibrate(8); wcHideModal(); openVerifyPhone(); });
+  $('wc-later').addEventListener('click', function () {
+    try { sessionStorage.setItem('lc_wc_dismissed_v1', '1'); } catch (e) {}
+    wcHideModal(); renderWelcomeCard();
   });
   $('vf-confirm').addEventListener('click', function () { vibrate(8); vfConfirm(); });
   $('vf-resend').addEventListener('click', function () { if (!$('vf-resend').disabled) vfSend(); });
