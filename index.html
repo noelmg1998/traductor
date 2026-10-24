@@ -839,6 +839,13 @@
 
   #view-soon{display:none;}
   #view-soon.on{display:block;}
+  #view-learn{display:none;}
+  #view-learn.on{display:block;}
+  .lgoal{display:flex; align-items:center; gap:12px; padding:13px 2px; border-bottom:1px solid rgba(255,255,255,.06);}
+  .lgoal:last-child{border-bottom:0;}
+  .lgoal b{font-size:15px;}
+  .lgoal small{display:block; color:var(--muted); font-size:12.5px; margin-top:2px;}
+  .lgoal .soonbadge{margin-left:auto; flex:none;}
   .sooncard{margin-top:6px; text-align:center;
     background:linear-gradient(170deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
     border:1px solid var(--line); border-radius:24px; padding:34px 24px 26px;
@@ -1219,6 +1226,28 @@
       <p id="soon-text"></p>
       <span class="soonbadge" data-i18n="soonBadge">En preparación</span>
       <button class="btn-ghost" id="btn-soon-back" data-i18n="backHome">Volver al inicio</button>
+    </div>
+  </section>
+
+  <!-- ===== Aprender: vista normal como las demás (pedido de Noel,
+       2026-10-24; antes abría la ventana flotante de «en preparación») ===== -->
+  <section id="view-learn">
+    <div class="plhead">
+      <h2><span data-i18n="learnTitleA">Practicar</span> <span class="goldt" data-i18n="learnTitleB">inglés</span></h2>
+    </div>
+    <div class="setcard">
+      <p class="pdelnote" style="margin-top:0;" data-i18n="soonLearnText">El módulo de lecciones está en preparación. Muy pronto podrás practicar inglés aquí, con lecciones hechas para ti.</p>
+      <span class="soonbadge" data-i18n="soonBadge">En preparación</span>
+    </div>
+    <p class="pseclab" data-i18n="learnGoalsTitle">Cursos por objetivo</p>
+    <div class="setcard">
+      <div class="lgoal"><div><b data-i18n="learnGoalLicense">Licencia de conducir</b><small data-i18n="learnGoalLicenseSub">Examen de Florida, solo en inglés</small></div><span class="soonbadge" data-i18n="soonBadge">En preparación</span></div>
+      <div class="lgoal"><div><b data-i18n="learnGoalCitizen">Ciudadanía</b><small data-i18n="learnGoalCitizenSub">Entrevista y examen de naturalización</small></div><span class="soonbadge" data-i18n="soonBadge">En preparación</span></div>
+      <div class="lgoal"><div><b data-i18n="learnGoalCDL">Chequeo CDL</b><small data-i18n="learnGoalCDLSub">Inglés para la inspección en carretera</small></div><span class="soonbadge" data-i18n="soonBadge">En preparación</span></div>
+    </div>
+    <p class="pseclab" data-i18n="learnHowTitle">Cómo va a funcionar</p>
+    <div class="setcard">
+      <p class="pdelnote" style="margin:0;" data-i18n="learnHowText">Escuchas, entiendes, repites y practicas en conversaciones reales, con repaso justo antes de olvidar. Tus frases saldrán de lo que traduces todos los días.</p>
     </div>
   </section>
 
@@ -2179,6 +2208,13 @@
       soonPremiumTitle: 'Englix Premium',
       soonPremiumText: 'Los planes Premium están en preparación. Muy pronto podrás verlos y suscribirte desde aquí.',
       soonLearnTitle: 'Practicar inglés',
+      learnTitleA: 'Practicar', learnTitleB: 'inglés',
+      learnGoalsTitle: 'Cursos por objetivo',
+      learnGoalLicense: 'Licencia de conducir', learnGoalLicenseSub: 'Examen de Florida, solo en inglés',
+      learnGoalCitizen: 'Ciudadanía', learnGoalCitizenSub: 'Entrevista y examen de naturalización',
+      learnGoalCDL: 'Chequeo CDL', learnGoalCDLSub: 'Inglés para la inspección en carretera',
+      learnHowTitle: 'Cómo va a funcionar',
+      learnHowText: 'Escuchas, entiendes, repites y practicas en conversaciones reales, con repaso justo antes de olvidar. Tus frases saldrán de lo que traduces todos los días.',
       soonLearnText: 'El módulo de lecciones está en preparación. Muy pronto podrás practicar inglés aquí, con lecciones hechas para ti.',
       backHome: 'Volver al inicio',
       state_idle: 'Listo', state_requesting: 'Pidiendo permiso del micrófono…', state_connecting: 'Conectando…',
@@ -2421,6 +2457,13 @@
       soonPremiumTitle: 'Englix Premium',
       soonPremiumText: 'Premium plans are in preparation. Very soon you will be able to see them and subscribe right here.',
       soonLearnTitle: 'Practice English',
+      learnTitleA: 'Practice', learnTitleB: 'English',
+      learnGoalsTitle: 'Goal-based courses',
+      learnGoalLicense: 'Driver license', learnGoalLicenseSub: 'Florida exam, English only',
+      learnGoalCitizen: 'Citizenship', learnGoalCitizenSub: 'Naturalization interview and test',
+      learnGoalCDL: 'CDL roadside check', learnGoalCDLSub: 'English for roadside inspections',
+      learnHowTitle: 'How it will work',
+      learnHowText: 'Listen, understand, repeat and practice in real conversations, with review right before you forget. Your phrases will come from what you translate every day.',
       soonLearnText: 'The lessons module is in preparation. Very soon you will practice English here, with lessons made for you.',
       backHome: 'Back to home',
       state_idle: 'Ready', state_requesting: 'Asking for microphone permission…', state_connecting: 'Connecting…',
@@ -3014,10 +3057,12 @@
     viewCall.classList.toggle('on', name === 'call');
     viewSaved.classList.toggle('on', name === 'saved');
     viewSoon.classList.toggle('on', name === 'soon');
+    viewLearn.classList.toggle('on', name === 'learn');
     viewPlans.classList.toggle('on', name === 'plans');
     homeHeader.style.display = name === 'call' ? 'none' : 'flex';
     document.body.classList.toggle('has-nav', name !== 'call');
     if (name === 'home') navTab = 'home';
+    else if (name === 'learn') navTab = 'learn';
     else if (name === 'saved') navTab = 'history';
     else if (name === 'done') navTab = 'home';
     syncNav();
@@ -3034,7 +3079,7 @@
      terminada (sus datos viven en memoria): ambas caen al Inicio.
      Las vistas de acceso NO pasan por showView (son el overlay de
      auth), así que nunca se persisten ni se restauran. */
-  var RESTORE_VIEW = { home: 'home', plans: 'plans', saved: 'saved', soon: 'soon', done: 'home', call: 'home' };
+  var RESTORE_VIEW = { home: 'home', plans: 'plans', saved: 'saved', soon: 'soon', learn: 'learn', done: 'home', call: 'home' };
   function restoredView() {
     var v = null;
     try { v = localStorage.getItem('lc_last_view_v1'); } catch (e) {}
@@ -4863,6 +4908,7 @@
 
   /* ================= v11 · Englix: navegación e Inicio ================= */
   var viewSoon = $('view-soon');
+  var viewLearn = $('view-learn');
   var viewPlans = $('view-plans');
   var navTab = 'home';
   var soonKind = 'learn';
@@ -4928,6 +4974,9 @@
     dipPrimed = true;
   }
   window.addEventListener('resize', function () { moveDip(false); });
+  /* Aprender es una VISTA normal (como Inicio o Historial), no la
+     ventana flotante: la ventana «soon» queda solo pa' Premium. */
+  function openLearn() { showView('learn'); }
   function openSoon(kind) {
     soonKind = kind;
     $('soon-icon').textContent = kind === 'premium' ? '👑' : '📖';
@@ -4940,7 +4989,8 @@
   function resyncNav() {
     if (viewCall.classList.contains('on')) return;
     if (viewSaved.classList.contains('on')) navTab = 'history';
-    else if (viewSoon.classList.contains('on')) navTab = soonKind === 'learn' ? 'learn' : 'home';
+    else if (viewLearn.classList.contains('on')) navTab = 'learn';
+    else if (viewSoon.classList.contains('on')) navTab = 'home';
     else navTab = 'home';
     syncNav();
   }
@@ -5435,10 +5485,10 @@
   if (callStoreGet(CALL_PENDING_KEY)) startCallPolling();
 
   $('btn-crown-home').addEventListener('click', function () { vibrate(8); openPlans(); });
-  $('btn-practice').addEventListener('click', function () { vibrate(8); openSoon('learn'); });
+  $('btn-practice').addEventListener('click', function () { vibrate(8); openLearn(); });
   $('btn-soon-back').addEventListener('click', function () { showView('home'); });
   $('tab-home').addEventListener('click', function () { showView('home'); });
-  $('tab-learn').addEventListener('click', function () { openSoon('learn'); });
+  $('tab-learn').addEventListener('click', function () { openLearn(); });
   $('tab-history').addEventListener('click', function () { openSavedList(); });
   $('tab-profile').addEventListener('click', function () { navTab = 'profile'; syncNav(); openPanel(); });
   $('btn-panel-close').addEventListener('click', resyncNav);
