@@ -443,11 +443,11 @@
   /* ===== Ajustes v38 — compacto, tal cual la maqueta de Noel ===== */
   #settings-panel{width:min(100vw,430px); background:linear-gradient(180deg,#111a2e 0%,#0a0f1e 55%,#070a13 100%); padding:20px 13px calc(18px + env(safe-area-inset-bottom));}
   #settings-panel::before{content:''; position:absolute; left:0; right:0; top:0; height:170px; pointer-events:none; background:radial-gradient(280px 150px at 88% -30px, rgba(233,201,121,.26), rgba(233,201,121,.05) 55%, transparent 72%);}
-  #settings-panel .phead{position:relative; margin-bottom:2px; display:flex; align-items:center; justify-content:center; min-height:36px;}
-  #settings-panel .phead #btn-panel-close{position:absolute; left:0; top:50%; transform:translateY(-50%);}
-  #settings-panel .phead h3{font-family:var(--sans); font-size:27px; font-weight:800; letter-spacing:-.01em; background:linear-gradient(92deg,#ffffff 42%,#f2d287 78%,#c99b45 100%); -webkit-background-clip:text; background-clip:text; color:transparent;}
-  #settings-panel #btn-panel-close{width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.16); color:#f2d287; display:flex; align-items:center; justify-content:center; flex:0 0 auto; padding:0;}
-  #settings-panel #btn-panel-close svg{width:15px; height:15px;}
+  #settings-panel .phead, #view-profile .phead{position:relative; margin-bottom:2px; display:flex; align-items:center; justify-content:center; min-height:36px;}
+  #settings-panel .phead #btn-panel-close, #view-profile .phead #btn-panel-close{position:absolute; left:0; top:50%; transform:translateY(-50%);}
+  #settings-panel .phead h3, #view-profile .phead h3{font-family:var(--sans); font-size:27px; font-weight:800; letter-spacing:-.01em; background:linear-gradient(92deg,#ffffff 42%,#f2d287 78%,#c99b45 100%); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  #settings-panel #btn-panel-close, #view-profile #btn-panel-close{width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.16); color:#f2d287; display:flex; align-items:center; justify-content:center; flex:0 0 auto; padding:0;}
+  #settings-panel #btn-panel-close svg, #view-profile #btn-panel-close svg{width:15px; height:15px;}
   .setcard{position:relative; background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.018)); border:1px solid rgba(233,201,121,.17); border-radius:18px; padding:2px 14px 6px; margin-top:11px;}
   .sicon{width:32px; height:32px; border-radius:50%; background:rgba(233,201,121,.09); border:1px solid rgba(233,201,121,.16); display:flex; align-items:center; justify-content:center; color:var(--gold1); flex:0 0 auto;}
   .sicon svg{width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;}
@@ -462,15 +462,15 @@
   #settings-panel .btn-danger{display:flex; align-items:center; gap:9px; text-align:left; background:linear-gradient(180deg, rgba(229,72,77,.17), rgba(229,72,77,.06)); border:1px solid rgba(229,72,77,.45); color:#ffa4a6; border-radius:13px; padding:11px 13px; font-size:13.5px; width:100%;}
   #settings-panel .btn-danger::before{content:''; width:17px; height:17px; flex:0 0 auto; background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ff9d9f' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 6h18'/%3E%3Cpath d='M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2'/%3E%3Cpath d='M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6'/%3E%3Cpath d='M10 11v6M14 11v6'/%3E%3C/svg%3E") center/contain no-repeat;}
   #settings-panel .btn-danger::after{content:'›'; margin-left:auto; font-size:20px; line-height:1; color:#ff9d9f;}
-  #settings-panel #acct-block{position:relative; background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.018)); border:1px solid rgba(233,201,121,.17); border-radius:18px; padding:13px 14px; margin-top:11px;}
-  #settings-panel .acctrow{display:flex; align-items:center; gap:11px; flex-wrap:nowrap;}
-  #settings-panel .acctava{width:52px; height:52px; box-shadow:0 0 18px rgba(233,201,121,.16);}
-  #settings-panel #acct-plan{display:inline-block; margin:7px 0 0; border:1px solid rgba(233,201,121,.55); color:var(--gold1); border-radius:999px; padding:4px 10px; font-size:11.5px; font-weight:600; background:rgba(233,201,121,.08); line-height:1.35; white-space:nowrap;}
-  #settings-panel .acctsub{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:11px;}
-  #settings-panel .acctsub #acct-plan{margin:0;}
-  #settings-panel .acctsub #btn-signout{margin-left:auto;}
-  #settings-panel #btn-signout{display:inline-flex; align-items:center; gap:6px; border:1px solid rgba(233,201,121,.55); color:var(--gold1); background:rgba(233,201,121,.05); border-radius:999px; padding:8px 12px; font-weight:600; font-size:12.5px; width:auto; margin-left:auto; white-space:nowrap;}
-  #settings-panel #btn-signout::before{content:''; width:14px; height:14px; flex:0 0 auto; background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e9c979' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4'/%3E%3Cpath d='M16 17l5-5-5-5'/%3E%3Cpath d='M21 12H9'/%3E%3C/svg%3E") center/contain no-repeat;}
+  #settings-panel #acct-block, #view-profile #acct-block{position:relative; background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.018)); border:1px solid rgba(233,201,121,.17); border-radius:18px; padding:13px 14px; margin-top:11px;}
+  #settings-panel .acctrow, #view-profile .acctrow{display:flex; align-items:center; gap:11px; flex-wrap:nowrap;}
+  #settings-panel .acctava, #view-profile .acctava{width:52px; height:52px; box-shadow:0 0 18px rgba(233,201,121,.16);}
+  #settings-panel #acct-plan, #view-profile #acct-plan{display:inline-block; margin:7px 0 0; border:1px solid rgba(233,201,121,.55); color:var(--gold1); border-radius:999px; padding:4px 10px; font-size:11.5px; font-weight:600; background:rgba(233,201,121,.08); line-height:1.35; white-space:nowrap;}
+  #settings-panel .acctsub, #view-profile .acctsub{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:11px;}
+  #settings-panel .acctsub #acct-plan, #view-profile .acctsub #acct-plan{margin:0;}
+  #settings-panel .acctsub #btn-signout, #view-profile .acctsub #btn-signout{margin-left:auto;}
+  #settings-panel #btn-signout, #view-profile #btn-signout{display:inline-flex; align-items:center; gap:6px; border:1px solid rgba(233,201,121,.55); color:var(--gold1); background:rgba(233,201,121,.05); border-radius:999px; padding:8px 12px; font-weight:600; font-size:12.5px; width:auto; margin-left:auto; white-space:nowrap;}
+  #settings-panel #btn-signout::before, #view-profile #btn-signout::before{content:''; width:14px; height:14px; flex:0 0 auto; background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e9c979' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4'/%3E%3Cpath d='M16 17l5-5-5-5'/%3E%3Cpath d='M21 12H9'/%3E%3C/svg%3E") center/contain no-repeat;}
   /* ===== Perfil v44 — tal cual la maqueta de Noel ===== */
   #settings-panel .psub{display:none;}
   #settings-panel .psub.on{display:block;}
@@ -478,9 +478,9 @@
   #settings-panel .psubhead h3{font-family:var(--sans); font-size:21px; font-weight:800; letter-spacing:-.01em; background:linear-gradient(92deg,#ffffff 42%,#f2d287 78%,#c99b45 100%); -webkit-background-clip:text; background-clip:text; color:transparent; margin:0;}
   #settings-panel .pback{width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.16); color:#f2d287; display:flex; align-items:center; justify-content:center; flex:0 0 auto; padding:0;}
   #settings-panel .pback svg{width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round;}
-  #settings-panel .acctava{width:78px; height:78px;}
+  #settings-panel .acctava, #view-profile .acctava{width:78px; height:78px;}
   .acctmeta{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:11px;}
-  #settings-panel .acctmeta #acct-plan{margin:0;}
+  #settings-panel .acctmeta #acct-plan, #view-profile .acctmeta #acct-plan{margin:0;}
   .acctmeta .acctdot{color:var(--dim); font-size:12px;}
   .acctmins{display:inline-flex; align-items:center; gap:5px; color:var(--dim); font-size:12.5px;}
   .acctmins svg{width:14px; height:14px; fill:none; stroke:var(--gold1); stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; flex:0 0 auto;}
@@ -497,7 +497,7 @@
   .pnav .pnavtx b{display:block; font-size:16.5px; font-weight:700;}
   .pnav .pnavtx small{display:block; font-size:13px; color:var(--muted); margin-top:2px;}
   .pnav .pchev{color:var(--gold1); font-size:25px; line-height:1; flex:0 0 auto;}
-  #settings-panel #btn-signout{display:flex; width:100%; justify-content:center; align-items:center; margin:14px 0 0; margin-left:0; padding:14px; border-radius:16px; font-size:15px;}
+  #settings-panel #btn-signout, #view-profile #btn-signout{display:flex; width:100%; justify-content:center; align-items:center; margin:14px 0 0; margin-left:0; padding:14px; border-radius:16px; font-size:15px;}
   .plabel{display:block; font-size:13px; color:var(--dim); margin:22px 2px 10px;}
   #settings-panel .afield{margin-top:0;}
   .pseclab{font-size:19px; font-weight:800; letter-spacing:-.2px; margin:30px 2px 2px;}
@@ -840,6 +840,8 @@
   #view-soon{display:none;}
   #view-soon.on{display:block;}
   #view-learn{display:none;}
+  #view-profile{display:none;}
+  #view-profile.on{display:block; padding:10px 13px 28px;}
   #view-learn.on{display:block;}
   .lgoal{display:flex; align-items:center; gap:12px; padding:13px 2px; border-bottom:1px solid rgba(255,255,255,.06);}
   .lgoal:last-child{border-bottom:0;}
@@ -1251,6 +1253,74 @@
     </div>
   </section>
 
+  <!-- ===== Perfil: vista normal como las demas (2026-10-24; antes era la raiz del panel deslizable) ===== -->
+  <section id="view-profile">
+  <div id="profile-main">
+    <div class="phead">
+      <button class="iconbtn" id="btn-panel-close" aria-label="Back">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <h3 data-i18n="settings">Perfil</h3>
+    </div>
+
+    <div id="acct-block" style="display:none">
+      <div class="acctrow">
+        <span class="acctava" id="acct-ava"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4.2"/><path d="M3.5 20.5c.8-3.9 4.2-5.8 8.5-5.8s7.7 1.9 8.5 5.8"/></svg></span>
+        <div style="flex:1; min-width:0;">
+          <b id="acct-name" style="display:block; font-size:19px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></b>
+          <span id="acct-email" style="color:var(--dim); font-size:13px;"></span>
+        </div>
+      </div>
+      <div class="acctmeta">
+        <p id="acct-plan"></p>
+        <span class="acctdot">·</span>
+        <span class="acctmins"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg><span id="acct-mins"></span></span>
+      </div>
+      <button class="pupgrade" id="btn-upgrade">
+        <span class="pupcrown"><svg viewBox="0 0 24 24"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-1.6 10.2a1.8 1.8 0 0 1-1.8 1.5H6.4a1.8 1.8 0 0 1-1.8-1.5L3 8z"/></svg></span>
+        <span data-i18n="profUpgrade">Mejorar plan</span>
+        <span class="puparrow"><svg viewBox="0 0 24 24"><line x1="4" y1="12" x2="20" y2="12"/><polyline points="13 5 20 12 13 19"/></svg></span>
+      </button>
+    </div>
+
+    <div id="profile-nav">
+      <button class="pnav" id="nav-edit">
+        <span class="picon"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+        <span class="pnavtx"><b data-i18n="profEdit">Editar perfil</b><small data-i18n="profEditSub">Nombre, correo y datos de cuenta</small></span>
+        <span class="pchev">›</span>
+      </button>
+      <button class="pnav" id="nav-myplan">
+        <span class="picon"><svg class="fillg" viewBox="0 0 24 24"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-1.6 10.2a1.8 1.8 0 0 1-1.8 1.5H6.4a1.8 1.8 0 0 1-1.8-1.5L3 8z"/></svg></span>
+        <span class="pnavtx"><b data-i18n="profMyPlan">Mi plan</b><small data-i18n="profMyPlanSub">Suscripción y minutos disponibles</small></span>
+        <span class="pchev">›</span>
+      </button>
+      <button class="pnav" id="nav-pay">
+        <span class="picon"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></span>
+        <span class="pnavtx"><b data-i18n="profPay">Método de pago</b><small data-i18n="profPaySub">Tarjeta y cobros de tu cuenta</small></span>
+        <span class="pchev">›</span>
+      </button>
+      <button class="pnav" id="nav-lang">
+        <span class="picon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.6 3.9 5.7 3.9 9s-1.4 6.4-3.9 9c-2.5-2.6-3.9-5.7-3.9-9S9.5 5.6 12 3z"/></svg></span>
+        <span class="pnavtx"><b data-i18n="profLang">Idioma</b><small data-i18n="profLangSub">Idioma de la aplicación</small></span>
+        <span class="pchev">›</span>
+      </button>
+      <button class="pnav" id="nav-privacy">
+        <span class="picon"><svg viewBox="0 0 24 24"><path d="M12 3l7 2.8v5.4c0 4.6-3 7.7-7 9.3-4-1.6-7-4.7-7-9.3V5.8L12 3z"/></svg></span>
+        <span class="pnavtx"><b data-i18n="profPriv">Privacidad y seguridad</b><small data-i18n="profPrivSub">Contraseña, datos y permisos</small></span>
+        <span class="pchev">›</span>
+      </button>
+      <button class="pnav" id="nav-help">
+        <span class="picon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 2.4c-.8.3-1.1.8-1.1 1.8"/><path d="M12 17h.01"/></svg></span>
+        <span class="pnavtx"><b data-i18n="profHelp">Ayuda</b><small data-i18n="profHelpSub">Soporte y preguntas frecuentes</small></span>
+        <span class="pchev">›</span>
+      </button>
+    </div>
+
+    <button class="btn-ghost" id="btn-signout" data-i18n="authSignOut">Cerrar sesión</button>
+    <div class="verlabel" style="margin-top:14px;">Englix</div>
+  </div>
+  </section>
+
   <!-- ===== Planes y saldo (v40) ===== -->
   <section id="view-plans">
     <div class="plhead">
@@ -1498,71 +1568,6 @@
 <div class="overlay" id="panel-overlay" style="align-items:stretch; justify-content:flex-end; background:rgba(3,4,8,.45);"></div>
 <aside class="panel" id="settings-panel">
   <!-- ===== Perfil (v44) — vista principal, tal cual la maqueta ===== -->
-  <div id="profile-main">
-    <div class="phead">
-      <button class="iconbtn" id="btn-panel-close" aria-label="Back">
-        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-      </button>
-      <h3 data-i18n="settings">Perfil</h3>
-    </div>
-
-    <div id="acct-block" style="display:none">
-      <div class="acctrow">
-        <span class="acctava" id="acct-ava"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4.2"/><path d="M3.5 20.5c.8-3.9 4.2-5.8 8.5-5.8s7.7 1.9 8.5 5.8"/></svg></span>
-        <div style="flex:1; min-width:0;">
-          <b id="acct-name" style="display:block; font-size:19px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></b>
-          <span id="acct-email" style="color:var(--dim); font-size:13px;"></span>
-        </div>
-      </div>
-      <div class="acctmeta">
-        <p id="acct-plan"></p>
-        <span class="acctdot">·</span>
-        <span class="acctmins"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg><span id="acct-mins"></span></span>
-      </div>
-      <button class="pupgrade" id="btn-upgrade">
-        <span class="pupcrown"><svg viewBox="0 0 24 24"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-1.6 10.2a1.8 1.8 0 0 1-1.8 1.5H6.4a1.8 1.8 0 0 1-1.8-1.5L3 8z"/></svg></span>
-        <span data-i18n="profUpgrade">Mejorar plan</span>
-        <span class="puparrow"><svg viewBox="0 0 24 24"><line x1="4" y1="12" x2="20" y2="12"/><polyline points="13 5 20 12 13 19"/></svg></span>
-      </button>
-    </div>
-
-    <div id="profile-nav">
-      <button class="pnav" id="nav-edit">
-        <span class="picon"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
-        <span class="pnavtx"><b data-i18n="profEdit">Editar perfil</b><small data-i18n="profEditSub">Nombre, correo y datos de cuenta</small></span>
-        <span class="pchev">›</span>
-      </button>
-      <button class="pnav" id="nav-myplan">
-        <span class="picon"><svg class="fillg" viewBox="0 0 24 24"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-1.6 10.2a1.8 1.8 0 0 1-1.8 1.5H6.4a1.8 1.8 0 0 1-1.8-1.5L3 8z"/></svg></span>
-        <span class="pnavtx"><b data-i18n="profMyPlan">Mi plan</b><small data-i18n="profMyPlanSub">Suscripción y minutos disponibles</small></span>
-        <span class="pchev">›</span>
-      </button>
-      <button class="pnav" id="nav-pay">
-        <span class="picon"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></span>
-        <span class="pnavtx"><b data-i18n="profPay">Método de pago</b><small data-i18n="profPaySub">Tarjeta y cobros de tu cuenta</small></span>
-        <span class="pchev">›</span>
-      </button>
-      <button class="pnav" id="nav-lang">
-        <span class="picon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.6 3.9 5.7 3.9 9s-1.4 6.4-3.9 9c-2.5-2.6-3.9-5.7-3.9-9S9.5 5.6 12 3z"/></svg></span>
-        <span class="pnavtx"><b data-i18n="profLang">Idioma</b><small data-i18n="profLangSub">Idioma de la aplicación</small></span>
-        <span class="pchev">›</span>
-      </button>
-      <button class="pnav" id="nav-privacy">
-        <span class="picon"><svg viewBox="0 0 24 24"><path d="M12 3l7 2.8v5.4c0 4.6-3 7.7-7 9.3-4-1.6-7-4.7-7-9.3V5.8L12 3z"/></svg></span>
-        <span class="pnavtx"><b data-i18n="profPriv">Privacidad y seguridad</b><small data-i18n="profPrivSub">Contraseña, datos y permisos</small></span>
-        <span class="pchev">›</span>
-      </button>
-      <button class="pnav" id="nav-help">
-        <span class="picon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 2.4c-.8.3-1.1.8-1.1 1.8"/><path d="M12 17h.01"/></svg></span>
-        <span class="pnavtx"><b data-i18n="profHelp">Ayuda</b><small data-i18n="profHelpSub">Soporte y preguntas frecuentes</small></span>
-        <span class="pchev">›</span>
-      </button>
-    </div>
-
-    <button class="btn-ghost" id="btn-signout" data-i18n="authSignOut">Cerrar sesión</button>
-    <div class="verlabel" style="margin-top:14px;">Englix</div>
-  </div>
-
   <!-- ===== Sub-vista: Editar perfil ===== -->
   <div class="psub" id="psub-edit">
     <div class="psubhead">
@@ -3058,11 +3063,13 @@
     viewSaved.classList.toggle('on', name === 'saved');
     viewSoon.classList.toggle('on', name === 'soon');
     viewLearn.classList.toggle('on', name === 'learn');
+    viewProfile.classList.toggle('on', name === 'profile');
     viewPlans.classList.toggle('on', name === 'plans');
     homeHeader.style.display = name === 'call' ? 'none' : 'flex';
     document.body.classList.toggle('has-nav', name !== 'call');
     if (name === 'home') navTab = 'home';
     else if (name === 'learn') navTab = 'learn';
+    else if (name === 'profile') navTab = 'profile';
     else if (name === 'saved') navTab = 'history';
     else if (name === 'done') navTab = 'home';
     syncNav();
@@ -3079,7 +3086,7 @@
      terminada (sus datos viven en memoria): ambas caen al Inicio.
      Las vistas de acceso NO pasan por showView (son el overlay de
      auth), así que nunca se persisten ni se restauran. */
-  var RESTORE_VIEW = { home: 'home', plans: 'plans', saved: 'saved', soon: 'soon', learn: 'learn', done: 'home', call: 'home' };
+  var RESTORE_VIEW = { home: 'home', plans: 'plans', saved: 'saved', soon: 'soon', learn: 'learn', profile: 'profile', done: 'home', call: 'home' };
   function restoredView() {
     var v = null;
     try { v = localStorage.getItem('lc_last_view_v1'); } catch (e) {}
@@ -4560,11 +4567,17 @@
 
   /* ================= Ajustes (§13) ================= */
   var panel = $('settings-panel'), panelOverlay = $('panel-overlay');
-  function openPanel() { profileGo(null); populatePanel(); billingRefresh(); panel.classList.add('on'); panelOverlay.classList.add('on'); lockScroll(); }
+  /* Perfil ahora es una VISTA normal (como Inicio): el panel
+     deslizable queda SOLO pa' las sub-pantallas (editar, pago,
+     idioma, privacidad, ayuda), que se abren SOBRE la vista y al
+     volver caen otra vez en la vista de Perfil. */
+  function openProfile() { showView('profile'); populatePanel(); billingRefresh(); }
+  function openPsub(name) { profileGo(name); panel.classList.add('on'); panelOverlay.classList.add('on'); lockScroll(); }
+  function openPanel() { openProfile(); }
   function closePanel() { profileGo(null); panel.classList.remove('on'); panelOverlay.classList.remove('on'); unlockScroll(); }
   $('btn-gear-home').addEventListener('click', openPanel);
   $('btn-gear-call').addEventListener('click', openPanel);
-  $('btn-panel-close').addEventListener('click', closePanel);
+  $('btn-panel-close').addEventListener('click', function () { showView('home'); });
   panelOverlay.addEventListener('click', closePanel);
   /* v14: con Ajustes abierto, arrastrar sobre el fondo oscuro no mueve la
      página; el panel se desplaza por sí mismo (overscroll contenido). */
@@ -4615,7 +4628,7 @@
     f.className = 'pfeed' + (msg ? ' on ' + (ok ? 'ok' : 'err') : '');
   }
   document.querySelectorAll('[data-psub-back]').forEach(function (b) {
-    b.addEventListener('click', function () { vibrate(8); profileGo(null); });
+    b.addEventListener('click', function () { vibrate(8); closePanel(); });
   });
   function openPlansFromProfile() { closePanel(); openPlans(); }
   /* Método de pago (v50): la tarjeta vive en Stripe, nunca en la
@@ -4650,10 +4663,10 @@
   });
   $('btn-upgrade').addEventListener('click', function () { vibrate(8); openPlansFromProfile(); });
   $('nav-myplan').addEventListener('click', function () { vibrate(8); openPlansFromProfile(); });
-  $('nav-pay').addEventListener('click', function () { vibrate(8); renderPayMethod(); profileGo('pay'); });
-  $('nav-lang').addEventListener('click', function () { vibrate(8); profileGo('lang'); });
-  $('nav-privacy').addEventListener('click', function () { vibrate(8); profileGo('privacy'); });
-  $('nav-help').addEventListener('click', function () { vibrate(8); profileGo('help'); });
+  $('nav-pay').addEventListener('click', function () { vibrate(8); renderPayMethod(); openPsub('pay'); });
+  $('nav-lang').addEventListener('click', function () { vibrate(8); openPsub('lang'); });
+  $('nav-privacy').addEventListener('click', function () { vibrate(8); openPsub('privacy'); });
+  $('nav-help').addEventListener('click', function () { vibrate(8); openPsub('help'); });
   $('nav-edit').addEventListener('click', function () {
     vibrate(8);
     var meta = (sbUser && sbUser.user_metadata) || {};
@@ -4662,7 +4675,7 @@
     $('prof-newemail').value = '';
     pfeed('email-feed', '');
     editShowMail(false);
-    profileGo('edit');
+    openPsub('edit');
   });
   /* El nombre NO se edita (orden de Noel): se muestra en solo
      lectura; lo editable es el correo (con enlace de confirmación)
@@ -4909,6 +4922,7 @@
   /* ================= v11 · Englix: navegación e Inicio ================= */
   var viewSoon = $('view-soon');
   var viewLearn = $('view-learn');
+  var viewProfile = $('view-profile');
   var viewPlans = $('view-plans');
   var navTab = 'home';
   var soonKind = 'learn';
@@ -4990,6 +5004,7 @@
     if (viewCall.classList.contains('on')) return;
     if (viewSaved.classList.contains('on')) navTab = 'history';
     else if (viewLearn.classList.contains('on')) navTab = 'learn';
+    else if (viewProfile.classList.contains('on')) navTab = 'profile';
     else if (viewSoon.classList.contains('on')) navTab = 'home';
     else navTab = 'home';
     syncNav();
