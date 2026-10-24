@@ -211,6 +211,14 @@
   .statuspill.error .smic svg{stroke:#ff9a9d;}
   .statuspill .stime{font-variant-numeric:tabular-nums; color:var(--gold1); font-weight:600;}
 
+  /* ---------- Aviso de tiempo bajo (v47) ---------- */
+  .lowpill{
+    margin:10px auto 0; width:fit-content; max-width:92%; align-self:center;
+    background:rgba(212,167,92,.12); border:1px solid rgba(212,167,92,.55); color:var(--gold1);
+    border-radius:999px; padding:6px 14px; font-size:13px; font-weight:600; text-align:center;
+    box-shadow:0 0 14px rgba(212,167,92,.18);
+  }
+
   /* ---------- Frase actual (v10): sin tarjetas durante la llamada.
      Solo la frase en curso: original en gris pequeno y traduccion
      grande en dorado. El historial completo vive en el resumen. ---------- */
@@ -1078,6 +1086,8 @@
       <span class="stime" id="timer">00:00</span>
     </div>
 
+    <div class="lowpill" id="lowpill-conv" style="display:none;"></div>
+
     <div class="nowzone" id="now-zone">
       <div class="nowempty" id="feed-empty"></div>
       <p class="noworig" id="now-orig"></p>
@@ -1257,7 +1267,7 @@
   </section>
 
   <footer data-i18n="footer">Traducción automática con IA · En vivo</footer>
-  <div class="verlabel">v46 · Englix</div>
+  <div class="verlabel">v47 · Englix</div>
 </div>
 
 <!-- ===== Barra inferior (v11 · Englix) ===== -->
@@ -1368,6 +1378,7 @@
     <div class="cs-scroll" id="calls-scroll">
       <div id="calls-list-view">
         <p class="callstatus" id="calls-pending" style="display:none;"></p>
+        <p class="lowpill" id="lowpill-call" style="display:none;"></p>
         <div id="calls-list"></div>
         <p class="sub" id="calls-empty" style="display:none; margin-top:6px;" data-i18n="callsLogEmpty">Todavía no tienes llamadas registradas.</p>
       </div>
@@ -1460,7 +1471,7 @@
     </div>
 
     <button class="btn-ghost" id="btn-signout" data-i18n="authSignOut">Cerrar sesión</button>
-    <div class="verlabel" style="margin-top:14px;">v46 · Englix</div>
+    <div class="verlabel" style="margin-top:14px;">v47 · Englix</div>
   </div>
 
   <!-- ===== Sub-vista: Editar perfil ===== -->
@@ -1957,6 +1968,9 @@
       plansPayOk: 'Pago recibido — tu plan/saldo se actualiza en unos segundos',
       plansPayCanceled: 'Pago cancelado. No se hizo ningún cargo.',
       plansPayError: 'No se pudo abrir el pago. Inténtalo de nuevo.',
+      warnConvLow: 'Te quedan unos 5 minutos de conversación',
+      warnCallLow: 'Te quedan unos 5 minutos de llamadas',
+      warnPillLeft: 'Quedan {N} min',
       profUpgrade: 'Mejorar plan',
       profMinsAvail: '{N} minutos disponibles',
       profEdit: 'Editar perfil', profEditSub: 'Nombre, correo y datos de cuenta',
@@ -2153,6 +2167,9 @@
       plansPayOk: 'Payment received — your plan/balance updates in a few seconds',
       plansPayCanceled: 'Payment canceled. You were not charged.',
       plansPayError: 'Could not open the payment. Please try again.',
+      warnConvLow: 'You have about 5 minutes of conversation left',
+      warnCallLow: 'You have about 5 minutes of call time left',
+      warnPillLeft: '{N} min left',
       profUpgrade: 'Upgrade plan',
       profMinsAvail: '{N} minutes available',
       profEdit: 'Edit profile', profEditSub: 'Name, email and account details',
@@ -2475,6 +2492,7 @@
     var e = elapsedMs();
     timerEl.textContent = fmt(e);
     meterFlush(false); // v40: envío periódico de voz (trozos de ≥20 s)
+    if (typeof convLowTick === 'function') convLowTick(); // v47: aviso de tiempo bajo
   }
 
   /* ================= Tarjetas de conversación (§6) ================= */
@@ -3296,6 +3314,14 @@
     }
     ib = { card: null, inText: '', inDone: false, outText: '', outDone: false,
            finishTimer: null, respId: null, suspect: false, suspectTimer: null, cancelled: false };
+    // v47 (auditoría de medición): las ventanas de voz en vuelo mueren
+    // con el turno. Si una quedara abierta (p. ej. tras un 'error' o
+    // una caída de la sesión), la SIGUIENTE respuesta cobraría también
+    // el tiempo muerto entre respuestas — y la regla es cobrar solo
+    // voz traducida, nunca tiempo de conexión. (Las ventanas ya
+    // cerradas se midieron y se pusieron en cero en su propio evento,
+    // así que esto jamás borra voz ya contada.)
+    ibVadT0 = 0; ibVadA0 = null; ibOutT0 = 0;
   }
 
   // ¿La entrada que disparó la respuesta es vacía o trivial (ruido)?
@@ -3588,7 +3614,11 @@
         break;
       case 'response.done':
       case 'response.cancelled':
-        if (ibOutT0) { voiceMeterAdd(Date.now() - ibOutT0); ibOutT0 = 0; }
+        // v47 (auditoría de medición): una respuesta cancelada por
+        // disparo falso (ib.cancelled, ver cancelSuspectResponse) NO
+        // fue traducción de una voz real: su ventana de audio no se
+        // cobra. La ventana medida es solo la del audio ya emitido.
+        if (ibOutT0) { if (!ib.cancelled) voiceMeterAdd(Date.now() - ibOutT0); ibOutT0 = 0; }
         if (ib.cancelled) { resetInterpTurn(); if (inCall && !paused) setState('listening'); break; }
         ib.outDone = true;
         maybeFinishInterp();
@@ -4006,6 +4036,7 @@
     // detiene el inicio; sin minutos ni saldo → vista de Planes.
     var gateOk = await billingAuthorize('conv');
     if (!gateOk) { openPlans(); return; }
+    await billingRefresh(); // v47: saldo fresquito pa' el aviso de tiempo bajo
     hideErrs();
     setState('requesting_permission');
     btnStart.disabled = true;
@@ -4020,6 +4051,7 @@
       muted = false;
       accumulatedMs = 0;
       meterReset(); // v40: el medidor de voz arranca en cero por sesión
+      convLowStart(); // v47: foto del tiempo disponible al arrancar (avisa ya si son ≤5 min)
       cards = [];
       curCard = null;
       levelHistory = [];
@@ -4034,6 +4066,7 @@
       teardownSessions();
       stopMic();
       intentionalClose = false;
+      convLowEnd(); // v47: la sesión no arrancó: sin aviso colgando
       setState('idle');
       showView('home');
       showErr('home', errorMessage(e));
@@ -4168,6 +4201,7 @@
       lastSummary._saved = true;
     }
     meterFlush(true); // v40: al terminar se envía el resto de la voz medida
+    convLowEnd(); // v47: se apaga el aviso de tiempo bajo
     showView('done');
   }
 
@@ -4661,6 +4695,7 @@
       d.addEventListener('click', function () { vibrate(8); showCallDetail(c); });
       list.appendChild(d);
     });
+    callLowCheck(); // v47: la píldora de la llamada en curso refleja el tiempo que queda
   }
 
   function showCallDetail(c) {
@@ -4701,6 +4736,7 @@
 
   function stopCallPolling() { if (callPollTimer) { clearInterval(callPollTimer); callPollTimer = null; } }
   function pollCallSummary() {
+    callLowCheck(); // v47: el tiempo de la llamada en curso también avisa al bajar de 5 min
     var pending = callStoreGet(CALL_PENDING_KEY);
     if (!pending || !pending.relayHost || !pending.callId) { stopCallPolling(); renderCallLast(); return; }
     if (Date.now() - pending.at > 90 * 60 * 1000) { callStoreSet(CALL_PENDING_KEY, null); stopCallPolling(); renderCallLast(); return; }
@@ -4733,6 +4769,7 @@
     if (nums.mine && !callMineIn.value) callMineIn.value = nums.mine;
     if (nums.dest && !callDestIn.value) callDestIn.value = nums.dest;
     callShowErr(''); callShowStatus('');
+    billingRefresh(); // v47: saldo fresquito pa' el aviso de tiempo bajo de la llamada
     renderCallHistory();
     renderCallPairChips();
     refreshVerifyUI(); checkVerifiedRemote();
@@ -4877,7 +4914,8 @@
           return;
         }
         callStoreSet(CALL_NUMS_KEY, { mine: mine, dest: dest });
-        callStoreSet(CALL_PENDING_KEY, { callId: j.callId, relayHost: j.relayHost, dest: dest, at: Date.now(), goal: (callGoalIn.value || '').trim() });
+        callStoreSet(CALL_PENDING_KEY, { callId: j.callId, relayHost: j.relayHost, dest: dest, at: Date.now(), goal: (callGoalIn.value || '').trim(), availSec: availCallSecSnap() });
+        callLowCheck(); // v47: si ya arranca con ≤5 min de llamadas, el aviso sale ahora mismo
         callShowErr(''); callShowStatus(t('callRinging'));
         renderCallLast(); startCallPolling();
         setTimeout(closeCallSheet, 1600);
@@ -5075,6 +5113,15 @@
   (function () {
     var pago = null;
     try { pago = new URLSearchParams(window.location.search).get('pago'); } catch (e) {}
+    if (pago) {
+      // v47: el parámetro se consume UNA vez — se borra de la URL
+      // sin recargar, pa' que un refresco no repita el aviso.
+      try {
+        var cleanUrl = new URL(window.location.href);
+        cleanUrl.searchParams.delete('pago');
+        window.history.replaceState(null, '', cleanUrl.toString());
+      } catch (e) {}
+    }
     if (pago === 'ok') {
       toast(t('plansPayOk'));
       setTimeout(function () { billingRefresh(); }, 3000);
@@ -5105,6 +5152,92 @@
       meterBusy = false;
       if (gen === meterGen) meterSentSec += consumed;
     });
+  }
+
+  /* ---- Avisos de tiempo bajo (v47) ----
+     Cuando quedan ~5 minutos, la persona se entera ANTES de
+     quedarse sin tiempo, pa' que se vaya preparando: un toast
+     prominente una sola vez y, desde ahí, una píldora fija con
+     los minutos enteros que quedan. SOLO avisa: jamás corta ni
+     bloquea nada.
+     La verdad sale del estado de cobro del servidor
+     (__englixBilling): segundos del plan + lo que el saldo
+     alcanza a comprar (conversación a $0.10/min = 6 s por
+     centavo; llamadas a $0.15/min = 4 s por centavo). Sin estado
+     conocido (sin sesión o cobro sin configurar) no se inventa
+     ninguna cifra: no hay aviso. */
+  var LOW_WARN_SEC = 300; // ~5 minutos
+  function availConvSec() {
+    var b = window.__englixBilling;
+    if (!b) return Infinity;
+    return (b.plan_conv_seconds || 0) + (b.balance_cents || 0) * 6;
+  }
+  function availCallSec() {
+    var b = window.__englixBilling;
+    if (!b) return Infinity;
+    return (b.plan_call_seconds || 0) + (b.balance_cents || 0) * 4;
+  }
+  // Foto serializable del tiempo de llamada disponible (o null si
+  // no se conoce: JSON no guarda Infinity y un null jamás avisa).
+  function availCallSecSnap() {
+    var s = availCallSec();
+    return isFinite(s) ? Math.round(s) : null;
+  }
+  function lowMinsText(sec) {
+    var m = Math.max(1, Math.round(Math.max(0, sec) / 60));
+    return t('warnPillLeft').replace('{N}', String(m));
+  }
+
+  /* Conversación en persona: foto del disponible al arrancar y
+     descuento EN VIVO con el MISMO medidor de voz de arriba
+     (meterAccMs: solo voz traducida, nunca tiempo conectado). */
+  var convLow = { avail: Infinity, warned: false };
+  function convLowStart() {
+    convLow.avail = availConvSec();
+    convLow.warned = false;
+    convLowTick(); // si la sesión ya arranca con ≤5 min, avisa de una vez
+  }
+  function convLowTick() {
+    if (typeof convLow === 'undefined' || !convLow) return;
+    var pill = $('lowpill-conv');
+    if (!inCall || !isFinite(convLow.avail)) { if (pill) pill.style.display = 'none'; return; }
+    var rem = convLow.avail - meterAccMs / 1000;
+    if (rem <= LOW_WARN_SEC) {
+      if (!convLow.warned) { convLow.warned = true; vibrate(30); toast(t('warnConvLow')); }
+      if (pill) { pill.textContent = lowMinsText(rem); pill.style.display = ''; }
+    } else if (pill) pill.style.display = 'none';
+  }
+  function convLowEnd() {
+    convLow.avail = Infinity;
+    convLow.warned = false;
+    var pill = $('lowpill-conv');
+    if (pill) pill.style.display = 'none';
+  }
+
+  /* Llamada telefónica: la llamada vive en la línea, así que el
+     transcurso sale del registro pendiente (pending.at, la misma
+     base con la que luego se cobra) contra la foto de disponible
+     guardada al marcar (pending.availSec). Lo revisan el sondeo
+     del resumen (cada 15 s), el registro de llamadas al pintarse
+     y el propio arranque de la llamada. El aviso queda marcado
+     en el registro (lowWarned) pa' no repetirse ni tras recargar. */
+  function callLowCheck() {
+    var pill = $('lowpill-call');
+    var pending = callStoreGet(CALL_PENDING_KEY);
+    if (!pending || typeof pending.availSec !== 'number') {
+      if (pill) pill.style.display = 'none';
+      return;
+    }
+    var rem = pending.availSec - (Date.now() - pending.at) / 1000;
+    if (rem <= LOW_WARN_SEC) {
+      if (!pending.lowWarned) {
+        pending.lowWarned = true;
+        callStoreSet(CALL_PENDING_KEY, pending);
+        vibrate(30);
+        toast(t('warnCallLow'));
+      }
+      if (pill) { pill.textContent = lowMinsText(rem); pill.style.display = ''; }
+    } else if (pill) pill.style.display = 'none';
   }
 
   /* ================= Autenticación Englix (v33) =================
